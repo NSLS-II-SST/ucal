@@ -5,6 +5,6 @@ setup(
     author_email="charles.titus@nist.gov",
     install_requires=["bluesky", "ophyd", "sst_base"],
     name="sst_common",
-    version="0.1.0",
+    use_scm_version=True,
     packages=find_packages()
 )
