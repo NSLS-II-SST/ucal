@@ -1,6 +1,5 @@
 #from .shims import *
 import sst_hw
-from importlib import metadata
 #from alignment import find_z_offset, find_x_offset, find_radius_theta, find_max
 #from alignment import find_corner_coordinates, find_corner_x_theta
 
@@ -16,6 +15,9 @@ plt.ion()
 
 from . import STATION_NAME
 
+"""
+from importlib import metadata
+not using entry points for now?
 eps = metadata.entry_points()["sst_common"]
 endstation = None
 if STATION_NAME is not None:
@@ -24,3 +26,14 @@ if STATION_NAME is not None:
             endstation = ep.load()
 if endstation is None:
     raise ImportError(f"No sst_common entrypoint called {STATION_NAME} found or loaded")
+"""
+
+############################################################
+#                      imports                             #
+############################################################
+
+from .motors import *
+from .detectors import *
+from .plans import *
+
+from sst_base.users import new_experiment
