@@ -1,7 +1,9 @@
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
+from bluesky.utils import Msg
 
-from sst_common.api import samplex, samplez, sampler, i1
+from sst_common.motors import samplex, samplez, sampler
+from sst_common.detectors import i1
 from sst_base.linalg import deg_to_rad, rad_to_deg, rotz, vec
 import numpy as np
 
@@ -75,3 +77,6 @@ def find_side_basis(nsides=4):
     print("Rotated points ", p1r, p2r, p3r)
     return p1r, p2r, p3r
     
+def calibrate_side(side_num, nsides=4):
+    p1, p2, p3 = yield from find_side_basis(nsides)
+    yield Msg("calibrate", sample_holder, side_num, p1, p2, p3)
