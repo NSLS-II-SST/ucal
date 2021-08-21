@@ -1,3 +1,10 @@
+import numpy as np
+from sst_common.motors import samplex, sampley, samplez, sampler
+from sst_common.detectors import i1
+from sst_base.maximizers import find_max_deriv, find_max
+from bluesky.plan_stubs import mv, mvr
+from bluesky.plans import rel_scan
+
 def scan_z_offset(zstart, zstop, step_size):
     nsteps = int(np.abs(zstop - zstart)/step_size) + 1
     ret = yield from find_max_deriv(rel_scan, [i1], samplez, zstart, zstop, nsteps)

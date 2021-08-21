@@ -1,5 +1,4 @@
 from bluesky.plan_stubs import mv, mvr
-from bluesky.plans import rel_scan
 from bluesky.utils import Msg
 
 from sst_common.motors import samplex, samplez, sampler

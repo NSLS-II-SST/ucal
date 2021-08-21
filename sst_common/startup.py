@@ -1,9 +1,9 @@
-#import nslsii
+# import nslsii does a bunch of setup I don't actually want yet
 
-from bluesky import RunEngine
-from databroker import Broker
 from sst_common.api import *
 from sst_base.commands import generic_cmd
+from bluesky import RunEngine
+from databroker import Broker
 
 RE = RunEngine({})
 db = Broker.named('temp')
