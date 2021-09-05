@@ -31,9 +31,10 @@ if endstation is None:
 ############################################################
 #                      imports                             #
 ############################################################
+# from .plans import *
 
-from .motors import *
-from .detectors import *
-from .plans import *
+# def _startup():
+#     from .detectors import *
 
-from sst_base.users import new_experiment
+
+# from sst_base.users import new_experiment
