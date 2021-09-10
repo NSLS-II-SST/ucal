@@ -1,5 +1,5 @@
 # import sst_hw.motors
-import SimpleNamespace
+from types import SimpleNamespace
 from . import STATION_NAME
 
 
