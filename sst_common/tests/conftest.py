@@ -3,6 +3,41 @@ from bluesky.run_engine import RunEngine, TransitionError
 import numpy as np
 import os
 import pytest
+from sst_base.linalg import vec, deg_to_rad
+import sst_common
+sst_common.STATION_NAME = "sst_sim"
+from sst_common.motors import (samplex, sampley, samplez, sampler,
+                               sample_holder, manipulator)
+from sst_common.run_engine import setup_run_engine
+
+
+@pytest.fixture()
+def fresh_manipulator():
+    from sst_base.linalg import vec
+    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5, 5, 0)]
+    sample_holder.load_geometry(10, 100, 4, points)
+    samplex.set(0)
+    sampley.set(0)
+    # Sink samplez so that we are blocking beam
+    samplez.set(-1)
+    sampler.set(0)
+    yield manipulator
+    sample_holder._reset()
+
+
+@pytest.fixture()
+def random_angle_manipulator():
+    angle = 5*np.random.rand()
+    theta = deg_to_rad(angle)
+    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5 - 10*np.tan(theta), 5, 0)]
+    sample_holder.load_geometry(10, 100, 4, points)
+    samplex.set(0)
+    sampley.set(0)
+    # Sink samplez so that we are blocking beam
+    samplez.set(-1)
+    sampler.set(0)
+    yield manipulator, angle
+    sample_holder._reset()
 
 
 @pytest.fixture(scope='function')
@@ -10,6 +45,7 @@ def RE(request):
     loop = asyncio.new_event_loop()
     loop.set_debug(True)
     RE = RunEngine({}, loop=loop, call_returns_result=True)
+    RE = setup_run_engine(RE)
 
     def clean_event_loop():
         if RE.state not in ('idle', 'panicked'):

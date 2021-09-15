@@ -1,11 +1,13 @@
 # import nslsii does a bunch of setup I don't actually want yet
+# startup sequence for beamline
 
-from sst_common.api import *
-from sst_base.commands import generic_cmd
 from bluesky import RunEngine
+from sst_common.run_engine import setup_run_engine
 from databroker import Broker
 
 RE = RunEngine({})
+RE = setup_run_engine(RE)
+
+
 db = Broker.named('temp')
 RE.subscribe(db.insert)
-RE.register_command("calibrate", generic_cmd)

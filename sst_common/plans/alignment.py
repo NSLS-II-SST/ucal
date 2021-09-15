@@ -69,7 +69,8 @@ def find_side_basis(nsides=4):
     yield from mvr(samplez, -90)
     (x3, y3) = yield from find_corner_known_rotation(r1, r2, nsides)
     yield from mv(samplez, z)
-    # fudging origin a bit so that it is z, not z + 5
+    # fudging origin a bit so that it is z, not z + 5, could fix this
+    # by proper scaling along p1-p2 vector
     p1 = vec(x1, -y1, z)
     # still want correct height difference between points
     p2 = vec(x3, -y3, z + 95)

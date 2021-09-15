@@ -9,37 +9,8 @@ from sst_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_r_offset,
                                          scan_r_medium, scan_r_fine,
                                          scan_r_coarse)
-from sst_common.plans.alignment import find_corner_x_r
-
-
-@pytest.fixture()
-def fresh_manipulator():
-    from sst_base.linalg import vec
-    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5, 5, 0)]
-    sample_holder.load_geometry(10, 100, 4, points)
-    samplex.set(0)
-    sampley.set(0)
-    # Sink samplez so that we are blocking beam
-    samplez.set(-1)
-    samplex.set(0)
-    yield manipulator
-    sample_holder._reset()
-
-
-@pytest.fixture()
-def random_angle_manipulator():
-    from sst_base.linalg import vec, deg_to_rad
-    angle = 5*np.random.rand()
-    theta = deg_to_rad(angle)
-    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5 - 10*np.tan(theta), 5, 0)]
-    sample_holder.load_geometry(10, 100, 4, points)
-    samplex.set(0)
-    sampley.set(0)
-    # Sink samplez so that we are blocking beam
-    samplez.set(-1)
-    sampler.set(0)
-    yield manipulator, angle
-    sample_holder._reset()
+from sst_common.plans.alignment import find_corner_x_r, find_corner_coordinates
+from bluesky.plan_stubs import mvr
 
 
 # need to directly set hardware in fixtures
@@ -89,7 +60,46 @@ def test_find_corner_x_r(RE, fresh_manipulator, angle):
     assert np.isclose(theta, 0, 0.1)
     # print(f"theta: {theta}")
 
+
+def test_corner_coordinates(RE, fresh_manipulator):
+    samplex.set(3)
+    sampler.set(4)
+    x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
+
+    assert np.isclose(r1, 0, 0.1)
+    assert np.isclose(r2, 90, 0.1)
+    assert np.isclose(x1, 5, 0.1)
+    assert np.isclose(y1, 5, 0.1)
+
+    sampler.set(87)
+    samplex.set(3)
+    x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
+
+    assert np.isclose(r1, 90, 0.1)
+    assert np.isclose(r2, 180, 0.1)
+    assert np.isclose(x1, 5, 0.1)
+    assert np.isclose(y1, 5, 0.1)
+
+
+def test_random_corner_coordinates(RE, random_angle_manipulator):
+    _, angle = random_angle_manipulator
+    samplex.set(3)
+    x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
+
+    assert np.isclose(r1, -1*angle, 0.1)
+    assert np.isclose(r2, 90 - angle, 0.1)
+    assert np.isclose(x1, 5, 0.1)
+    assert np.isclose(y1, 5, 0.1)
+
+    sampler.set(90)
+    samplex.set(3)
+    x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
+
+    assert np.isclose(r1, 90 - angle, 0.1)
+    assert np.isclose(r2, 180 - angle, 0.1)
+    assert np.isclose(x1, 5, 0.1)
+    assert np.isclose(y1, 5, 0.1)
+
 # Better random tests
 # Test actual alignment
 # Test/estimate time taken?
-
