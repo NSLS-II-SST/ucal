@@ -1,0 +1,6 @@
+Sample ID,Sample Name,side,x1,y1,x2,y2,thickness,tags,
+1,sample1,1,1,1,5,5,0,iron,copper
+2,sample2,1,1,6,5,11,0,test,
+3,sample3,2,2,1,5,4,0,,
+4,sample4,2,1,6,5,9,1,,
+5,sample5,3,1,1,4,4,0,,
