@@ -82,14 +82,15 @@ def test_corner_coordinates(RE, fresh_manipulator):
 
 
 def test_random_corner_coordinates(RE, random_angle_manipulator):
-    _, angle = random_angle_manipulator
+    manipulator, angle = random_angle_manipulator
+    w = manipulator.bar.width/2.0
     samplex.set(3)
     x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
-
+    
     assert np.isclose(r1, -1*angle, 0.1)
     assert np.isclose(r2, 90 - angle, 0.1)
-    assert np.isclose(x1, 5, 0.1)
-    assert np.isclose(y1, 5, 0.1)
+    assert np.isclose(x1, w, 0.1)
+    assert np.isclose(y1, w, 0.1)
 
     sampler.set(90)
     samplex.set(3)
@@ -97,8 +98,8 @@ def test_random_corner_coordinates(RE, random_angle_manipulator):
 
     assert np.isclose(r1, 90 - angle, 0.1)
     assert np.isclose(r2, 180 - angle, 0.1)
-    assert np.isclose(x1, 5, 0.1)
-    assert np.isclose(y1, 5, 0.1)
+    assert np.isclose(x1, w, 0.1)
+    assert np.isclose(y1, w, 0.1)
 
 # Better random tests
 # Test actual alignment

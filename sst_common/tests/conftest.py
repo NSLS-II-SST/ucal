@@ -25,12 +25,13 @@ def fresh_manipulator():
     sample_holder._reset()
 
 
-@pytest.fixture()
-def random_angle_manipulator():
+@pytest.fixture(params=[4, 5, 6])
+def random_angle_manipulator(request):
     angle = 5*np.random.rand()
+    w = request.param
     theta = deg_to_rad(angle)
-    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5 - 10*np.tan(theta), 5, 0)]
-    sample_holder.load_geometry(10, 100, 4, points)
+    points = [vec(w, -w, 0), vec(w, -w, 1), vec(w - 2*w*np.tan(theta), w, 0)]
+    sample_holder.load_geometry(2*w, 100, 4, points)
     samplex.set(0)
     sampley.set(0)
     # Sink samplez so that we are blocking beam

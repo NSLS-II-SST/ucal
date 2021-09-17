@@ -7,7 +7,7 @@ scripts = [script for script in scripts if script[-1] != '~']
 setup(
     author="Charles Titus",
     author_email="charles.titus@nist.gov",
-    install_requires=["bluesky", "ophyd", "sst_base", "sst_hw"],
+    install_requires=["bluesky", "ophyd", "sst_base"],
     name="sst_common",
     use_scm_version=True,
     packages=find_packages(),
