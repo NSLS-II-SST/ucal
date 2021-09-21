@@ -61,23 +61,30 @@ def scan_x_offset(xstart, xstop, step_size):
 
 def scan_x_coarse():
     """
-    Initial misalignment can be +- 10 degrees
+    Find x to within 1 mm, initial misalignment can be +- 10 mm
     """
-    return (yield from scan_x_offset(-10, 10, 0.5))
+    return (yield from scan_x_offset(-10, 10, 1))
 
 
 def scan_x_medium():
     """
-    Initial misalignment can be +- 2 degrees
+    Find x to within 0.25 mm, Initial misalignment can be +- 2 mm
     """
-    return (yield from scan_x_offset(-2, 2, 0.2))
+    return (yield from scan_x_offset(-2, 2, 0.25))
 
 
 def scan_x_fine():
+    """
+    Find x to within 0.05 mm, Initial misalignment can be +- 0.5 mm
+    """
     return (yield from scan_x_offset(-0.5, 0.5, 0.05))
 
 
+
+
+
 def find_x_offset():
+    yield from scan_x_coarse()
     yield from scan_x_medium()
     ret = yield from scan_x_fine()
     print(f"Found edge at {ret}")

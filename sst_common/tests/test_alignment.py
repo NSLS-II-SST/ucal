@@ -23,7 +23,13 @@ def test_scan_z_finds_edge(RE, fresh_manipulator):
 
 
 def test_find_x_offset(RE, fresh_manipulator):
+    samplex.set(1)
+    x_offset = RE(find_x_offset()).plan_result
+    assert np.isclose(x_offset, 5, 0.05)
     samplex.set(3)
+    x_offset = RE(find_x_offset()).plan_result
+    assert np.isclose(x_offset, 5, 0.05)
+    samplex.set(10)
     x_offset = RE(find_x_offset()).plan_result
     assert np.isclose(x_offset, 5, 0.05)
     sampler.set(45)
@@ -86,7 +92,7 @@ def test_random_corner_coordinates(RE, random_angle_manipulator):
     w = manipulator.bar.width/2.0
     samplex.set(3)
     x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
-    
+
     assert np.isclose(r1, -1*angle, 0.1)
     assert np.isclose(r2, 90 - angle, 0.1)
     assert np.isclose(x1, w, 0.1)

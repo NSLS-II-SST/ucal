@@ -34,5 +34,14 @@ def test_sample_edge_position(RE, loaded_manipulator):
 
 @pytest.mark.parametrize("sampleid", [1, 2, 3, 4, 5, 6])
 def test_sample_center_position(RE, loaded_manipulator, sampleid):
-    RE(move_to_sample_center(sampleid))
-    assert manipulator.sample_distance_to_beam() < 0
+
+    # Hitting sample dead center should be "negative" distance
+    RE(move_to_sample_center(sampleid, r=90))
+    d = manipulator.sample_distance_to_beam()
+    assert d < 0
+
+    # Hitting sample at 45 degrees should be smaller or equal
+    # distance to the sample edges
+    RE(move_to_sample_center(sampleid, r=45))
+    d2 = manipulator.sample_distance_to_beam()
+    assert d2 >= d

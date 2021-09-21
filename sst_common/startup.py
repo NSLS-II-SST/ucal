@@ -5,7 +5,7 @@ from bluesky import RunEngine
 from sst_common.run_engine import setup_run_engine
 from databroker import Broker
 
-RE = RunEngine({})
+RE = RunEngine({}, call_returns_result=True)
 RE = setup_run_engine(RE)
 
 
