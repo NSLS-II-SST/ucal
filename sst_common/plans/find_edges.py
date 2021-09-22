@@ -1,7 +1,7 @@
 import numpy as np
 from sst_common.motors import samplex, sampley, samplez, sampler
 from sst_common.detectors import i1
-from sst_base.maximizers import find_max_deriv, find_max
+from sst_base.maximizers import find_max_deriv, find_max, halfmax_adaptive
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
 
@@ -80,9 +80,6 @@ def scan_x_fine():
     return (yield from scan_x_offset(-0.5, 0.5, 0.05))
 
 
-
-
-
 def find_x_offset():
     yield from scan_x_coarse()
     yield from scan_x_medium()
@@ -103,3 +100,9 @@ def find_r_offset():
     ret = yield from scan_r_offset(-1, 1, 0.1)
     print(f"Found angle at {ret}")
     return ret
+
+def find_z_adaptive(precision=0.1):
+    start_pos = samplez.position
+    thres_pos = yield from threshold_adaptive([i1], samplez, step=2)
+    yield from mvr(samplez, 2)
+    return (yield from halfmax_adaptive([i1], samplez, precision=precision))

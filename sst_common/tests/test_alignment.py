@@ -5,15 +5,16 @@ import numpy as np
 sst_common.STATION_NAME = "sst_sim"
 from sst_common.motors import (samplex, sampley, samplez, sampler,
                                sample_holder, manipulator)
+from sst_common.detectors import i1
 from sst_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_r_offset,
                                          scan_r_medium, scan_r_fine,
                                          scan_r_coarse)
 from sst_common.plans.alignment import find_corner_x_r, find_corner_coordinates
+from sst_base.maximizers import halfmax_adaptive
 from bluesky.plan_stubs import mvr
 
 
-# need to directly set hardware in fixtures
 def test_scan_z_finds_edge(RE, fresh_manipulator):
     z_offset = RE(scan_z_medium()).plan_result
     assert np.isclose(z_offset, 0, 0.05)
@@ -106,6 +107,13 @@ def test_random_corner_coordinates(RE, random_angle_manipulator):
     assert np.isclose(r2, 180 - angle, 0.1)
     assert np.isclose(x1, w, 0.1)
     assert np.isclose(y1, w, 0.1)
+
+
+@pytest.mark.parametrize("precision", [1, 0.5, 0.1, 0.01])
+def test_halfmax_adaptive(RE, fresh_manipulator, precision):
+    samplez.set(4)
+    z = RE(halfmax_adaptive([i1], samplez, -5, precision)).plan_result
+    assert -1*precision < z and z < precision
 
 # Better random tests
 # Test actual alignment
