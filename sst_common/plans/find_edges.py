@@ -1,7 +1,7 @@
 import numpy as np
 from sst_common.motors import samplex, sampley, samplez, sampler
-from sst_common.detectors import i1
-from sst_base.maximizers import find_max_deriv, find_max, halfmax_adaptive
+from sst_common.detectors import i1, thresholds
+from sst_base.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
 
@@ -81,15 +81,14 @@ def scan_x_fine():
 
 
 def find_x_offset():
-    yield from scan_x_coarse()
-    yield from scan_x_medium()
+    yield from find_x_adaptive(precision=0.25)
     ret = yield from scan_x_fine()
     print(f"Found edge at {ret}")
     return ret
 
 
 def find_z_offset():
-    yield from scan_z_medium()
+    yield from find_z_adaptive(precision=0.25)
     zoffset = yield from scan_z_fine()
     print(f"Found edge at {zoffset}")
     return zoffset
@@ -101,8 +100,27 @@ def find_r_offset():
     print(f"Found angle at {ret}")
     return ret
 
+def find_edge_adaptive(dets, motor, step, precision):
+    """
+    Parameters
+    -----------
+    dets : list
+    motor : Ophyd device
+    step : float
+        step size to move motor that will make det go from low to high signal
+    precision : float
+        desired precision of edge position
+    """
+    main_det = dets[0]
+    if main_det.name not in thresholds:
+        raise KeyError(f"{main_dets.name} has no threshold value and cannot be used with"
+                       " an adaptive plan")
+    thres_pos = yield from threshold_adaptive(dets, motor, thresholds[main_det.name], step=step)
+    yield from mvr(motor, step)
+    return (yield from halfmax_adaptive(dets, motor, -1*step, precision=precision))
+            
 def find_z_adaptive(precision=0.1):
-    start_pos = samplez.position
-    thres_pos = yield from threshold_adaptive([i1], samplez, step=2)
-    yield from mvr(samplez, 2)
-    return (yield from halfmax_adaptive([i1], samplez, precision=precision))
+    return (yield from find_edge_adaptive([i1], samplez, 2, precision))
+    
+def find_x_adaptive(precision=0.1):
+    return (yield from find_edge_adaptive([i1], samplex, 2, precision))
