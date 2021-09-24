@@ -3,7 +3,7 @@ from bluesky.run_engine import RunEngine, TransitionError
 import numpy as np
 import os
 import pytest
-from sst_base.linalg import vec, deg_to_rad
+from sst_base.linalg import vec, deg_to_rad, rotz
 import sst_common
 sst_common.STATION_NAME = "sst_sim"
 from sst_common.motors import (samplex, sampley, samplez, sampler,
@@ -30,8 +30,9 @@ def random_angle_manipulator(request):
     angle = 5*np.random.rand()
     w = request.param
     theta = deg_to_rad(angle)
-    points = [vec(w, -w, 0), vec(w, -w, 1), vec(w - 2*w*np.tan(theta), w, 0)]
-    sample_holder.load_geometry(2*w, 100, 4, points)
+    points = [vec(w, -w, 0), vec(w, -w, 1), vec(w, w, 0)]
+    points_r = [rotz(theta, p) for p in points]
+    sample_holder.load_geometry(2*w, 100, 4, points_r)
     samplex.set(0)
     sampley.set(0)
     # Sink samplez so that we are blocking beam

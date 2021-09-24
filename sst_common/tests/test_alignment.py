@@ -15,8 +15,10 @@ from sst_common.plans.alignment import find_corner_x_r, find_corner_coordinates
 from sst_base.maximizers import halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mvr
 
+
 def isclose(a, b, precision):
     return (a >= b - precision) and (a <= b + precision)
+
 
 def test_scan_z_finds_edge(RE, fresh_manipulator):
     z_offset = RE(scan_z_medium()).plan_result
@@ -37,6 +39,7 @@ def test_find_x_adaptive(RE, fresh_manipulator):
     x_offset = RE(find_x_adaptive()).plan_result
     assert isclose(x_offset, 5, 0.1)
 
+
 def test_find_x_offset(RE, fresh_manipulator):
     samplex.set(1)
     x_offset = RE(find_x_offset()).plan_result
@@ -51,8 +54,6 @@ def test_find_x_offset(RE, fresh_manipulator):
     x_offset = RE(find_x_offset()).plan_result
     # Find diagonal with tolerance of 0.05
     assert isclose(x_offset, np.sqrt(50), 0.05)
-
-
 
 
 def test_find_r_offset(RE, fresh_manipulator):
@@ -134,14 +135,17 @@ def test_halfmax_adaptive(RE, fresh_manipulator, precision):
 
 def test_threshold_adaptive(RE, fresh_manipulator):
     samplez.set(2)
-    z = RE(threshold_adaptive([i1], samplez, thresholds['i1'], step=-2)).plan_result
+    z = RE(threshold_adaptive([i1], samplez, thresholds['i1'],
+                              step=-2)).plan_result
     assert z == 2
     samplez.set(-4)
-    z2 = RE(threshold_adaptive([i1], samplez, thresholds['i1'], step=2)).plan_result
+    z2 = RE(threshold_adaptive([i1], samplez, thresholds['i1'],
+                               step=2)).plan_result
     assert z2 >= 0
     samplez.set(-4)
     with pytest.raises(ValueError):
-        z3 = RE(threshold_adaptive([i1], samplez, thresholds['i1'], step=-2)).plan_result
+        RE(threshold_adaptive([i1], samplez, thresholds['i1'], step=-2))
+
 
 def test_find_z_adaptive(RE, fresh_manipulator):
     samplez.set(2)
