@@ -3,8 +3,7 @@ import pytest
 import sst_common
 import numpy as np
 sst_common.STATION_NAME = "sst_sim"
-from sst_common.motors import (samplex, sampley, samplez, sampler,
-                               sample_holder, manipulator)
+from sst_common.motors import samplex, sampley, samplez, sampler
 from sst_common.detectors import i1, thresholds
 from sst_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_r_offset,
@@ -12,7 +11,7 @@ from sst_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          scan_r_coarse, find_z_adaptive,
                                          find_x_adaptive)
 from sst_common.plans.alignment import find_corner_x_r, find_corner_coordinates
-from sst_base.maximizers import halfmax_adaptive, threshold_adaptive
+from bl_funcs.plans.maximizers import halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mvr
 
 

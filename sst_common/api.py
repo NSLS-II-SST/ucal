@@ -1,5 +1,5 @@
 #from .shims import *
-import sst_hw
+#import sst_hw
 #from alignment import find_z_offset, find_x_offset, find_radius_theta, find_max
 #from alignment import find_corner_coordinates, find_corner_x_theta
 

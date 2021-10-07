@@ -5,7 +5,7 @@ from sst_common.detectors import i1
 from sst_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    scan_x_coarse, scan_x_medium, scan_x_fine,
                                    find_x_offset, find_z_offset)
-from sst_base.linalg import deg_to_rad, rad_to_deg, rotz, vec
+from bl_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 import numpy as np
 
 # need to fix imports, test, etc, actually hook up the max logic, and do a

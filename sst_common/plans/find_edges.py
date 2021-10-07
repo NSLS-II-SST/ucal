@@ -1,7 +1,7 @@
 import numpy as np
 from sst_common.motors import samplex, sampley, samplez, sampler
 from sst_common.detectors import i1, thresholds
-from sst_base.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive
+from bl_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
 
@@ -100,6 +100,7 @@ def find_r_offset():
     print(f"Found angle at {ret}")
     return ret
 
+
 def find_edge_adaptive(dets, motor, step, precision):
     """
     Parameters
@@ -113,14 +114,19 @@ def find_edge_adaptive(dets, motor, step, precision):
     """
     main_det = dets[0]
     if main_det.name not in thresholds:
-        raise KeyError(f"{main_dets.name} has no threshold value and cannot be used with"
-                       " an adaptive plan")
-    thres_pos = yield from threshold_adaptive(dets, motor, thresholds[main_det.name], step=step)
+        raise KeyError(f"{main_det.name} has no threshold value and cannot be"
+                       "used with an adaptive plan")
+    thres_pos = yield from threshold_adaptive(dets, motor,
+                                              thresholds[main_det.name],
+                                              step=step)
     yield from mvr(motor, step)
-    return (yield from halfmax_adaptive(dets, motor, -1*step, precision=precision))
-            
+    return (yield from halfmax_adaptive(dets, motor, -1*step,
+                                        precision=precision))
+
+
 def find_z_adaptive(precision=0.1):
     return (yield from find_edge_adaptive([i1], samplez, 2, precision))
-    
+
+
 def find_x_adaptive(precision=0.1):
     return (yield from find_edge_adaptive([i1], samplex, 2, precision))

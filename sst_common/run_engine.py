@@ -1,4 +1,4 @@
-from sst_base.commands import generic_cmd
+from bl_funcs.re_commands import generic_cmd
 
 
 def load_RE_commands(engine):
