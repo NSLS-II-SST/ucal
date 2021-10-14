@@ -9,6 +9,6 @@ except DistributionNotFound:
 STATION_ENV = "SST_STATION"
 
 station_specified = STATION_ENV in os.environ
-os.environ.setdefault(STATION_ENV, "sst_sim")
+os.environ.setdefault(STATION_ENV, "ucal")
 
 STATION_NAME = os.environ[STATION_ENV].lower()
