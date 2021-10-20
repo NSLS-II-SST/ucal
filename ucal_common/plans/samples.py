@@ -1,4 +1,4 @@
-from ..motors import sample_holder, manipulator, framex, framey, framez, framer
+from ucal_common.sampleholder import sampleholder
 from bluesky.plan_stubs import mv, abs_set
 from bluesky.utils import Msg
 import csv
@@ -24,7 +24,7 @@ def read_sample_csv(filename):
     return samples
 
 
-def load_samples_into_holder(filename, holder):
+def load_samples_into_holder(filename):
     holder._reset()
     samples = read_sample_csv(filename)
     for sample_id, s in samples.items():
@@ -32,7 +32,7 @@ def load_samples_into_holder(filename, holder):
         name = s['sample_name']
         side = s['side']
         thickness = s['t']
-        holder.add_sample(sample_id, name, position, side, thickness)
+        sampleholder.add_sample(sample_id, name, position, side, thickness)
 
 
 def load_samples(filename):

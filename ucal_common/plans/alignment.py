@@ -1,8 +1,8 @@
 from bluesky.plan_stubs import mv, mvr
 # from bluesky.utils import Msg
-from sst_common.motors import samplex, samplez, sampler
-from sst_common.detectors import i1
-from sst_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
+from ucal_common.motors import samplex, samplez, sampler
+from ucal_common.detectors import i1
+from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    scan_x_coarse, scan_x_medium, scan_x_fine,
                                    find_x_offset, find_z_offset)
 from bl_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec

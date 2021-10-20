@@ -1,6 +1,6 @@
 import numpy as np
-from sst_common.motors import samplex, sampley, samplez, sampler
-from sst_common.detectors import i1, thresholds
+from ucal_common.motors import samplex, sampley, samplez, sampler
+from ucal_common.detectors import i1, thresholds
 from bl_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
