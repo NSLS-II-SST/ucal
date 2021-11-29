@@ -5,4 +5,4 @@ if STATION_NAME == "sst_sim":
 if STATION_NAME == "ucal":
     from ucal_hw.detectors import *
     
-#dets = [i0, ref]
+base_dets = [i0, ref]
