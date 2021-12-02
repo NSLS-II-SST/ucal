@@ -1,6 +1,6 @@
 from bluesky.plan_stubs import mv, mvr
 # from bluesky.utils import Msg
-from ucal_common.motors import samplex, samplez, sampler
+from ucal_common.motors import manipx, manipz, manipr
 from ucal_common.detectors import i1
 from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    scan_x_coarse, scan_x_medium, scan_x_fine,
@@ -31,7 +31,7 @@ def find_corner_coordinates(nsides=4):
     ra = 360.0/nsides
 
     x1, r1 = yield from find_corner_x_r()
-    yield from mvr(sampler, ra)
+    yield from mvr(manipr, ra)
     x2, r2 = yield from find_corner_x_r()
 
     y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
@@ -51,9 +51,9 @@ def calculate_corner_y(x1, r1, x2, r2, nsides=4):
 
 
 def find_corner_known_rotation(r1, r2, nsides=4):
-    yield from mv(sampler, r2)
+    yield from mv(manipr, r2)
     x2 = yield from find_x_offset()
-    yield from mv(sampler, r1)
+    yield from mv(manipr, r1)
     x1 = yield from find_x_offset()
     y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
     x2 = np.abs(x2)
@@ -65,11 +65,11 @@ def find_corner_known_rotation(r1, r2, nsides=4):
 
 def find_side_basis(nsides=4):
     z = yield from find_z_offset()
-    yield from mvr(samplez, -5)
+    yield from mvr(manipz, -5)
     x1, y1, r1, r2 = yield from find_corner_coordinates(nsides)
-    yield from mvr(samplez, -90)
+    yield from mvr(manipz, -90)
     (x3, y3) = yield from find_corner_known_rotation(r1, r2, nsides)
-    yield from mv(samplez, z)
+    yield from mv(manipz, z)
     # fudging origin a bit so that it is z, not z + 5, could fix this
     # by proper scaling along p1-p2 vector
     p1 = vec(x1, -y1, z)

@@ -3,26 +3,28 @@ from bluesky.run_engine import RunEngine, TransitionError
 import numpy as np
 import os
 import pytest
-from sst_base.linalg import vec, deg_to_rad, rotz
-import sst_common
-sst_common.STATION_NAME = "sst_sim"
-from sst_common.motors import (samplex, sampley, samplez, sampler,
-                               sample_holder, manipulator)
-from sst_common.run_engine import setup_run_engine
+from bl_funcs.geometry.linalg import vec, deg_to_rad, rotz
+from bl_base.sampleholder import make_regular_polygon
+import ucal_common
+ucal_common.STATION_NAME = "sst_sim"
+from ucal_common.motors import (manipx, manipy, manipz, manipr,
+                                manipulator)
+from ucal_common.sampleholder import sampleholder
+from ucal_common.run_engine import setup_run_engine
 
 
 @pytest.fixture()
 def fresh_manipulator():
-    from sst_base.linalg import vec
     points = [vec(5, -5, 0), vec(5, -5, 1), vec(5, 5, 0)]
-    sample_holder.load_geometry(10, 100, 4, points)
-    samplex.set(0)
-    sampley.set(0)
-    # Sink samplez so that we are blocking beam
-    samplez.set(-1)
-    sampler.set(0)
+    geometry = make_regular_polygon(10, 100, 4, points, parent=None)
+    sampleholder.add_geometry(geometry)
+    manipx.set(0)
+    manipy.set(0)
+    # Sink manipz so that we are blocking beam
+    manipz.set(-1)
+    manipr.set(0)
     yield manipulator
-    sample_holder._reset()
+    sampleholder._reset()
 
 
 @pytest.fixture(params=[4, 5, 6])
@@ -32,14 +34,15 @@ def random_angle_manipulator(request):
     theta = deg_to_rad(angle)
     points = [vec(w, -w, 0), vec(w, -w, 1), vec(w, w, 0)]
     points_r = [rotz(theta, p) for p in points]
-    sample_holder.load_geometry(2*w, 100, 4, points_r)
-    samplex.set(0)
-    sampley.set(0)
-    # Sink samplez so that we are blocking beam
-    samplez.set(-1)
-    sampler.set(0)
+    geometry = make_regular_polygon(2*w, 100, 4, points_r, parent=None)
+    sampleholder.add_geometry(geometry)
+    manipx.set(0)
+    manipy.set(0)
+    # Sink manipz so that we are blocking beam
+    manipz.set(-1)
+    manipr.set(0)
     yield manipulator, angle
-    sample_holder._reset()
+    sampleholder._reset()
 
 
 @pytest.fixture(scope='function')
@@ -88,4 +91,4 @@ def db(request):
     return db
 
 
-pytest_plugins = ["sst_base_experiment"]
+#pytest_plugins = ["sst_base_experiment"]

@@ -1,14 +1,20 @@
 import numpy as np
-from ucal_common.motors import samplex, sampley, samplez, sampler
+from ucal_common.motors import manipx, manipy, manipz, manipr
 from ucal_common.detectors import sc, thresholds
 from bl_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
 
+# This should go into a beamline config file at some point
+alignment_detector = [sc]
+# If we have a drain current detector on the manipulator,
+# as opposed to a detector that the manipulator shadows,
+# we will need to invert some of the maximum finding routines
+detector_on_manip = True
 
 def scan_z_offset(zstart, zstop, step_size):
     nsteps = int(np.abs(zstop - zstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, [sc], samplez, zstart, zstop,
+    ret = yield from find_max_deriv(rel_scan, alignment_detector, manipz, zstart, zstop,
                                     nsteps)
     _, zoffset = ret[0]
     print(zoffset)
@@ -32,7 +38,8 @@ def scan_r_offset(rstart, rstop, step_size):
     Relative scan, find r that maximizes signal
     """
     nsteps = int(np.abs(rstop - rstart)/step_size) + 1
-    ret = yield from find_max(rel_scan, [sc], sampler, rstart, rstop, nsteps)
+    ret = yield from find_max(rel_scan, alignment_detector, manipr, rstart, rstop, nsteps,
+                              invert=detector_on_manip)
     _, roffset = ret[0]
     print(roffset)
     return roffset
@@ -52,7 +59,7 @@ def scan_r_fine():
 
 def scan_x_offset(xstart, xstop, step_size):
     nsteps = int(np.abs(xstop - xstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, [sc], samplex, xstart, xstop,
+    ret = yield from find_max_deriv(rel_scan, alignment_detector, manipx, xstart, xstop,
                                     nsteps)
     _, xoffset = ret[0]
     print(xoffset)
@@ -125,8 +132,8 @@ def find_edge_adaptive(dets, motor, step, precision):
 
 
 def find_z_adaptive(precision=0.1):
-    return (yield from find_edge_adaptive([sc], samplez, 2, precision))
+    return (yield from find_edge_adaptive(alignment_detector, manipz, -2, precision))
 
 
 def find_x_adaptive(precision=0.1):
-    return (yield from find_edge_adaptive([sc], samplex, 2, precision))
+    return (yield from find_edge_adaptive(alignment_detector, manipx, 2, precision))

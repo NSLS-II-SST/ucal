@@ -6,8 +6,8 @@ from . import STATION_NAME
 #def _motors():
 if STATION_NAME == "sst_sim":
     from sst_common_sim.api import samplex, sampley, samplez, sampler
-    from sst_common_sim.api import framex, framey, framez, framer
-    from sst_common_sim.api import manipulator, sample_holder
+    from sst_common_sim.api import manipx, manipy, manipz, manipr
+    from sst_common_sim.api import manipulator
 
 if STATION_NAME == "ucal":
     from ucal_hw.motors import *

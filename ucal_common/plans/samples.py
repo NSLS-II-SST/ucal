@@ -1,6 +1,6 @@
 from ucal_common.sampleholder import sampleholder
+from ucal_common.motors import samplex, sampley, samplez, sampler
 from bluesky.plan_stubs import mv, abs_set
-from bluesky.utils import Msg
 import csv
 
 filename = "../../examples/sample_load.csv"
@@ -24,7 +24,7 @@ def read_sample_csv(filename):
     return samples
 
 
-def load_samples_into_holder(filename):
+def load_samples_into_holder(filename, holder):
     holder._reset()
     samples = read_sample_csv(filename)
     for sample_id, s in samples.items():
@@ -32,30 +32,26 @@ def load_samples_into_holder(filename):
         name = s['sample_name']
         side = s['side']
         thickness = s['t']
-        sampleholder.add_sample(sample_id, name, position, side, thickness)
+        holder.add_sample(sample_id, name, position, side, thickness)
 
 
 def load_samples(filename):
-    load_samples_into_holder(sample_holder)
+    load_samples_into_holder(filename, sampleholder)
 
 
-def move_to_frame(x, y, z, r):
-    yield from mv(framex, x, framey, y, framez, z, framer, r)
+def set_sample(sampleid, origin="center"):
+    yield from abs_set(sampleholder, sampleid, origin=origin)
 
 
-def set_frame_sample_center(holder, sampleid):
-    yield Msg("set_frame_sample_center", holder, sampleid)
+def set_sample_center(sampleid):
+    yield from set_sample(sampleid, origin="center")
 
 
-def set_frame_sample_edge(holder, sampleid):
-    yield Msg("set_frame_sample_edge", holder, sampleid)
+def set_sample_edge(sampleid):
+    yield from set_sample(sampleid, origin='edge')
 
 
-def move_to_sample_center(sampleid, x=0, y=0, r=45, z=0):
-    yield from set_frame_sample_center(sample_holder, sampleid)
-    yield from move_to_frame(x, y, z, r)
-
-
-def move_to_sample_edge(sampleid, x=0, y=0, r=45, z=0):
-    yield from set_frame_sample_edge(sample_holder, sampleid)
-    yield from move_to_frame(x, y, z, r)
+def sample_move(x, y, r, sampleid=None, **kwargs):
+    if sampleid is not None:
+        yield from set_sample(sampleid, **kwargs)
+    yield from mv(samplex, x, sampley, y, sampler, r)
