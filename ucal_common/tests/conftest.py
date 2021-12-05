@@ -15,13 +15,16 @@ from ucal_common.run_engine import setup_run_engine
 
 @pytest.fixture()
 def fresh_manipulator():
-    points = [vec(5, -5, 0), vec(5, -5, 1), vec(5, 5, 0)]
-    geometry = make_regular_polygon(10, 100, 4, points, parent=None)
+    h = 100
+    w = 10
+    points = [vec(w/2, w/2, 0), vec(w/2, w/2, 1), vec(w/2, -w/2, 0)]
+    geometry = make_regular_polygon(w, h, 4, points, parent=None)
     sampleholder.add_geometry(geometry)
-    manipx.set(0)
-    manipy.set(0)
+    x, y, z = manipulator.origin
+    manipx.set(x)
+    manipy.set(y)
     # Sink manipz so that we are blocking beam
-    manipz.set(-1)
+    manipz.set(z+1)
     manipr.set(0)
     yield manipulator
     sampleholder._reset()
@@ -31,15 +34,17 @@ def fresh_manipulator():
 def random_angle_manipulator(request):
     angle = 5*np.random.rand()
     w = request.param
+    h = 100
     theta = deg_to_rad(angle)
-    points = [vec(w, -w, 0), vec(w, -w, 1), vec(w, w, 0)]
+    points = [vec(w, -w, 0), vec(w, -w, -1), vec(w, w, 0)]
     points_r = [rotz(theta, p) for p in points]
-    geometry = make_regular_polygon(2*w, 100, 4, points_r, parent=None)
+    geometry = make_regular_polygon(2*w, h, 4, points_r, parent=None)
     sampleholder.add_geometry(geometry)
-    manipx.set(0)
-    manipy.set(0)
+    x, y, z = manipulator.origin
+    manipx.set(x)
+    manipy.set(y)
     # Sink manipz so that we are blocking beam
-    manipz.set(-1)
+    manipz.set(z+1)
     manipr.set(0)
     yield manipulator, angle
     sampleholder._reset()

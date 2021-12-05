@@ -53,5 +53,3 @@ def test_sample_center_position(RE, loaded_manipulator, sampleid):
     RE(sample_move(0, -20, 90))
     d3 = manipulator.sample_distance_to_beam()
     assert d3 > 0
-
-    

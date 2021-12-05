@@ -132,7 +132,7 @@ def find_edge_adaptive(dets, motor, step, precision):
 
 
 def find_z_adaptive(precision=0.1):
-    return (yield from find_edge_adaptive(alignment_detector, manipz, -2, precision))
+    return (yield from find_edge_adaptive(alignment_detector, manipz, 2, precision))
 
 
 def find_x_adaptive(precision=0.1):

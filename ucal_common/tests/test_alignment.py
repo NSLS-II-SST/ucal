@@ -4,7 +4,7 @@ import ucal_common
 import numpy as np
 ucal_common.STATION_NAME = "sst_sim"
 from ucal_common.motors import manipx, manipy, manipz, manipr
-from ucal_common.detectors import i1, thresholds
+from ucal_common.detectors import i1, sc, thresholds
 from ucal_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_r_offset,
                                          scan_r_medium, scan_r_fine,
@@ -20,11 +20,12 @@ def isclose(a, b, precision):
 
 
 def test_scan_z_finds_edge(RE, fresh_manipulator):
+    z_origin = fresh_manipulator.origin[-1]
     z_offset = RE(scan_z_medium()).plan_result
-    assert isclose(z_offset, 0, 0.05)
-    manipz.set(-1)
+    assert isclose(z_offset, z_origin, 0.05)
+    manipz.set(z_origin + 1)
     z_offset2 = RE(scan_z_medium()).plan_result
-    assert isclose(z_offset2, 0, 0.05)
+    assert isclose(z_offset2, z_origin, 0.05)
 
 
 def test_find_x_adaptive(RE, fresh_manipulator):
@@ -127,38 +128,44 @@ def test_random_corner_coordinates(RE, random_angle_manipulator):
 
 @pytest.mark.parametrize("precision", [1, 0.5, 0.1, 0.01])
 def test_halfmax_adaptive(RE, fresh_manipulator, precision):
-    manipz.set(4)
-    z = RE(halfmax_adaptive([i1], manipz, -5, precision)).plan_result
-    assert isclose(z, 0, precision)
+    z_origin = fresh_manipulator.origin[-1]
+    manipz.set(z_origin - 4)
+    z = RE(halfmax_adaptive([i1], manipz, 5, precision)).plan_result
+    assert isclose(z, z_origin, precision)
 
 
 def test_threshold_adaptive(RE, fresh_manipulator):
-    manipz.set(2)
-    z = RE(threshold_adaptive([i1], manipz, thresholds['i1'],
-                              step=-2)).plan_result
-    assert z == 2
-    manipz.set(-4)
-    z2 = RE(threshold_adaptive([i1], manipz, thresholds['i1'],
-                               step=2)).plan_result
-    assert z2 >= 0
-    manipz.set(-4)
+    z_origin = fresh_manipulator.origin[-1]
+    manipz.set(z_origin - 2)
+    z = RE(threshold_adaptive([sc], manipz, thresholds['sc'],
+                              step=2)).plan_result
+    assert z == z_origin
+    manipz.set(z_origin+4)
+    z2 = RE(threshold_adaptive([sc], manipz, thresholds['sc'],
+                               step=-2)).plan_result
+    assert z2 >= z_origin
+    manipz.set(z_origin-2)
     with pytest.raises(ValueError):
-        RE(threshold_adaptive([i1], manipz, thresholds['i1'], step=-2))
+        RE(threshold_adaptive([sc], manipz, thresholds['sc'], step=-2))
 
 
 def test_find_z_adaptive(RE, fresh_manipulator):
-    manipz.set(2)
+    z_origin = fresh_manipulator.origin[-1]
+    manipz.set(z_origin - 2)
     z = RE(find_z_adaptive()).plan_result
-    assert isclose(z, 0, 0.1)
+    assert isclose(z, z_origin, 0.1)
 
-    manipz.set(10)
+    manipz.set(z_origin - 10)
     z = RE(find_z_adaptive()).plan_result
-    assert isclose(z, 0, 0.1)
+    assert isclose(z, z_origin, 0.1)
 
-    manipz.set(-10)
+    manipz.set(z_origin+10)
     z = RE(find_z_adaptive()).plan_result
-    assert isclose(z, 0, 0.1)
+    assert isclose(z, z_origin, 0.1)
 
+
+#def test_alignement(RE, fresh_manipulator):
+#    
 # Better random tests
 # Test actual alignment
 # Test/estimate time taken?

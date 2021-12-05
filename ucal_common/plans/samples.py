@@ -39,6 +39,10 @@ def load_samples(filename):
     load_samples_into_holder(filename, sampleholder)
 
 
+def set_side(side_num):
+    yield from abs_set(sampleholder, "side%d" % side_num)
+
+
 def set_sample(sampleid, origin="center"):
     yield from abs_set(sampleholder, sampleid, origin=origin)
 
