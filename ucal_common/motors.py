@@ -5,13 +5,22 @@ from . import STATION_NAME
 
 #def _motors():
 if STATION_NAME == "sst_sim":
-    from sst_common_sim.api import samplex, sampley, samplez, sampler
-    from sst_common_sim.api import manipx, manipy, manipz, manipr
     from sst_common_sim.api import manipulator
 
 if STATION_NAME == "ucal":
-    from ucal_hw.motors import *
+    from ucal_hw.motors import tesz
+    from ucal_hw.manipulator import manipulator
     from sst_hw.motors import *
+
+manipx = manipulator.x
+manipy = manipulator.y
+manipz = manipulator.z
+manipr = manipulator.r
+
+samplex = manipulator.sx
+sampley = manipulator.sy
+samplez = manipulator.sz
+sampler = manipulator.sr
 
 """
 Disabled 20211013, too complex for testing, unnecessary
