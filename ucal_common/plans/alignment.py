@@ -5,8 +5,8 @@ from ucal_common.detectors import i1
 from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    scan_x_coarse, scan_x_medium, scan_x_fine,
                                    find_x_offset, find_z_offset)
-from ucal_common.plans.plan_stubs import update_side
 from ucal_common.plans.samples import set_side, sample_move
+from ucal_common.plans.plan_stubs import update_manipulator_side
 from bl_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 import numpy as np
 
@@ -132,7 +132,7 @@ def find_side_basis(nsides=4):
 
 def calibrate_side(side_num, nsides=4):
     p1, p2, p3 = yield from find_side_basis(nsides)
-    yield from update_side(side_num, p1, p2, p3)
+    yield from update_manipulator_side(side_num, p1, p2, p3)
     # yield Msg("calibrate", sample_holder, side_num, p1, p2, p3)
 
 
@@ -143,4 +143,4 @@ def calibrate_sides(side_start, side_end, nsides=4):
         yield from sample_move(0, 0, 0)
         points, previous_side = yield from find_side_basis(nsides,
                                                            **previous_side)
-        yield from update_side(side, *points)
+        yield from update_manipulator_side(side, *points)
