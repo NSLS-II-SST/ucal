@@ -17,8 +17,8 @@ from ucal_common.run_engine import setup_run_engine
 def fresh_manipulator():
     h = 100
     w = 10
-    points = [vec(w/2, w/2, 0), vec(w/2, w/2, 1), vec(w/2, -w/2, 0)]
-    geometry = make_regular_polygon(w, h, 4, points, parent=None)
+    # points = [vec(w/2, w/2, 0), vec(w/2, w/2, 1), vec(w/2, -w/2, 0)]
+    geometry = make_regular_polygon(w, h, 4)
     sampleholder.add_geometry(geometry)
     x, y, z = manipulator.origin
     manipx.set(x)
