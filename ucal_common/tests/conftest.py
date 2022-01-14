@@ -20,11 +20,13 @@ def fresh_manipulator():
     # points = [vec(w/2, w/2, 0), vec(w/2, w/2, 1), vec(w/2, -w/2, 0)]
     geometry = make_regular_polygon(w, h, 4)
     sampleholder.add_geometry(geometry)
-    x, y, z = manipulator.origin
+    sampleholder.set("side1")
+    x, y, _ = manipulator.origin
+    z = manipulator.forward(0, 0, 0, 0).z
     manipx.set(x)
     manipy.set(y)
     # Sink manipz so that we are blocking beam
-    manipz.set(z+1)
+    manipz.set(z + 1)
     manipr.set(0)
     yield manipulator
     sampleholder._reset()
@@ -36,7 +38,10 @@ def random_angle_manipulator(request):
     w = request.param
     h = 100
     theta = deg_to_rad(angle)
-    points = [vec(w, -w, 0), vec(w, -w, -1), vec(w, w, 0)]
+    p1 = vec(w, w, 100)
+    p2 = p1 + vec(0, 0, -1)
+    p3 = p1 + vec(0, -1, 0)
+    points = [p1, p2, p3]
     points_r = [rotz(theta, p) for p in points]
     geometry = make_regular_polygon(2*w, h, 4, points_r, parent=None)
     sampleholder.add_geometry(geometry)
@@ -44,7 +49,7 @@ def random_angle_manipulator(request):
     manipx.set(x)
     manipy.set(y)
     # Sink manipz so that we are blocking beam
-    manipz.set(z+1)
+    manipz.set(z - h + 1)
     manipr.set(0)
     yield manipulator, angle
     sampleholder._reset()
@@ -94,6 +99,3 @@ def db(request):
     from databroker import temp
     db = temp()
     return db
-
-
-#pytest_plugins = ["sst_base_experiment"]

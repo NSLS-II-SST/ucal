@@ -26,7 +26,7 @@ x, y, z = manipulator.origin
 manipx.set(x)
 manipy.set(y)
 # Sink manipz so that we are blocking beam
-manipz.set(z+1)
+manipz.set(z - h + 1)
 manipr.set(0)
 
 RE = RunEngine({}, call_returns_result=True)
