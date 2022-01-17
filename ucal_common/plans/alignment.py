@@ -7,7 +7,7 @@ from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    find_x_offset, find_z_offset)
 from ucal_common.plans.samples import set_side, sample_move
 from ucal_common.plans.plan_stubs import update_manipulator_side
-from bl_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
+from sst_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 import numpy as np
 
 # need to fix imports, test, etc, actually hook up the max logic, and do a

@@ -1,4 +1,4 @@
-from bl_funcs.re_commands import generic_cmd, call_obj
+from sst_funcs.re_commands import generic_cmd, call_obj
 
 
 def load_RE_commands(engine):

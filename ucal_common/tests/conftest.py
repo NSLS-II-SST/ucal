@@ -3,8 +3,8 @@ from bluesky.run_engine import RunEngine, TransitionError
 import numpy as np
 import os
 import pytest
-from bl_funcs.geometry.linalg import vec, deg_to_rad, rotz
-from bl_base.sampleholder import make_regular_polygon
+from sst_funcs.geometry.linalg import vec, deg_to_rad, rotz
+from sst_base.sampleholder import make_regular_polygon
 import ucal_common
 ucal_common.STATION_NAME = "sst_sim"
 from ucal_common.motors import (manipx, manipy, manipz, manipr,
@@ -21,7 +21,7 @@ def fresh_manipulator():
     geometry = make_regular_polygon(w, h, 4)
     sampleholder.add_geometry(geometry)
     sampleholder.set("side1")
-    x, y, _ = manipulator.origin
+    x, y, _, _ = manipulator.origin
     z = manipulator.forward(0, 0, 0, 0).z
     manipx.set(x)
     manipy.set(y)
@@ -45,11 +45,13 @@ def random_angle_manipulator(request):
     points_r = [rotz(theta, p) for p in points]
     geometry = make_regular_polygon(2*w, h, 4, points_r, parent=None)
     sampleholder.add_geometry(geometry)
-    x, y, z = manipulator.origin
+    sampleholder.set("side1")
+    x, y, _, _ = manipulator.origin
+    z = manipulator.forward(0, 0, 0, 0).z
     manipx.set(x)
     manipy.set(y)
     # Sink manipz so that we are blocking beam
-    manipz.set(z - h + 1)
+    manipz.set(z + 1)
     manipr.set(0)
     yield manipulator, angle
     sampleholder._reset()

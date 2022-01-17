@@ -1,4 +1,4 @@
-from bl_base.sampleholder import SampleHolder, make_regular_polygon, make_two_sided_bar
+from sst_base.sampleholder import SampleHolder, make_regular_polygon, make_two_sided_bar
 from ucal_common.motors import manipulator
 
 sampleholder = SampleHolder(name="Sample Holder")

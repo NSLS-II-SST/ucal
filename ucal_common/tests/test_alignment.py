@@ -11,7 +11,7 @@ from ucal_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          scan_r_coarse, find_z_adaptive,
                                          find_x_adaptive)
 from ucal_common.plans.alignment import find_corner_x_r, find_corner_coordinates
-from bl_funcs.plans.maximizers import halfmax_adaptive, threshold_adaptive
+from sst_funcs.plans.maximizers import halfmax_adaptive, threshold_adaptive
 from bluesky.plan_stubs import mvr
 
 
