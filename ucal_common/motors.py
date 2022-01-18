@@ -5,7 +5,7 @@ from . import STATION_NAME
 
 #def _motors():
 if STATION_NAME == "sst_sim":
-    from sst_common_sim.api import manipulator
+    from sst_common_sim.api import manipulator, multimesh
 
 if STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
