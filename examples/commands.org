@@ -1,0 +1,10 @@
+* Plans
+** Alignment plans
+*** Align Z
+*** Align X
+*** Calibrate Z
+*** Calibrate
+** Sample Movement
+*** Set Sample
+*** Move reference
+*** Move Sample
