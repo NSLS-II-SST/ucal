@@ -3,8 +3,32 @@
 *** Align Z
 *** Align X
 *** Calibrate Z
-*** Calibrate
+*** Calibrate stick
 ** Sample Movement
 *** Set Sample
 *** Move reference
 *** Move Sample
+*** mv
+*** mvr
+** Sample Load
+*** Load samples
+*** Load stick geometry
+** Measurement Plans
+*** Count
+*** Various energy scans
+*** Scan while moving motors
+*** scan -> ascan
+*** relative scan -> dscan
+*** gscan
+* Globals
+** Motors
+*** en
+*** tesx
+*** manipx, manipy, manipz, manipr
+*** samplex, sampley, samplez, sampler
+** Detectors
+*** i0, i1, sc, tes, ref
+** Mirrors
+*** mir1, mir3,  mir4?
+** Shutters
+*** psh10, psh7

@@ -116,11 +116,16 @@ def find_side_basis(nsides=4):
     yield from mv(manipz, z)
     # fudging origin a bit so that it is z, not z + 5, could fix this
     # by proper scaling along p1-p2 vector
-    p1 = manipulator.manip_to_beam_frame(*vec(x1, -y1, z), 0)
+    origin = manipulator.origin[:3]
+    p1 = origin + vec(x1, y1, -z)
+    p2 = origin + vec(x3, y3, -(z + 90))
+    p3 = origin + vec(x1, y1 - 1, -z)
+    """
+    p1 = manipulator.manip_to_beam_frame(*vec(x1, y1, z), 0)[:3]
     # still want correct height difference between points
-    p2 = manipulator.manip_to_beam_frame(*vec(x3, -y3, z + 90), 0)
-    p3 = manipulator.manip_to_beam_frame(*vec(x1, -y1 + 10, z), 0)
-
+    p2 = manipulator.manip_to_beam_frame(*vec(x3, y3, z + 90), 0)[:3]
+    p3 = manipulator.manip_to_beam_frame(*vec(x1, y1 + 10, z), 0)[:3]
+    """
     theta1 = -1*deg_to_rad(r1)
     p1r = rotz(theta1, p1)
     p2r = rotz(theta1, p2)
@@ -141,6 +146,6 @@ def calibrate_sides(side_start, side_end, nsides=4):
     for side in range(side_start, side_end + 1):
         yield from set_side(side)
         yield from sample_move(0, 0, 0)
-        points, previous_side = yield from find_side_basis(nsides,
-                                                           **previous_side)
+        points, previous_side = yield from efficient_find_side_basis(nsides,
+                                                                     **previous_side)
         yield from update_manipulator_side(side, *points)
