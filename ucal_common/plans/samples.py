@@ -1,5 +1,6 @@
 from ucal_common.sampleholder import sampleholder
 from ucal_common.motors import samplex, sampley, samplez, sampler
+from sst_base.sampleholder import make_two_sided_bar
 from bluesky.plan_stubs import mv, abs_set
 import csv
 
@@ -24,17 +25,30 @@ def read_sample_csv(filename):
     return samples
 
 
-def load_samples_into_holder(filename, holder):
-    holder._reset()
-    samples = read_sample_csv(filename)
+def load_samples_from_dict(samples):
+    """
+    Sample dictionary
+    """
     for sample_id, s in samples.items():
         position = (s['x1'], s['y1'], s['x2'], s['y2'])
         name = s['sample_name']
         side = s['side']
         thickness = s['t']
-        holder.add_sample(sample_id, name, position, side, thickness)
+        sampleholder.add_sample(sample_id, name, position, side, thickness)
+    return 
 
 
+def load_standard_two_sided_bar():
+    bar = make_two_sided_bar(13, 300, 2)
+    sampleholder.add_geometry(bar)
+    
+
+def load_samples_into_holder(filename, holder):
+    holder._reset()
+    samples = read_sample_csv(filename)
+    load_sample_dict_into_holder(samples, holder)
+
+    
 def load_samples(filename):
     load_samples_into_holder(filename, sampleholder)
 
