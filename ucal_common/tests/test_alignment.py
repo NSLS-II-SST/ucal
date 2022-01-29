@@ -12,7 +12,7 @@ from ucal_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_x_adaptive)
 from ucal_common.plans.alignment import (find_corner_x_r,
                                          find_corner_coordinates,
-                                         find_side_basis)
+                                         efficient_find_side_basis)
 from sst_funcs.plans.maximizers import halfmax_adaptive, threshold_adaptive
 from sst_funcs.geometry.frames import Frame
 from bluesky.plan_stubs import mvr
@@ -167,17 +167,16 @@ def test_find_z_adaptive(RE, fresh_manipulator):
     assert isclose(z, z_origin, 0.1)
 
 
-@pytest.mark.parametrize('angle', [1, 2, 4, 6, 8])
+@pytest.mark.parametrize('angle', [1, 2, 4, 6])
 def test_one_side_alignment(RE, fresh_manipulator, angle):
     z_origin = fresh_manipulator.forward(0, 0, 0, 0).z
     manipz.set(z_origin - 2)
     manipr.set(angle)
-    s = fresh_manipulator.holder.sides[0]
-    p1, p2, p3 = RE(find_side_basis()).plan_result
-    f = Frame(p1, p2, p3)
-    for fb, sb in zip(f._basis, s._basis):
-        assert np.all(isclose(fb, sb, 0.1))
-
-# Better random tests
-# Test actual alignment
-# Test/estimate time taken?
+    next_side = {}
+    for n, s in enumerate(fresh_manipulator.holder.sides):
+        points, next_side = RE(efficient_find_side_basis(**next_side)).plan_result
+        f = Frame(*points)
+        print(f"Checking side {n}")
+        for fb, sb in zip(f._basis, s._basis):
+            print(f"Does {fb} equal {sb}")
+            assert np.all(isclose(fb, sb, 0.1))

@@ -87,16 +87,18 @@ def scan_x_fine():
     return (yield from scan_x_offset(-0.5, 0.5, 0.05))
 
 
-def find_x_offset():
-    yield from find_x_adaptive(precision=0.25)
-    ret = yield from scan_x_fine()
+def find_x_offset(precision=0.25, refine=True):
+    ret = yield from find_x_adaptive(precision=precision)
+    if refine:
+        ret = yield from scan_x_fine()
     print(f"Found edge at {ret}")
     return ret
 
 
-def find_z_offset():
-    yield from find_z_adaptive(precision=0.25)
-    zoffset = yield from scan_z_fine()
+def find_z_offset(precision=0.25, refine=True):
+    zoffset = yield from find_z_adaptive(precision=precision)
+    if refine:
+        zoffset = yield from scan_z_fine()
     print(f"Found edge at {zoffset}")
     return zoffset
 

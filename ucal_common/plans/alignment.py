@@ -20,7 +20,7 @@ def find_corner_x_r():
     finds the rotation that makes a side parallel to the beam, and the
     x-coordinate of the surface
     """
-    yield from scan_x_coarse()
+    yield from find_x_offset(refine=False)
     yield from scan_r_coarse()
     yield from scan_x_medium()
     theta = yield from scan_r_medium()
@@ -67,40 +67,48 @@ def find_corner_known_rotation(r1, r2, nsides=4):
 
 
 def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
+    """
+    Efficiently finds the side basis and leaves manipulator ready for
+    the next side
+    """
     ra = 360.0/nsides
-    zoffset = 90
+    z_bump = 5
     z = yield from find_z_offset()
-    yield from mvr(manipz, 5)
+    z2 = z + 90
+    yield from mv(manipz, z + z_bump)
     if x1 is None or r1 is None:
         x1, r1 = yield from find_corner_x_r()
-    yield from mv(manipr, r1 + ra)
-    x2, r2 = yield from find_corner_x_r()
-    y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
-    yield from mvr(manipz, zoffset)
-    yield from mv(manipr, r2)
-    x4 = yield from find_x_offset()
-    x4 = np.abs(x4)
+    yield from mv(manipz, z2 + z_bump)
     if x3 is None:
         yield from mv(manipr, r1)
         x3 = yield from find_x_offset()
         x3 = np.abs(x3)
+    yield from mv(manipr, r1 + ra)
+    x4, r2 = yield from find_corner_x_r()
+
+    yield from mv(manipz, z + z_bump)
+    yield from mv(manipr, r2)
+    x2 = yield from find_x_offset()
+    x2 = np.abs(x2)
+    y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
     y3 = calculate_corner_y(x3, r1, x4, r2, nsides)
 
     # Move manipulator back into place
     yield from mv(manipz, z)
-    points = find_side_points(x1, y1, x3, y3, z, z + zoffset, r1)
+    # Note, assumes a certain side to calibrate on!
+    yield from mvr(manipx, 2)
+    points = find_side_points(x1, y1, x3, y3, z, z2, r1)
     # Points we can plug into the basis for the next side
     next_side = {"x1": x2, "r1": r2, "x3": x4}
     return points, next_side
 
 
-def find_side_points(x1, y1, x3, y3, z1, z3, r1):
-    p1 = vec(x1, -y1, z1)
-    # still want correct height difference between points
-    p2 = vec(x3, -y3, z3)
-    p3 = vec(x1, -y1 + 10, z1)
+def find_side_points(x1, y1, x3, y3, z1, z3, r1, origin=0):
+    p1 = origin + vec(x1, y1, -z1)
+    p2 = origin + vec(x3, y3, -z3)
+    p3 = origin + vec(x1, y1 - 1, -z1)
 
-    theta1 = -1*deg_to_rad(r1)
+    theta1 = deg_to_rad(r1)
     p1r = rotz(theta1, p1)
     p2r = rotz(theta1, p2)
     p3r = rotz(theta1, p3)
@@ -126,7 +134,7 @@ def find_side_basis(nsides=4):
     p2 = manipulator.manip_to_beam_frame(*vec(x3, y3, z + 90), 0)[:3]
     p3 = manipulator.manip_to_beam_frame(*vec(x1, y1 + 10, z), 0)[:3]
     """
-    theta1 = -1*deg_to_rad(r1)
+    theta1 = deg_to_rad(r1)
     p1r = rotz(theta1, p1)
     p2r = rotz(theta1, p2)
     p3r = rotz(theta1, p3)
