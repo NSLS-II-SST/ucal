@@ -11,6 +11,7 @@ if STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
     from ucal_hw.manipulator import manipulator
     from sst_hw.motors import *
+    from sst_hw.manipulator import multimesh
 
 manipx = manipulator.x
 manipy = manipulator.y

@@ -96,6 +96,10 @@ def find_x_offset(precision=0.25, refine=True):
 
 
 def find_z_offset(precision=0.25, refine=True):
+    """
+    Find z-offset of manipulator. Manipulator should start
+    out of the beam
+    """
     zoffset = yield from find_z_adaptive(precision=precision)
     if refine:
         zoffset = yield from scan_z_fine()
