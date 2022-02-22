@@ -1,3 +1,5 @@
+
+from bluesky.utils import PersistentDict
 from bluesky.plan_stubs import mv, mvr, abs_set
 # startup sequence for beamline
 import ucal_common.motors as ucal_motors
@@ -20,8 +22,10 @@ from ucal_common.plans.samples import (load_samples, set_side, set_sample,
                                        sample_move, load_standard_two_sided_bar,
                                        load_samples_from_dict)
 from ucal_common.plans.tes import *
-
-
+from ucal_common.run_engine import RE
+from ucal_common.configuration import print_config_info
 
 # Motor aliases
 energy = en.energy
+
+print_config_info()
