@@ -6,7 +6,7 @@ from . import STATION_NAME
 if STATION_NAME == "sst_sim":
     beamline_metadata_dir = "/tmp/ucal_beamline_metadata"
 elif STATION_NAME == "ucal":
-    beamline_metadata_dir = "/nsls2/data/sst1/shared/config/ucal_beamline_metadata"
+    beamline_metadata_dir = "/nsls2/data/sst1/shared/config/ucal/beamline_metadata"
 
 def load_RE_commands(engine):
     engine.register_command("calibrate", generic_cmd)

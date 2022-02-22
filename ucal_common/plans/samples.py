@@ -26,7 +26,7 @@ def read_sample_csv(filename):
     return samples
 
 
-def load_samples_dict_into_holder(samples, holder):
+def load_sample_dict_into_holder(samples, holder):
     """
     Sample dictionary
     """
@@ -39,6 +39,11 @@ def load_samples_dict_into_holder(samples, holder):
     return
 
 
+def load_sample_dict(samples):
+    sampleholder._reset()
+    load_sample_dict_into_holder(samples, sampleholder)
+
+
 def load_standard_two_sided_bar():
     bar = make_two_sided_bar(13, 300, 2)
     sampleholder.add_geometry(bar)
@@ -47,7 +52,7 @@ def load_standard_two_sided_bar():
 def load_samples_into_holder(filename, holder):
     holder._reset()
     samples = read_sample_csv(filename)
-    load_samples_dict_into_holder(samples, holder)
+    load_sample_dict_into_holder(samples, holder)
 
 
 def load_samples(filename):
