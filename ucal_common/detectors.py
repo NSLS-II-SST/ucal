@@ -5,5 +5,3 @@ if STATION_NAME == "sst_sim":
     basic_dets = [sc, i0, i1, ref]
 if STATION_NAME == "ucal":
     from ucal_hw.detectors import *
-    
-
