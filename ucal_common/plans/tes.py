@@ -5,13 +5,18 @@ from ucal_common.plans.plan_stubs import call_obj, set_exposure
 from ucal_common.scan_exfiltrator import ScanExfiltrator
 from ucal_common.sampleholder import sampleholder
 from bluesky.plan_stubs import sleep
+from bluesky.preprocessors import run_decorator
 import bluesky.plans as bp
 
 
+
 def tes_take_noise():
-    yield from psh10.close()
-    yield from call_obj(tes, "take_noise")
-    yield from psh10.open()
+    @run_decorator(md={"scantype": "noise"})    
+    def inner_noise():
+        yield from psh10.close()
+        yield from call_obj(tes, "take_noise")
+        yield from psh10.open()
+    return (yield from inner_noise())
 
 
 def wrap_metadata(param):
