@@ -1,11 +1,12 @@
 from ucal_common.sampleholder import sampleholder
 from ucal_common.motors import samplex, sampley, samplez, sampler
 from ucal_common.configuration import beamline_config
-from sst_base.sampleholder import make_two_sided_bar
+from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
+from os.path import abspath
 import csv
 
-filename = "../../examples/sample_load.csv"
+#filename = "../../examples/sample_load.csv"
 
 
 def read_sample_csv(filename):
@@ -26,37 +27,48 @@ def read_sample_csv(filename):
     return samples
 
 
-def load_sample_dict_into_holder(samples, holder):
+def load_sample_dict_into_holder(samples, holder, clear=True):
     """
     Sample dictionary
     """
+    if clear:
+        holder.clear_samples()
     for sample_id, s in samples.items():
-        position = (s['x1'], s['y1'], s['x2'], s['y2'])
+        position = (float(s['x1']), float(s['y1']), float(s['x2']), float(s['y2']))
         name = s['sample_name']
-        side = s['side']
-        thickness = s['t']
+        side = int(s['side'])
+        thickness = float(s['t'])
         holder.add_sample(sample_id, name, position, side, thickness)
     return
 
 
 def load_sample_dict(samples):
-    sampleholder._reset()
     load_sample_dict_into_holder(samples, sampleholder)
 
 
-def load_standard_two_sided_bar():
-    bar = make_two_sided_bar(13, 300, 2)
-    sampleholder.add_geometry(bar)
-
-
 def load_samples_into_holder(filename, holder):
-    holder._reset()
     samples = read_sample_csv(filename)
     load_sample_dict_into_holder(samples, holder)
 
 
+def load_standard_two_sided_bar(filename):
+    bar = make_two_sided_bar(13, 300, 2)
+    sampleholder.add_geometry(bar)
+    beamline_config['loadfile'] = abspath(filename)
+    beamline_config['bar'] = "Standard 2-sided bar"
+    load_samples_into_holder(filename, sampleholder)
+
+
+def load_standard_four_sided_bar(filename):
+    bar = make_regular_polygon(24.5, 160, 4)
+    sampleholder.add_geometry(bar)
+    beamline_config['loadfile'] = abspath(filename)
+    beamline_config['bar'] = "Standard 4-sided bar"
+    load_samples_into_holder(filename, sampleholder)
+
+
 def load_samples(filename):
-    beamline_config['loadfile'] = filename
+    beamline_config['loadfile'] = abspath(filename)
     load_samples_into_holder(filename, sampleholder)
 
 
