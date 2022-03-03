@@ -22,8 +22,8 @@ def tes_ni_xas(**kwargs):
 
 @wrap_xas("Co")
 def tes_co_xas(**kwargs):
-    yield from tes_gscan(en.energy, 765, 772, 0.4, 775, 0.2, 784, 0.1, 790,
-                         0.2, 797, 0.1, 800, 0.2, 805, 0.4, 810, 1, **kwargs)
+    yield from tes_gscan(en.energy, 755, 765, 1, 772, 0.5, 775, 0.2, 784, 0.1, 790,
+                         0.2, 797, 0.1, 800, 0.2, 805, 0.5, 810, 1, 830, 2, **kwargs)
 
 
 @wrap_xas("Fe")
@@ -43,13 +43,20 @@ def tes_o_xas(**kwargs):
     yield from tes_gscan(en.energy, 515, 520, 0.5, 526, 0.2, 535, 0.05, 545,
                          0.1, 555, 0.25, 585, 0.5, 600, 1, **kwargs)
 
-
-@wrap_xas("Fe")
-def tes_fe_xas_short(**kwargs):
-    yield from tes_gscan(en.energy, 700, 705, 1, 720, 0.5, 740, 1, **kwargs)
+@wrap_xas("N")
+def tes_n_xas(**kwargs):
+    yield from tes_gscan(en.energy, 380, 395, 0.5, 397, 0.1, 403, 0.05, 407, 0.1, 417, 0.2, 440, 0.5, 480, 2, **kwargs)
 
 
 @wrap_xas("C")
 def tes_c_xas(**kwargs):
-    yield from tes_gscan(en.energy, 270, 280, 1, 300, 0.1, 310, 0.2, 350, 1,
-                         **kwargs)
+    yield from tes_gscan(en.energy, 260, 263, 1, 278, 0.5, 282, 0.1, 287.5, 0.05, 290, 0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2, **kwargs)
+
+@wrap_xas("C")
+def tes_c_xas_long(**kwargs):
+    yield from tes_gscan(en.energy, 250, 263, 1, 278, 0.5, 282, 0.1, 287.5, 0.05, 290, 0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2, **kwargs)
+
+
+@wrap_xas("Fe")
+def tes_fe_xas_short(**kwargs):
+    yield from tes_gscan(en.energy, 700, 705, 1, 720, 0.5, 740, 1, **kwargs)

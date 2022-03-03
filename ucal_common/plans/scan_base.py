@@ -1,4 +1,4 @@
-from ucal_common.detectors import tes, basic_dets
+from ucal_common.detectors import tes, det_devices
 from ucal_common.shutters import psh10
 from ucal_hw.energy import en
 from ucal_common.plans.plan_stubs import call_obj, set_exposure
@@ -30,7 +30,7 @@ def _tes_plan_wrapper(plan_function):
     def _inner(motor, *args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-        dets = [tes] + basic_dets + extra_dets
+        dets = [tes] + det_devices + extra_dets
         if exposure_time_s is not None:
             yield from set_exposure(dets, exposure_time_s)
 
@@ -78,7 +78,7 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     motor = dummymotor()
     scanex = ScanExfiltrator(motor, en.energy.position)
     tes.scanexfiltrator = scanex
-    dets = [tes] + basic_dets + extra_dets
+    dets = [tes] + det_devices + extra_dets
     if exposure_time_s is not None:
         yield from set_exposure(dets, exposure_time_s)
 
@@ -125,6 +125,6 @@ def tes_calibrate(time, sampleid, exposure_time_s=10):
     yield from mv(tes.cal_flag, True)
     yield from mv(energy, 980)
     yield from sample_move(0, 0, 45, sampleid)
-    yield from set_exposure([tes], exposure_time_s)
-    yield from tes_count(int(time//exposure_time_s))
+    yield from set_exposure(exposure_time_s)
+    yield from tes_count(int(time//exposure_time_s), md={"scantype": "calibration"})
     yield from mv(tes.cal_flag, False)

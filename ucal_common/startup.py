@@ -20,8 +20,10 @@ from ucal_common.plans.multimesh import set_multimesh
 from ucal_common.plans.samples import (load_samples, set_side, set_sample,
                                        set_sample_center, set_sample_edge,
                                        sample_move, load_standard_two_sided_bar,
+                                       load_standard_four_sided_bar,
                                        load_sample_dict)
-from ucal_common.plans.tes import *
+from ucal_common.plans.scans import *
+from ucal_common.plans.scan_base import tes_calibrate, tes_take_noise, tes_gscan, tes_count, tes_scan
 from ucal_common.run_engine import RE
 from ucal_common.configuration import print_config_info
 

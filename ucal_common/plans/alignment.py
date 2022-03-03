@@ -7,6 +7,7 @@ from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                    find_x_offset, find_z_offset)
 from ucal_common.plans.samples import set_side, sample_move
 from ucal_common.plans.plan_stubs import update_manipulator_side
+from ucal_common.configuration import beamline_config
 from sst_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 import numpy as np
 
@@ -157,3 +158,14 @@ def calibrate_sides(side_start, side_end, nsides=4):
         points, previous_side = yield from efficient_find_side_basis(nsides,
                                                                      **previous_side)
         yield from update_manipulator_side(side, *points)
+
+
+def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
+    updates = [x, y, z, r]
+    if np.any(updates) is None and beamline_config.get('manipulator_origin', None) is not None:
+        manipulator.origin = np.array(beamline_config['manipulator_origin'])
+    else:
+        for i, val in enumerate([x, y, z, r]):
+            if val is not None:
+                manipulator.origin[i] = val
+        beamline_config['manipulator_origin'] = list(manipulator.origin)

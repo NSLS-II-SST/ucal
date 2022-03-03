@@ -46,9 +46,9 @@ def load_sample_dict(samples):
     load_sample_dict_into_holder(samples, sampleholder)
 
 
-def load_samples_into_holder(filename, holder):
+def load_samples_into_holder(filename, holder, **kwargs):
     samples = read_sample_csv(filename)
-    load_sample_dict_into_holder(samples, holder)
+    load_sample_dict_into_holder(samples, holder, **kwargs)
 
 
 def load_standard_two_sided_bar(filename):
@@ -56,15 +56,15 @@ def load_standard_two_sided_bar(filename):
     sampleholder.add_geometry(bar)
     beamline_config['loadfile'] = abspath(filename)
     beamline_config['bar'] = "Standard 2-sided bar"
-    load_samples_into_holder(filename, sampleholder)
+    load_samples_into_holder(filename, sampleholder, clear=False)
 
 
 def load_standard_four_sided_bar(filename):
-    bar = make_regular_polygon(24.5, 160, 4)
+    bar = make_regular_polygon(24.5, 215, 4)
     sampleholder.add_geometry(bar)
     beamline_config['loadfile'] = abspath(filename)
     beamline_config['bar'] = "Standard 4-sided bar"
-    load_samples_into_holder(filename, sampleholder)
+    load_samples_into_holder(filename, sampleholder, clear=False)
 
 
 def load_samples(filename):
@@ -92,3 +92,12 @@ def sample_move(x, y, r, sampleid=None, **kwargs):
     if sampleid is not None:
         yield from set_sample(sampleid, **kwargs)
     yield from mv(samplex, x, sampley, y, sampler, r)
+
+
+def list_samples():
+    print("Samples loaded in sampleholder")
+    for v in sampleholder.sample_md.values():
+        if v['sample_id'] == 'null':
+            pass
+        else:
+            print(f"id: {v['sample_id']}, name: {v['sample_name']}: ")
