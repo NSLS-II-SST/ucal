@@ -12,7 +12,8 @@ from ucal_common.shutters import psh10, psh7
 from ucal_common.mirrors import mir1, mir3, mir4
 from ucal_common.detectors import (ucal_i400, dm7_i400, tes, i0, sc,
                                    ref, basic_dets)
-from ucal_common.motors import manipx, manipy, manipz, manipr, tesz
+from ucal_common.motors import (manipx, manipy, manipz, manipr, tesz,
+                                manipulator, eslit)
 from ucal_hw.energy import en
 
 from ucal_common.plans.find_edges import find_z_offset, find_x_offset
