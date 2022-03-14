@@ -65,7 +65,7 @@ def tes_take_noise():
         yield from psh10.close()
         yield from call_obj(tes, "take_noise")
         yield from psh10.open()
-        
+
     return (yield from inner_noise())
 
 
@@ -104,7 +104,7 @@ def _make_gscan_points(*args):
         raise TypeError(f"gscan requires at least estart, estop, and delta, recieved {args}")
     if len(args) % 2 == 0:
         raise TypeError("gscan received an even number of arguments. Either a step or a step-size is missing")
-    start = args[0]
+    start = float(args[0])
     points = [start]
     for stop, step in zip(args[1::2], args[2::2]):
         nextpoint = points[-1] + step
