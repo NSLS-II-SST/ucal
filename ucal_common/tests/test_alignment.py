@@ -12,7 +12,8 @@ from ucal_common.plans.find_edges import (scan_z_medium, find_x_offset,
                                          find_x_adaptive)
 from ucal_common.plans.alignment import (find_corner_x_r,
                                          find_corner_coordinates,
-                                         efficient_find_side_basis)
+                                         efficient_find_side_basis,
+                                         find_beam_x_offset)
 from sst_funcs.plans.maximizers import halfmax_adaptive, threshold_adaptive
 from sst_funcs.geometry.frames import Frame
 from bluesky.plan_stubs import mvr
@@ -76,14 +77,14 @@ def test_random_offset(RE, random_angle_manipulator, n):
     manipx.set(-3)
     RE(find_x_offset())
     angle2 = RE(find_r_offset()).plan_result
-    assert isclose(angle, -1*angle2, 0.1)
+    assert isclose(angle, angle2, 0.1)
 
 
 @pytest.mark.parametrize('angle', [1, 2, 4, 6, 8])
 def test_find_corner_x_r(RE, fresh_manipulator, angle):
     manipr.set(angle)
     x, theta = RE(find_corner_x_r()).plan_result
-    assert isclose(x, 5, 0.1)
+    assert isclose(np.abs(x), 5, 0.1)
     assert isclose(theta, 0, 0.1)
     # print(f"theta: {theta}")
 
@@ -95,16 +96,16 @@ def test_corner_coordinates(RE, fresh_manipulator):
 
     assert isclose(r1, 0, 0.1)
     assert isclose(r2, 90, 0.1)
-    assert isclose(x1, 5, 0.1)
+    assert isclose(np.abs(x1), 5, 0.1)
     assert isclose(y1, 5, 0.1)
 
     manipr.set(87)
-    manipx.set(3)
+    manipx.set(-3)
     x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
 
     assert isclose(r1, 90, 0.1)
     assert isclose(r2, 180, 0.1)
-    assert isclose(x1, 5, 0.1)
+    assert isclose(np.abs(x1), 5, 0.1)
     assert isclose(y1, 5, 0.1)
 
 
@@ -114,18 +115,18 @@ def test_random_corner_coordinates(RE, random_angle_manipulator):
     manipx.set(-3)
     x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
 
-    assert isclose(r1, -1*angle, 0.1)
-    assert isclose(r2, 90 - angle, 0.1)
-    assert isclose(x1, w, 0.1)
+    assert isclose(r1, angle, 0.1)
+    assert isclose(r2, 90 + angle, 0.1)
+    assert isclose(np.abs(x1), w, 0.1)
     assert isclose(y1, w, 0.1)
 
     manipr.set(90)
     manipx.set(-3)
     x1, y1, r1, r2 = RE(find_corner_coordinates()).plan_result
 
-    assert isclose(r1, 90 - angle, 0.1)
-    assert isclose(r2, 180 - angle, 0.1)
-    assert isclose(x1, w, 0.1)
+    assert isclose(r1, 90 + angle, 0.1)
+    assert isclose(r2, 180 + angle, 0.1)
+    assert isclose(np.abs(x1), w, 0.1)
     assert isclose(y1, w, 0.1)
 
 
@@ -174,6 +175,30 @@ def test_one_side_alignment(RE, fresh_manipulator, angle):
     manipr.set(angle)
     next_side = {}
     for n, s in enumerate(fresh_manipulator.holder.sides):
+        points, next_side = RE(efficient_find_side_basis(**next_side)).plan_result
+        f = Frame(*points)
+        print(f"Checking side {n}")
+        for fb, sb in zip(f._basis, s._basis):
+            print(f"Does {fb} equal {sb}")
+            assert np.all(isclose(fb, sb, 0.1))
+
+
+@pytest.mark.parametrize('offset', [1, 2, 4])
+def test_find_beam_offset(RE, fresh_manipulator, offset):
+    z_origin = fresh_manipulator.forward(0, 0, 0, 0).z
+    manipz.set(z_origin - 2)
+    fresh_manipulator.origin[0] = offset
+    x = RE(find_beam_x_offset()).plan_result
+    assert isclose(x, offset, 0.1)
+
+
+def test_crazy_alignment(RE, crazy_manipulator):
+    z_origin = crazy_manipulator.forward(0, 0, 0, 0).z
+    manipz.set(z_origin - 2)
+    manipx.set(-3)
+    crazy_manipulator.origin[0] = -2
+    next_side = {}
+    for n, s in enumerate(crazy_manipulator.holder.sides):
         points, next_side = RE(efficient_find_side_basis(**next_side)).plan_result
         f = Frame(*points)
         print(f"Checking side {n}")
