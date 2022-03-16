@@ -64,6 +64,14 @@ def tes_take_noise():
     return (yield from inner_noise())
 
 
+def tes_take_projectors():
+    @run_decorator(md={"scantype": "projectors"})
+    def inner_projectors():
+        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=True)
+        yield from sleep(30)
+        tes._file_end()
+    return (yield from inner_projectors())
+        
 def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     """
     Modifies count to automatically fill
