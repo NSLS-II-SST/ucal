@@ -73,7 +73,12 @@ def load_samples(filename):
 
 
 def set_side(side_num):
-    yield from abs_set(sampleholder, "side%d" % side_num)
+    """
+    Set sample to side, origin edge
+    side_num : int
+    """
+    sampleid = f"side{side_num}"
+    yield from set_sample_edge(sampleid)
 
 
 def set_sample(sampleid, origin="center"):
@@ -91,7 +96,7 @@ def set_sample_edge(sampleid):
 def sample_move(x, y, r, sampleid=None, **kwargs):
     if sampleid is not None:
         yield from set_sample(sampleid, **kwargs)
-    yield from mv(samplex, x, sampley, y, sampler, r)
+    yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
 
 
 def list_samples():

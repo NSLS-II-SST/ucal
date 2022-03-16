@@ -12,6 +12,7 @@ alignment_detector = [sc]
 # we will need to invert some of the maximum finding routines
 detector_on_manip = True
 
+
 def scan_z_offset(zstart, zstop, step_size):
     nsteps = int(np.abs(zstop - zstart)/step_size) + 1
     ret = yield from find_max_deriv(rel_scan, alignment_detector, manipz, zstart, zstop,
@@ -68,9 +69,9 @@ def scan_x_offset(xstart, xstop, step_size):
 
 def scan_x_coarse():
     """
-    Find x to within 1 mm, initial misalignment can be +- 10 mm
+    Find x to within 1 mm, initial misalignment can be +- 7 mm
     """
-    return (yield from scan_x_offset(-10, 10, 1))
+    return (yield from scan_x_offset(-7, 7, 1))
 
 
 def scan_x_medium():
@@ -149,5 +150,12 @@ def find_z_adaptive(precision=0.1, step=2):
     return (yield from find_edge_adaptive(alignment_detector, manipz, step, precision))
 
 
-def find_x_adaptive(precision=0.1):
-    return (yield from find_edge_adaptive(alignment_detector, manipx, 2, precision))
+def find_x_adaptive(precision=0.1, step=2):
+    """
+    detector should start low
+    step : float
+        step size to move motor that will make det go from low to high signal
+    precision : float
+        desired precision of edge position
+    """
+    return (yield from find_edge_adaptive(alignment_detector, manipx, step, precision))

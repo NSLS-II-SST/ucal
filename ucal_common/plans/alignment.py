@@ -3,8 +3,8 @@ from bluesky.plan_stubs import mv, mvr
 from ucal_common.motors import manipx, manipz, manipr, manipulator
 from ucal_common.detectors import i1
 from ucal_common.plans.find_edges import (scan_r_coarse, scan_r_medium,
-                                   scan_x_coarse, scan_x_medium, scan_x_fine,
-                                   find_x_offset, find_z_offset)
+                                          scan_x_coarse, scan_x_medium, scan_x_fine,
+                                          find_x_offset, find_z_offset, find_x_adaptive)
 from ucal_common.plans.samples import set_side, sample_move
 from ucal_common.plans.plan_stubs import update_manipulator_side
 from ucal_common.configuration import beamline_config
@@ -14,6 +14,22 @@ import numpy as np
 # need to fix imports, test, etc, actually hook up the max logic, and do a
 # derivative scan version
 # figure out if I can use bluesky-live instead? See thread
+
+
+def find_beam_x_offset():
+    yield from set_side(1)
+    # We want to move off the sample
+    yield from sample_move(-1, 5, 45)
+    x1 = yield from find_x_adaptive(precision=0.1)
+    yield from sample_move(-1, 5, 45 + 180)
+    x2 = yield from find_x_adaptive(step=-2, precision=0.1)
+    return (x1 + x2)*0.5
+
+
+def calibrate_beam_offset():
+    x = yield from find_beam_x_offset()
+    set_manipulator_origin(x=x)
+    return x
 
 
 def find_corner_x_r():
@@ -26,7 +42,7 @@ def find_corner_x_r():
     yield from scan_x_medium()
     theta = yield from scan_r_medium()
     x = yield from scan_x_fine()
-    return np.abs(x), theta
+    return x, theta
 
 
 def find_corner_coordinates(nsides=4):
@@ -76,21 +92,33 @@ def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
     z_bump = 5
     z = yield from find_z_offset()
     z2 = z + 90
+    x0 = manipulator.origin[0]
+    z0 = manipulator.origin[2]
+    next_side = {}
     yield from mv(manipz, z + z_bump)
     if x1 is None or r1 is None:
         x1, r1 = yield from find_corner_x_r()
+        x1 -= x0
+        x1 = np.abs(x1)
     yield from mv(manipz, z2 + z_bump)
     if x3 is None:
         yield from mv(manipr, r1)
         x3 = yield from find_x_offset()
+        x3 -= x0
         x3 = np.abs(x3)
     yield from mv(manipr, r1 + ra)
     x4, r2 = yield from find_corner_x_r()
-
+    next_side['r1'] = r2
+    x4 -= x0
+    x4 = np.abs(x4)
+    next_side['x3'] = x4
     yield from mv(manipz, z + z_bump)
     yield from mv(manipr, r2)
     x2 = yield from find_x_offset()
+    x2 -= x0
     x2 = np.abs(x2)
+    next_side['x1'] = x2
+
     y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
     y3 = calculate_corner_y(x3, r1, x4, r2, nsides)
 
@@ -98,7 +126,7 @@ def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
     yield from mv(manipz, z)
     # Note, assumes a certain side to calibrate on!
     yield from mvr(manipx, 2)
-    points = find_side_points(x1, y1, x3, y3, z, z2, r1)
+    points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
     # Points we can plug into the basis for the next side
     next_side = {"x1": x2, "r1": r2, "x3": x4}
     return points, next_side
