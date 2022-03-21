@@ -71,19 +71,16 @@ def calculate_corner_y(x1, r1, x2, r2, nsides=4):
 
 
 def find_corner_known_rotation(r1, r2, nsides=4):
-    yield from mv(manipr, r2)
-    x2 = yield from find_x_offset()
     yield from mv(manipr, r1)
     x1 = yield from find_x_offset()
+    yield from mv(manipr, r2)
+    x2 = yield from find_x_offset()
     y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
-    x2 = np.abs(x2)
-    x1 = np.abs(x1)
-    y1 = np.abs(y1)
     print(f"Corners known rotation x1: {x1}, y1: {y1}")
     return x1, y1
 
 
-def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
+def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None, find_angle=False):
     """
     Efficiently finds the side basis and leaves manipulator ready for
     the next side
@@ -97,7 +94,11 @@ def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
     next_side = {}
     yield from mv(manipz, z + z_bump)
     if x1 is None or r1 is None:
-        x1, r1 = yield from find_corner_x_r()
+        if find_angle:
+            x1, r1 = yield from find_corner_x_r()
+        else:
+            x1 = yield from find_x_offset(refine=True)
+            r1 = manipr.position
         x1 -= x0
         x1 = np.abs(x1)
     yield from mv(manipz, z2 + z_bump)
@@ -107,7 +108,11 @@ def efficient_find_side_basis(nsides=4, x1=None, r1=None, x3=None):
         x3 -= x0
         x3 = np.abs(x3)
     yield from mv(manipr, r1 + ra)
-    x4, r2 = yield from find_corner_x_r()
+    if find_angle:
+        x4, r2 = yield from find_corner_x_r()
+    else:
+        x4 = yield from find_x_offset()
+        r2 = r1 + ra
     next_side['r1'] = r2
     x4 -= x0
     x4 = np.abs(x4)
