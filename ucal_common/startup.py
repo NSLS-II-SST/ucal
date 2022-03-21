@@ -18,6 +18,7 @@ from ucal_hw.energy import en
 
 from ucal_common.plans.find_edges import find_z_offset, find_x_offset
 from ucal_common.plans.multimesh import set_multimesh
+from ucal_common.plans.plan_stubs import set_exposure
 from ucal_common.plans.samples import (load_samples, set_side, set_sample,
                                        set_sample_center, set_sample_edge,
                                        sample_move, load_standard_two_sided_bar,
