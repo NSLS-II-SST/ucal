@@ -10,7 +10,10 @@ def call_obj(obj, method, *args, **kwargs):
 
 
 def update_manipulator_side(side, *args):
-    yield from call_obj(manipulator.holder, "update_side", side, *args)
+    """
+    Sides are numbered starting at 1
+    """
+    yield from call_obj(manipulator.holder, "update_side", side - 1, *args)
 
 
 def set_exposure(time, extra_dets=[]):

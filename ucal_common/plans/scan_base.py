@@ -137,16 +137,21 @@ def tes_gscan(motor, *args, extra_dets=[], **kwargs):
     return (yield from tes_list_scan(motor, points, extra_dets=extra_dets, **kwargs))
 
 
-def tes_calibrate(time, sampleid, exposure_time_s=10):
+def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
     yield from sample_move(0, 0, 45, sampleid)
-    return (yield from tes_calibrate_inplace(time, exposure_time_s))
+    return (yield from tes_calibrate_inplace(time, exposure_time_s, energy=energy, md=md))
 
 
-def tes_calibrate_inplace(time, exposure_time_s=10):
+def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     yield from mv(tes.cal_flag, True)
-    yield from mv(en.energy, 980)
+    yield from mv(en.energy, energy)
+    pre_cal_exposure = tes.acquire_time.get()
     yield from set_exposure(exposure_time_s)
-    cal_uid = yield from tes_count(int(time//exposure_time_s), md={"scantype": "calibration"})
+    md = md or {}
+    _md = {"scantype": "calibration", "calibration_energy": energy}
+    _md.update(md)
+    cal_uid = yield from tes_count(int(time//exposure_time_s), md=md)
     yield from mv(tes.cal_flag, False)
     beamline_config['last_cal'] = cal_uid
+    yield from set_exposure(pre_cal_exposure)
     return cal_uid
