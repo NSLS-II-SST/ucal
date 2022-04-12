@@ -39,6 +39,9 @@ def _tes_plan_wrapper(plan_function):
 
         md = md or {}
         _md = {"sample_args": sampleholder.sample.read()}
+        if 'last_cal' in beamline_config:
+            _md['last_cal'] = beamline_config['last_cal']
+        
         _md.update(md)
         yield from plan_function(dets, motor, *args, md=_md, **kwargs)
 
@@ -150,7 +153,7 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    cal_uid = yield from tes_count(int(time//exposure_time_s), md=md)
+    cal_uid = yield from tes_count(int(time//exposure_time_s), md=_md)
     yield from mv(tes.cal_flag, False)
     beamline_config['last_cal'] = cal_uid
     yield from set_exposure(pre_cal_exposure)
