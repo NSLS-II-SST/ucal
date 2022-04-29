@@ -7,7 +7,7 @@ from . import STATION_NAME
 if STATION_NAME == "sst_sim":
     beamline_config_dir = "/tmp/ucal_beamline_config"
 elif STATION_NAME == "ucal":
-    beamline_config_dir = "/nsls2/data/sst1/shared/config/ucal/beamline_config"
+    beamline_config_dir = "/nsls2/data/sst/shared/config/ucal/beamline_config"
 
 beamline_config = PersistentDict(beamline_config_dir)
 
@@ -28,7 +28,7 @@ def configure_beamline(proposal, year, cycle):
 
 
 def get_proposal_directory(proposal, year, cycle):
-    return f"/nsls2/data/sst1/proposals/{year}-{cycle}/pass-{proposal}"
+    return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
 
 
 def new_proposal(users, proposal, year, cycle, saf):
