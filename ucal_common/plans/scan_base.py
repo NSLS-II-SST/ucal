@@ -10,7 +10,7 @@ from ucal_common.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
 import bluesky.plans as bp
-
+import time
 
 def wrap_metadata(param):
     def decorator(func):
@@ -41,7 +41,7 @@ def _tes_plan_wrapper(plan_function):
         _md = {"sample_args": sampleholder.sample.read()}
         if 'last_cal' in beamline_config:
             _md['last_cal'] = beamline_config['last_cal']
-        
+
         _md.update(md)
         yield from plan_function(dets, motor, *args, md=_md, **kwargs)
 
@@ -76,10 +76,11 @@ def tes_take_projectors():
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
         tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=True)
-        yield from sleep(30)
+        yield from time.sleep(30)
         tes._file_end()
     return (yield from inner_projectors())
-        
+
+
 def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     """
     Modifies count to automatically fill
