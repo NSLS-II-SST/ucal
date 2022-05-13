@@ -3,9 +3,9 @@ from ucal_common.shutters import psh10
 from ucal_hw.energy import en
 from ucal_common.plans.plan_stubs import call_obj, set_exposure
 from ucal_common.scan_exfiltrator import ScanExfiltrator
-from ucal_common.sampleholder import sampleholder
+from ucal_common.sampleholder import sampleholder, refholder
 from ucal_common.motors import manipulator
-from ucal_common.plans.samples import sample_move
+from ucal_common.plans.samples import sample_move, set_ref
 from ucal_common.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
@@ -24,8 +24,19 @@ def wrap_metadata(param):
     return decorator
 
 
+def wrap_xas_setup(element):
+    def decorator(func):
+        def inner(*args, **kwargs):
+            yield from set_ref(element)
+            return (yield from func(*args, **kwargs))
+        return inner
+    return decorator
+
+
 def wrap_xas(element):
-    return wrap_metadata({"edge": element, "scantype": "xas"})
+    def decorator(func):
+        return wrap_metadata({"edge": element, "scantype": "xas"})(wrap_xas_setup(element)(func))
+    return decorator
 
 
 def _tes_plan_wrapper(plan_function):
@@ -38,7 +49,15 @@ def _tes_plan_wrapper(plan_function):
             yield from set_exposure(dets, exposure_time_s)
 
         md = md or {}
-        _md = {"sample_args": sampleholder.sample.read()}
+        """
+        idea for more simple scheme...
+        _md = {"sample_name": sampleholder.sample.sample_name.get(),
+               "sample_id": sampleholder.sample.sample_id.get(),
+               "sample_side": sampleholder.sample.side.get(),
+               "sample_origin": sampleholder.sample.origin.get()}
+        """
+        _md = {"sample_args": sampleholder.sample.read(),
+               "ref_args": refholder.sample.read()}
         if 'last_cal' in beamline_config:
             _md['last_cal'] = beamline_config['last_cal']
 

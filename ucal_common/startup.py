@@ -1,6 +1,7 @@
 
 from bluesky.utils import PersistentDict
 from bluesky.plan_stubs import mv, mvr, abs_set
+from bluesky.preprocessors import SupplementalData
 # startup sequence for beamline
 import ucal_common.motors as ucal_motors
 import ucal_common.mirrors as ucal_mirrors
@@ -34,3 +35,7 @@ energy = en.energy
 
 print_config_info()
 RE(set_exposure(1.0))
+
+sd = SupplementalData(baseline=[manipulator, eslit, tesz])
+RE.preprocessors.append(sd)
+

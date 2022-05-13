@@ -1,4 +1,4 @@
-from ucal_common.sampleholder import sampleholder
+from ucal_common.sampleholder import sampleholder, refholder
 from ucal_common.motors import samplex, sampley, samplez, sampler
 from ucal_common.configuration import beamline_config
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
@@ -80,6 +80,12 @@ def set_side(side_num):
     sampleid = f"side{side_num}"
     yield from set_sample_edge(sampleid)
 
+def set_ref(edge):
+    ref_dict = {"c": 0, "n": 3, "o": 4, "f": 2, "ca": 2,
+                "ti": 3, "v": 4, "cr": 6, "mn": 5, "fe": 6,
+                "co": 6, "ni": 6, "photodiode": 8, "empty": 7}
+    sampleid = ref_dict.get(edge.lower(), 6)
+    yield from abs_set(refholder, sampleid, origin="center")
 
 def set_sample(sampleid, origin="center"):
     yield from abs_set(sampleholder, sampleid, origin=origin)
