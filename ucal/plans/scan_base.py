@@ -3,9 +3,10 @@ from ucal.shutters import psh10
 from ucal_hw.energy import en
 from ucal.plans.plan_stubs import call_obj, set_exposure
 from ucal.scan_exfiltrator import ScanExfiltrator
-from ucal.sampleholder import sampleholder, refholder
+from ucal.sampleholder import sampleholder
 from ucal.motors import manipulator
-from ucal.plans.samples import sample_move, set_ref
+from ucal.plans.samples import sample_move
+from ucal.plans.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
@@ -27,7 +28,7 @@ def wrap_metadata(param):
 def wrap_xas_setup(element):
     def decorator(func):
         def inner(*args, **kwargs):
-            yield from set_ref(element)
+            yield from set_edge(element)
             return (yield from func(*args, **kwargs))
         return inner
     return decorator
