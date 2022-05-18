@@ -1,6 +1,6 @@
 import numpy as np
-from ucal_common.motors import manipx, manipy, manipz, manipr
-from ucal_common.detectors import det_devices, sc, thresholds
+from ucal.motors import manipx, manipy, manipz, manipr
+from ucal.detectors import det_devices, sc, thresholds
 from sst_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive, find_halfmax
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan

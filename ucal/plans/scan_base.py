@@ -1,12 +1,12 @@
-from ucal_common.detectors import tes, det_devices
-from ucal_common.shutters import psh10
+from ucal.detectors import tes, det_devices
+from ucal.shutters import psh10
 from ucal_hw.energy import en
-from ucal_common.plans.plan_stubs import call_obj, set_exposure
-from ucal_common.scan_exfiltrator import ScanExfiltrator
-from ucal_common.sampleholder import sampleholder, refholder
-from ucal_common.motors import manipulator
-from ucal_common.plans.samples import sample_move, set_ref
-from ucal_common.configuration import beamline_config
+from ucal.plans.plan_stubs import call_obj, set_exposure
+from ucal.scan_exfiltrator import ScanExfiltrator
+from ucal.sampleholder import sampleholder, refholder
+from ucal.motors import manipulator
+from ucal.plans.samples import sample_move, set_ref
+from ucal.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
 import bluesky.plans as bp

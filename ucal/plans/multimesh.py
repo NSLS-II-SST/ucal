@@ -1,6 +1,6 @@
 from bluesky.plan_stubs import abs_set
 from sst_base.sampleholder import SampleHolder, make_1d_bar
-from ucal_common.motors import multimesh
+from ucal.motors import multimesh
 
 multimesh_holder = SampleHolder(manipulator=multimesh,
                                 geometry=make_1d_bar(150),

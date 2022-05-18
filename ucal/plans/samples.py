@@ -1,6 +1,6 @@
-from ucal_common.sampleholder import sampleholder, refholder
-from ucal_common.motors import samplex, sampley, samplez, sampler
-from ucal_common.configuration import beamline_config
+from ucal.sampleholder import sampleholder, refholder
+from ucal.motors import samplex, sampley, samplez, sampler
+from ucal.configuration import beamline_config
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath

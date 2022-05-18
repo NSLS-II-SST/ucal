@@ -1,5 +1,5 @@
 from sst_base.sampleholder import SampleHolder, make_1d_bar
-from ucal_common.motors import manipulator, multimesh
+from ucal.motors import manipulator, multimesh
 
 sampleholder = SampleHolder(manipulator=manipulator, name="ucal_sampleholder")
 sampleholder.sample.sample_name.name = "sample_name"

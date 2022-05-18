@@ -1,4 +1,4 @@
-from ucal_common.sampleholder import sampleholder
+from ucal.sampleholder import sampleholder
 
 class ScanExfiltrator():
     def __init__(self, motor, energy):

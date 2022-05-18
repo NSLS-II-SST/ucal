@@ -1,7 +1,7 @@
 from bluesky import Msg
-from ucal_common.motors import manipulator
-from ucal_common.shutters import psh7
-from ucal_common.detectors import det_devices, tes
+from ucal.motors import manipulator
+from ucal.shutters import psh7
+from ucal.detectors import det_devices, tes
 import warnings
 
 
