@@ -1,7 +1,7 @@
 from bluesky import Msg
 from ucal.motors import manipulator
 from ucal.shutters import psh7
-from ucal.detectors import det_devices, tes
+from ucal.detectors import scan_devices
 import warnings
 
 
@@ -17,10 +17,10 @@ def update_manipulator_side(side, *args):
 
 
 def set_exposure(time, extra_dets=[]):
-    dets = det_devices + [tes] + extra_dets
-    for d in dets:
+    for d in scan_devices:
         try:
-            yield from call_obj(d, "set_exposure", time)
+            if hasattr(d, "set_exposure"):
+                yield from call_obj(d, "set_exposure", time)
         except RuntimeError as ex:
             warnings.warn(repr(ex), RuntimeWarning)
 

@@ -1,4 +1,4 @@
-from ucal.detectors import tes, det_devices
+from ucal.detectors import tes, det_devices, scan_devices
 from ucal.shutters import psh10
 from ucal_hw.energy import en
 from ucal.plans.plan_stubs import call_obj, set_exposure
@@ -40,14 +40,47 @@ def wrap_xas(element):
     return decorator
 
 
+def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
+    """
+    Modifies count to automatically fill
+    dets with the TES detector and basic beamline detectors.
+    Other detectors may be added on the fly via extra_dets
+    ---------------------------------------------------------
+    """
+    class dummymotor():
+        name = "time"
+        egu = "index"
+
+    motor = dummymotor()
+    scanex = ScanExfiltrator(motor, en.energy.position)
+    tes.scanexfiltrator = scanex
+
+    scan_devices = [tes] + det_devices + extra_dets
+    if exposure_time_s is not None:
+        yield from set_exposure(exposure_time_s)
+
+    md = md or {}
+    _md = {"sample_args": sampleholder.sample.read(),
+           "ref_args": refholder.sample.read()}
+    if 'last_cal' in beamline_config:
+        _md['last_cal'] = beamline_config['last_cal']
+    _md.update(md)
+
+    ret = (yield from bp.count(scan_devices, *args, md=_md, **kwargs))
+    scan_devices = det_devices
+    return ret
+    
+tes_count.__doc__ += bp.count.__doc__
+
+
 def _tes_plan_wrapper(plan_function):
 
     def _inner(motor, *args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-        dets = [tes] + det_devices + extra_dets
+        scan_devices = [tes] + det_devices + extra_dets
         if exposure_time_s is not None:
-            yield from set_exposure(dets, exposure_time_s)
+            yield from set_exposure(exposure_time_s)
 
         md = md or {}
         """
@@ -63,8 +96,9 @@ def _tes_plan_wrapper(plan_function):
             _md['last_cal'] = beamline_config['last_cal']
 
         _md.update(md)
-        yield from plan_function(dets, motor, *args, md=_md, **kwargs)
-
+        ret = (yield from plan_function(scan_devices, motor, *args, md=_md, **kwargs))
+        scan_devices = det_devices
+        return ret
     d = f"""Modifies {plan_function.__name__} to automatically fill
 dets with the TES detector and basic beamline detectors.
 Other detectors may be added on the fly via extra_dets
@@ -99,36 +133,6 @@ def tes_take_projectors():
         yield from time.sleep(30)
         tes._file_end()
     return (yield from inner_projectors())
-
-
-def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
-    """
-    Modifies count to automatically fill
-    dets with the TES detector and basic beamline detectors.
-    Other detectors may be added on the fly via extra_dets
-    ---------------------------------------------------------
-    """
-    class dummymotor():
-        name = "time"
-        egu = "index"
-
-    motor = dummymotor()
-    scanex = ScanExfiltrator(motor, en.energy.position)
-    tes.scanexfiltrator = scanex
-    dets = [tes] + det_devices + extra_dets
-    if exposure_time_s is not None:
-        yield from set_exposure(dets, exposure_time_s)
-
-    md = md or {}
-    _md = {"sample_args": sampleholder.sample.read()}
-    if 'last_cal' in beamline_config:
-        _md['last_cal'] = beamline_config['last_cal']
-    _md.update(md)
-
-    return (yield from bp.count(dets, *args, md=_md, **kwargs))
-
-
-tes_count.__doc__ += bp.count.__doc__
 
 
 def _make_gscan_points(*args):
@@ -170,11 +174,10 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     yield from mv(tes.cal_flag, True)
     yield from mv(en.energy, energy)
     pre_cal_exposure = tes.acquire_time.get()
-    yield from set_exposure(exposure_time_s)
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    cal_uid = yield from tes_count(int(time//exposure_time_s), md=_md)
+    cal_uid = yield from tes_count(int(time//exposure_time_s), exposure_time_s=exposure_time_s, md=_md)
     yield from mv(tes.cal_flag, False)
     beamline_config['last_cal'] = cal_uid
     yield from set_exposure(pre_cal_exposure)

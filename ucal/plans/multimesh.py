@@ -1,4 +1,4 @@
-from bluesky.plan_stubs import abs_set
+from bluesky.plan_stubs import abs_set, mv
 from sst_base.sampleholder import SampleHolder, make_1d_bar
 from ucal.motors import multimesh
 
@@ -29,7 +29,7 @@ def set_ref(refid):
     refid : sampleid for refholder
     """
     yield from abs_set(refholder, refid, origin="center")
-    yield from abs_set(multimesh, 0)
+    yield from mv(multimesh, 0)
     
 def set_edge(edge):
     """

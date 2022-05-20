@@ -17,6 +17,7 @@ def configure_user(users, proposal, cycle, saf):
     RE.md['proposal'] = proposal
     RE.md['saf'] = saf
     RE.md['cycle'] = cycle
+    RE.md['scan_id'] = 0
 
 
 def configure_beamline(proposal, year, cycle):
@@ -24,11 +25,11 @@ def configure_beamline(proposal, year, cycle):
     beamline_config['year'] = year
     beamline_config['cycle'] = cycle
     beamline_config['directory'] = get_proposal_directory(proposal, year, cycle)
-    beamline_config['loadfile'] = ""
+    beamline_config['loadfile'] = None
 
 
 def get_proposal_directory(proposal, year, cycle):
-    return f"/nsls2/data/sst1/proposals/{year}-{cycle}/pass-{proposal}"
+    return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
 
 
 def new_proposal(users, proposal, year, cycle, saf):

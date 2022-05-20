@@ -6,3 +6,5 @@ if STATION_NAME == "sst_sim":
     det_devices = basic_dets
 if STATION_NAME == "ucal":
     from ucal_hw.detectors import *
+
+scan_devices = det_devices
