@@ -18,7 +18,7 @@ from ucal.motors import (manipx, manipy, manipz, manipr, tesz,
 from ucal_hw.energy import en
 from ucal.sampleholder import sampleholder
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
-from ucal.plans.multimesh import set_edge
+from ucal.multimesh import set_edge
 from ucal.plans.plan_stubs import set_exposure
 from ucal.plans.samples import (load_samples, set_side, set_sample,
                                 set_sample_center, set_sample_edge,
