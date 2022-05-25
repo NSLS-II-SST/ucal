@@ -141,7 +141,6 @@ def find_edge_adaptive(dets, motor, step, precision, max_channel=None):
                                         precision=precision, max_channel=max_channel))
 
 
-
 def find_z_adaptive(precision=0.1, step=2):
     """
     detector should start low

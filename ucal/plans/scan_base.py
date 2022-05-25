@@ -6,7 +6,7 @@ from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.sampleholder import sampleholder
 from ucal.motors import manipulator
 from ucal.plans.samples import sample_move
-from ucal.plans.multimesh import set_edge, refholder
+from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator

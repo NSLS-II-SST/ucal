@@ -29,6 +29,9 @@ from ucal.plans.scans import *
 from ucal.plans.scan_base import tes_calibrate, tes_take_noise, tes_gscan, tes_count, tes_scan
 from ucal.run_engine import RE
 from ucal.configuration import print_config_info, beamline_config
+from ucal.globals import (add_detector, add_motor, list_detectors, list_motors,
+                          activate_detector, deactivate_detector, remove_detector,
+                          remove_motor)
 
 # Motor aliases
 energy = en.energy
@@ -39,3 +42,14 @@ RE(set_exposure(1.0))
 sd = SupplementalData(baseline=[manipulator, eslit, tesz])
 RE.preprocessors.append(sd)
 
+# Set up global devices
+add_detector(ucal_i400, "Small electric signals on ucal")
+add_detector(dm7_i400, "Large electric signals on ucal")
+add_detector(tes, "Transition-edge Sensor")
+
+add_motor(manipx, "Manipulator X")
+add_motor(manipy, "Manipulator Y")
+add_motor(manipz, "Manipulator Z")
+add_motor(manipr, "Manipulator R")
+add_motor(tesz, "TES Position")
+add_motor(eslit, "Exit Slit")
