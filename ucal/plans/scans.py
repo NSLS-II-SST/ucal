@@ -1,12 +1,14 @@
-from .scan_base import wrap_xas, tes_gscan
+from .scan_base import wrap_xas, tes_gscan, xas_factory
 from ucal_hw.energy import en
 
-
+"""
 @wrap_xas("Zn")
 def tes_zn_xas(**kwargs):
     yield from tes_gscan(en.energy, 1010, 1015, 0.5, 1030, 0.125, 1040, 0.2,
                          1060, 0.25, 1070, 0.5, **kwargs)
-
+"""
+tes_zn_xas = xas_factory([1010, 1015, 0.5, 1030, 0.125, 1040, 0.2,
+                          1060, 0.25, 1070, 0.5], "Zn")
 
 @wrap_xas("Cu")
 def tes_cu_xas(**kwargs):
@@ -43,6 +45,7 @@ def tes_o_xas(**kwargs):
     yield from tes_gscan(en.energy, 515, 520, 0.5, 526, 0.2, 535, 0.05, 545,
                          0.1, 555, 0.25, 585, 0.5, 600, 1, **kwargs)
 
+
 @wrap_xas("N")
 def tes_n_xas(**kwargs):
     yield from tes_gscan(en.energy, 380, 395, 0.5, 397, 0.1, 403, 0.05, 407, 0.1, 417, 0.2, 440, 0.5, 480, 2, **kwargs)
@@ -51,6 +54,7 @@ def tes_n_xas(**kwargs):
 @wrap_xas("C")
 def tes_c_xas(**kwargs):
     yield from tes_gscan(en.energy, 260, 263, 1, 278, 0.5, 282, 0.1, 287.5, 0.05, 290, 0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2, **kwargs)
+
 
 @wrap_xas("C")
 def tes_c_xas_long(**kwargs):

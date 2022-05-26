@@ -1,4 +1,5 @@
-from ucal.detectors import tes, det_devices, scan_devices
+from ucal.detectors import (tes, GLOBAL_ACTIVE_DETECTORS,
+                            activate_detector, deactivate_detector)
 from ucal.shutters import psh10
 from ucal_hw.energy import en
 from ucal.plans.plan_stubs import call_obj, set_exposure
@@ -10,6 +11,7 @@ from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
+from sst_base.plans.batch import setup_batch
 import bluesky.plans as bp
 import time
 
@@ -54,8 +56,9 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     motor = dummymotor()
     scanex = ScanExfiltrator(motor, en.energy.position)
     tes.scanexfiltrator = scanex
+    for det in extra_dets:
+        activate_detector(det)
 
-    scan_devices = [tes] + det_devices + extra_dets
     if exposure_time_s is not None:
         yield from set_exposure(exposure_time_s)
 
@@ -66,10 +69,15 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         _md['last_cal'] = beamline_config['last_cal']
     _md.update(md)
 
-    ret = (yield from bp.count(scan_devices, *args, md=_md, **kwargs))
-    scan_devices = det_devices
+    ret = (yield from bp.count(GLOBAL_ACTIVE_DETECTORS, *args, md=_md,
+                               **kwargs))
+
+    for det in extra_dets:
+        deactivate_detector(det)
+
     return ret
-    
+
+
 tes_count.__doc__ += bp.count.__doc__
 
 
@@ -78,7 +86,10 @@ def _tes_plan_wrapper(plan_function):
     def _inner(motor, *args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-        scan_devices = [tes] + det_devices + extra_dets
+
+        for det in extra_dets:
+            activate_detector(det)
+
         if exposure_time_s is not None:
             yield from set_exposure(exposure_time_s)
 
@@ -96,8 +107,12 @@ def _tes_plan_wrapper(plan_function):
             _md['last_cal'] = beamline_config['last_cal']
 
         _md.update(md)
-        ret = (yield from plan_function(scan_devices, motor, *args, md=_md, **kwargs))
-        scan_devices = det_devices
+        ret = (yield from plan_function(GLOBAL_ACTIVE_DETECTORS, motor,
+                                        *args, md=_md, **kwargs))
+
+        for det in extra_dets:
+            deactivate_detector(det)
+
         return ret
     d = f"""Modifies {plan_function.__name__} to automatically fill
 dets with the TES detector and basic beamline detectors.
@@ -182,3 +197,17 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     beamline_config['last_cal'] = cal_uid
     yield from set_exposure(pre_cal_exposure)
     return cal_uid
+
+
+def xas_factory(energy_grid, edge):
+    @wrap_xas(edge)
+    def inner(repeat=1, batch=True, batch_md={}, **kwargs):
+        if repeat > 1 and batch:
+            add_to_batch, close_batch = yield from setup_batch(batch_md)
+            for i in range(repeat):
+                yield from add_to_batch(tes_gscan(en.energy, *energy_grid, **kwargs))
+            yield from close_batch()
+        else:
+            for i in range(repeat):
+                yield from tes_gscan(en.energy, *energy_grid, **kwargs)
+    return inner
