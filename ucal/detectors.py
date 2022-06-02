@@ -154,17 +154,10 @@ def remove_detector(det_or_name):
 
 
 if STATION_NAME == "sst_sim":
-    from sst_common_sim.api import sc, i0, i1, ref, thresholds, tes
-    basic_dets = [sc, i0, i1, ref]
-    add_detector(sc)
-    add_detector(i0)
-    add_detector(i1)
-    add_detector(ref)
-    add_detector(tes)
+    from sst_common_sim.api import ucal_i400, dm7_i400, thresholds, tes, sc, i0, ref
+elif STATION_NAME == "ucal":
+    from ucal_hw.detectors import ucal_i400, dm7_i400, thresholds, tes, sc, i0, ref
 
-if STATION_NAME == "ucal":
-    from ucal_hw.detectors import ucal_i400, dm7_i400, tes
-
-    add_detector(ucal_i400, "Small electric signals on ucal")
-    add_detector(dm7_i400, "Large electric signals on ucal")
-    add_detector(tes, "Transition-edge Sensor")
+add_detector(ucal_i400, "Small electric signals on ucal")
+add_detector(dm7_i400, "Large electric signals on ucal")
+add_detector(tes, "Transition-edge Sensor")

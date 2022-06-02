@@ -1,5 +1,5 @@
 from .scan_base import wrap_xas, tes_gscan, xas_factory
-from ucal_hw.energy import en
+from ucal.energy import en
 
 """
 @wrap_xas("Zn")

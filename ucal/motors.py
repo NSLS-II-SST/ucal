@@ -36,9 +36,12 @@ def list_motors(describe=False):
 
 
 if STATION_NAME == "sst_sim":
-    from sst_common_sim.api import manipulator, multimesh
-
-if STATION_NAME == "ucal":
+    from sst_common_sim.api import (manipulator,
+                                    manipx, manipy, manipz, manipr,
+                                    samplex, sampley, samplez, sampler,
+                                    multimesh)
+    from sst_common_sim.motors import tesz, eslit
+elif STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
     from ucal_hw.manipulator import (manipulator,
                                      manipx, manipy, manipz, manipr,
@@ -48,12 +51,12 @@ if STATION_NAME == "ucal":
 
     eslit.name = "eslit"
 
-    add_motor(manipx, "Manipulator X", "manipx")
-    add_motor(manipy, "Manipulator Y", "manipy")
-    add_motor(manipz, "Manipulator Z", "manipz")
-    add_motor(manipr, "Manipulator R", "manipr")
-    add_motor(tesz, "TES Position", "tesz")
-    add_motor(eslit, "Exit Slit", "eslit")
+add_motor(manipx, "Manipulator X", "manipx")
+add_motor(manipy, "Manipulator Y", "manipy")
+add_motor(manipz, "Manipulator Z", "manipz")
+add_motor(manipr, "Manipulator R", "manipr")
+add_motor(tesz, "TES Position", "tesz")
+add_motor(eslit, "Exit Slit", "eslit")
 
 """
 Disabled 20211013, too complex for testing, unnecessary

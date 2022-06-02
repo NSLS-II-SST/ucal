@@ -1,7 +1,7 @@
 from ucal.detectors import (tes, GLOBAL_ACTIVE_DETECTORS,
                             activate_detector, deactivate_detector)
 from ucal.shutters import psh10
-from ucal_hw.energy import en
+from ucal.energy import en
 from ucal.plans.plan_stubs import call_obj, set_exposure
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.sampleholder import sampleholder
@@ -11,12 +11,15 @@ from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
-from sst_base.plans.batch import setup_batch
+from sst_funcs.plans.batches import setup_batch
 import bluesky.plans as bp
 import time
+from functools import wraps
+
 
 def wrap_metadata(param):
     def decorator(func):
+        @wraps(func)
         def inner(*args, md=None, **kwargs):
             md = md or {}
             _md = {}
@@ -29,6 +32,7 @@ def wrap_metadata(param):
 
 def wrap_xas_setup(element):
     def decorator(func):
+        @wraps(func)
         def inner(*args, **kwargs):
             yield from set_edge(element)
             return (yield from func(*args, **kwargs))
@@ -202,6 +206,18 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
 def xas_factory(energy_grid, edge):
     @wrap_xas(edge)
     def inner(repeat=1, batch=True, batch_md={}, **kwargs):
+        """Parameters
+        ----------
+        repeat : int
+            Number of times to repeat the scan
+        batch : bool
+            If True, and repeat > 1, group the scans in a batch run
+        batch_md : dict
+            Metadata that should be saved with the batch run
+        **kwargs : 
+            Arguments to be passed to tes_gscan
+
+        """
         if repeat > 1 and batch:
             add_to_batch, close_batch = yield from setup_batch(batch_md)
             for i in range(repeat):
@@ -210,4 +226,6 @@ def xas_factory(energy_grid, edge):
         else:
             for i in range(repeat):
                 yield from tes_gscan(en.energy, *energy_grid, **kwargs)
+    d = f"Perform an xas scan for {edge} with energy pattern {energy_grid} \n"
+    inner.__doc__ = d + inner.__doc__
     return inner

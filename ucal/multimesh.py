@@ -22,6 +22,7 @@ ref_dict = {"c": 0, "n": 3, "o": 4, "f": 2, "ca": 2,
             "ti": 3, "v": 4, "cr": 6, "mn": 5, "fe": 6,
             "co": 6, "ni": 6, "photodiode": 8, "empty": 7, "blank": 7}
 
+
 def set_ref(refid):
     """
     Moves multimesh to a selected sample id
@@ -30,7 +31,8 @@ def set_ref(refid):
     """
     yield from abs_set(refholder, refid, origin="center")
     yield from mv(multimesh, 0)
-    
+
+
 def set_edge(edge):
     """
     Moves multimesh to a sample that is appropriate for the requested
@@ -41,4 +43,4 @@ def set_edge(edge):
     """
     refid = ref_dict.get(edge.lower(), 6)
     yield from set_ref(refid)
-    
+

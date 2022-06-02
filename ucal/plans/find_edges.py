@@ -1,6 +1,6 @@
 import numpy as np
 from ucal.motors import manipx, manipy, manipz, manipr
-from ucal.detectors import det_devices, sc, thresholds
+from ucal.detectors import GLOBAL_ACTIVE_DETECTORS, sc, thresholds
 from sst_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive, find_halfmax
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
@@ -15,7 +15,7 @@ detector_on_manip = True
 
 def scan_z_offset(zstart, zstop, step_size):
     nsteps = int(np.abs(zstop - zstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, det_devices, manipz, zstart, zstop,
+    ret = yield from find_max_deriv(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipz, zstart, zstop,
                                     nsteps, max_channel=max_channel)
     _, zoffset = ret[0]
     print(zoffset)
@@ -39,7 +39,7 @@ def scan_r_offset(rstart, rstop, step_size):
     Relative scan, find r that maximizes signal
     """
     nsteps = int(np.abs(rstop - rstart)/step_size) + 1
-    ret = yield from find_max(rel_scan, det_devices, manipr, rstart, rstop, nsteps,
+    ret = yield from find_max(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipr, rstart, rstop, nsteps,
                               invert=detector_on_manip, max_channel=max_channel)
     _, roffset = ret[0]
     print(roffset)
@@ -60,7 +60,7 @@ def scan_r_fine():
 
 def scan_x_offset(xstart, xstop, step_size):
     nsteps = int(np.abs(xstop - xstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, det_devices, manipx, xstart, xstop,
+    ret = yield from find_max_deriv(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipx, xstart, xstop,
                                     nsteps, max_channel=max_channel)
     _, xoffset = ret[0]
     print(xoffset)
@@ -150,7 +150,7 @@ def find_z_adaptive(precision=0.1, step=2):
         desired precision of edge position
     """
 
-    return (yield from find_edge_adaptive(det_devices, manipz, step, precision,
+    return (yield from find_edge_adaptive(GLOBAL_ACTIVE_DETECTORS, manipz, step, precision,
                                           max_channel=max_channel))
 
 
@@ -162,7 +162,7 @@ def find_x_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
-    return (yield from find_edge_adaptive(det_devices, manipx, step, precision,
+    return (yield from find_edge_adaptive(GLOBAL_ACTIVE_DETECTORS, manipx, step, precision,
                                           max_channel=max_channel))
 
 
@@ -203,7 +203,7 @@ def find_x(invert=False, precision=0.1):
         start = -2
         stop = 2
     points = int(np.abs(start - stop)/precision) + 1
-    return (yield from find_edge(det_devices, manipx, step, start, stop, points, max_channel=max_channel))
+    return (yield from find_edge(GLOBAL_ACTIVE_DETECTORS, manipx, step, start, stop, points, max_channel=max_channel))
 
 def find_z(invert=False, precision=0.1):
     print("Finding z edge position")
@@ -216,5 +216,4 @@ def find_z(invert=False, precision=0.1):
         start = -2
         stop = 2
     points = int(np.abs(start - stop)/precision) + 1
-    return (yield from find_edge(det_devices, manipz, step, start, stop, points, max_channel=max_channel))
-
+    return (yield from find_edge(GLOBAL_ACTIVE_DETECTORS, manipz, step, start, stop, points, max_channel=max_channel))
