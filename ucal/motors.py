@@ -10,7 +10,7 @@ if STATION_NAME == "sst_sim":
 if STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
     from ucal_hw.manipulator import manipulator
-    from sst_hw.motors import Exit_Slit as eslit
+    from sst_hw.motors import Exit_Slit as eslit, i0upAu
     from sst_hw.manipulator import multimesh
 
 manipx = manipulator.x

@@ -14,7 +14,7 @@ from ucal.mirrors import mir1, mir3, mir4
 from ucal.detectors import (ucal_i400, dm7_i400, tes, i0, sc,
                             ref, basic_dets, det_devices)
 from ucal.motors import (manipx, manipy, manipz, manipr, tesz,
-                         manipulator, eslit)
+                         manipulator, eslit, i0upAu)
 from ucal_hw.energy import en
 from ucal.sampleholder import sampleholder
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
@@ -39,7 +39,7 @@ energy = en.energy
 print_config_info()
 RE(set_exposure(1.0))
 
-sd = SupplementalData(baseline=[manipulator, eslit, tesz])
+sd = SupplementalData(baseline=[manipulator, eslit, i0upAu, tesz])
 RE.preprocessors.append(sd)
 
 # Set up global devices
@@ -53,3 +53,4 @@ add_motor(manipz, "Manipulator Z")
 add_motor(manipr, "Manipulator R")
 add_motor(tesz, "TES Position")
 add_motor(eslit, "Exit Slit")
+add_motor(i0upAu, "I0 gold mesh")
