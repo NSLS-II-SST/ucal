@@ -2,7 +2,7 @@ from ucal.detectors import (tes, GLOBAL_ACTIVE_DETECTORS,
                             activate_detector, deactivate_detector)
 from ucal.shutters import psh10
 from ucal.energy import en
-from ucal.plans.plan_stubs import call_obj, set_exposure
+from ucal.plans.plan_stubs import call_obj, set_exposure, close_shutter, open_shutter
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.sampleholder import sampleholder
 from ucal.motors import manipulator
@@ -74,6 +74,9 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
            "ref_args": refholder.sample.read()}
     if 'last_cal' in beamline_config:
         _md['last_cal'] = beamline_config['last_cal']
+    if 'last_noise' in beamline_config:
+        _md['last_noise'] = beamline_config['last_noise']
+
     _md.update(md)
 
     ret = (yield from bp.count(GLOBAL_ACTIVE_DETECTORS, *args, md=_md,
@@ -112,6 +115,8 @@ def _tes_plan_wrapper(plan_function, plan_name):
                "ref_args": refholder.sample.read()}
         if 'last_cal' in beamline_config:
             _md['last_cal'] = beamline_config['last_cal']
+        if 'last_noise' in beamline_config:
+            _md['last_noise'] = beamline_config['last_noise']
 
         _md.update(md)
         ret = (yield from plan_function(GLOBAL_ACTIVE_DETECTORS, motor,
@@ -142,11 +147,13 @@ def tes_take_noise():
     @run_decorator(md={"scantype": "noise"})
     def inner_noise():
         beamline_config['last_cal'] = None
-        yield from psh10.close()
+        beamline_config['last_noise'] = None
+        yield from close_shutter()
         yield from call_obj(tes, "take_noise")
-        yield from psh10.open()
-
-    return (yield from inner_noise())
+        yield from open_shutter()
+    uid = yield from inner_noise()
+    beamline_config['last_noise'] = uid
+    return uid
 
 
 @add_to_plan_list
