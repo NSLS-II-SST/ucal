@@ -9,6 +9,7 @@ from ucal.motors import manipulator
 from ucal.plans.samples import sample_move
 from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
+from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator
 from sst_funcs.plans.batches import setup_batch
@@ -42,12 +43,14 @@ def wrap_xas_setup(element):
 
 def wrap_xas(element):
     def decorator(func):
-        return wrap_metadata({"edge": element, "scantype": "xas"})(wrap_xas_setup(element)(func))
+        return add_to_scan_list(wrap_metadata({"edge": element, "scantype": "xas"})(wrap_xas_setup(element)(func)))
     return decorator
 
 
+@add_to_scan_list
 def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
-    """
+    """Count for a specified number of points
+
     Modifies count to automatically fill
     dets with the TES detector and basic beamline detectors.
     Other detectors may be added on the fly via extra_dets
@@ -85,7 +88,7 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
 tes_count.__doc__ += bp.count.__doc__
 
 
-def _tes_plan_wrapper(plan_function):
+def _tes_plan_wrapper(plan_function, plan_name):
 
     def _inner(motor, *args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
@@ -125,15 +128,16 @@ Other detectors may be added on the fly via extra_dets
 """
 
     _inner.__doc__ = d + plan_function.__doc__
-
+    _inner.__name__ = plan_name
     return _inner
 
 
-tes_scan = _tes_plan_wrapper(bp.scan)
-tes_rel_scan = _tes_plan_wrapper(bp.rel_scan)
-tes_list_scan = _tes_plan_wrapper(bp.list_scan)
+tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
+tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
+tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"))
 
 
+@add_to_scan_list
 def tes_take_noise():
     @run_decorator(md={"scantype": "noise"})
     def inner_noise():
@@ -145,6 +149,7 @@ def tes_take_noise():
     return (yield from inner_noise())
 
 
+@add_to_plan_list
 def tes_take_projectors():
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
@@ -170,6 +175,7 @@ def _make_gscan_points(*args):
     return points
 
 
+@add_to_scan_list
 def tes_gscan(motor, *args, extra_dets=[], **kwargs):
     """
     A variable step scan of a motor, the TES detector, and the
@@ -184,11 +190,13 @@ def tes_gscan(motor, *args, extra_dets=[], **kwargs):
     return (yield from tes_list_scan(motor, points, extra_dets=extra_dets, **kwargs))
 
 
+@add_to_scan_list
 def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
     yield from sample_move(0, 0, 45, sampleid)
     return (yield from tes_calibrate_inplace(time, exposure_time_s, energy=energy, md=md))
 
 
+@add_to_scan_list
 def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     yield from mv(tes.cal_flag, True)
     yield from mv(en.energy, energy)

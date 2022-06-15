@@ -1,4 +1,7 @@
 from . import STATION_NAME
+from sst_funcs.configuration import add_to_func_list
+from sst_funcs.printing import boxed_text
+
 GLOBAL_MOTORS = {}
 GLOBAL_MOTOR_DESCRIPTIONS = {}
 
@@ -28,11 +31,17 @@ def remove_motor(motor_or_name):
     del GLOBAL_MOTOR_DESCRIPTIONS[name]
 
 
+@add_to_func_list
 def list_motors(describe=False):
+    """List the most important motors and their current positions"""
+
+    title = "Motors"
+    text = []
     for name, det in GLOBAL_MOTORS.items():
-        print(f"{name}: {det.position}")
+        text.append(f"{name}: {det.position}")
         if describe:
-            print(f"{GLOBAL_MOTOR_DESCRIPTIONS[name]}")
+            text.append(f"    {GLOBAL_MOTOR_DESCRIPTIONS[name]}")
+    boxed_text(title, text, "white")
 
 
 if STATION_NAME == "sst_sim":
@@ -40,7 +49,7 @@ if STATION_NAME == "sst_sim":
                                     manipx, manipy, manipz, manipr,
                                     samplex, sampley, samplez, sampler,
                                     multimesh)
-    from sst_common_sim.motors import tesz, eslit
+    from sst_common_sim.motors import tesz, eslit, i0upAu
 elif STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
     from ucal_hw.manipulator import (manipulator, i0upAu,

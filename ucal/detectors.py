@@ -1,6 +1,8 @@
 from . import STATION_NAME
 
 from ophyd import Device
+from sst_funcs.configuration import add_to_func_list
+from sst_funcs.printing import boxed_text
 
 GLOBAL_DETECTORS = {}
 GLOBAL_DETECTOR_DESCRIPTIONS = {}
@@ -39,6 +41,7 @@ def add_detector(det, description="", name=None, activate=True):
     return name
 
 
+@add_to_func_list
 def list_detectors(describe=False):
     """List all global detectors, optionally provide text descriptions
 
@@ -48,14 +51,17 @@ def list_detectors(describe=False):
         If True, print the text description of each detector
 
     """
+    title = "Detectors"
+    text = []
     for name, det in GLOBAL_DETECTORS.items():
         if det in GLOBAL_ACTIVE_DETECTORS:
             status = "active"
         else:
             status = "inactive"
-        print(f"{name}: {status}")
+        text.append(f"{name}: {status}")
         if describe:
-            print(f"{GLOBAL_DETECTOR_DESCRIPTIONS[name]}")
+            text.append(f"    {GLOBAL_DETECTOR_DESCRIPTIONS[name]}")
+    boxed_text(title, text, "white")
 
 
 def get_detector(det_or_name):
@@ -89,6 +95,7 @@ def get_detector(det_or_name):
         raise KeyError(f"Detector {det_or_name} not found in GLOBAL_DETECTORS")
 
 
+@add_to_func_list
 def activate_detector(det_or_name):
     """Activate a detector so that is is measured by default
 
@@ -104,6 +111,7 @@ def activate_detector(det_or_name):
         GLOBAL_ACTIVE_DETECTORS.append(detector)
 
 
+@add_to_func_list
 def deactivate_detector(det_or_name):
     """Deactivate a detector so that it is not measured by default
 

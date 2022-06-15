@@ -1,6 +1,7 @@
 from ucal.sampleholder import sampleholder
 from ucal.motors import samplex, sampley, samplez, sampler
 from ucal.configuration import beamline_config
+from sst_funcs.configuration import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
@@ -72,6 +73,7 @@ def load_samples(filename):
     load_samples_into_holder(filename, sampleholder)
 
 
+@add_to_plan_list
 def set_side(side_num):
     """
     Set sample to side, origin edge
@@ -79,6 +81,7 @@ def set_side(side_num):
     """
     sampleid = f"side{side_num}"
     yield from set_sample_edge(sampleid)
+
 
 def set_sample(sampleid, origin="center"):
     yield from abs_set(sampleholder, sampleid, origin=origin)
@@ -92,12 +95,15 @@ def set_sample_edge(sampleid):
     yield from set_sample(sampleid, origin='edge')
 
 
+@add_to_plan_list
 def sample_move(x, y, r, sampleid=None, **kwargs):
+    """Move to a specified point on a sample"""
     if sampleid is not None:
         yield from set_sample(sampleid, **kwargs)
     yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
 
 
+@add_to_func_list
 def list_samples():
     print("Samples loaded in sampleholder")
     for v in sampleholder.sample_md.values():

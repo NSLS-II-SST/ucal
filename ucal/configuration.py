@@ -1,8 +1,9 @@
 from ucal.run_engine import RE
+from sst_funcs.printing import boxed_text
+from sst_funcs.configuration import add_to_func_list
 from bluesky.utils import PersistentDict
 
 from . import STATION_NAME
-
 
 if STATION_NAME == "sst_sim":
     beamline_config_dir = "/tmp/ucal_beamline_config"
@@ -10,7 +11,6 @@ elif STATION_NAME == "ucal":
     beamline_config_dir = "/nsls2/data/sst/shared/config/ucal/beamline_config"
 
 beamline_config = PersistentDict(beamline_config_dir)
-
 
 def configure_user(users, proposal, cycle, saf):
     RE.md['users'] = users
@@ -32,16 +32,22 @@ def get_proposal_directory(proposal, year, cycle):
     return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
 
 
+@add_to_func_list
 def new_proposal(users, proposal, year, cycle, saf):
+    """Start a new proposal with new metadata and a reset scan counter"""
     configure_user(users, proposal, cycle, saf)
     configure_beamline(proposal, year, cycle)
 
 
+@add_to_func_list
 def print_config_info():
-    print("Currently configured information:")
-    print("User(s): ", RE.md.get('users', "None"))
-    print("Proposal ID: ", RE.md.get('proposal', "None"))
-    print("SAF: ", RE.md.get('saf', "None"))
-    print("Configuration directory: ", beamline_config_dir)
-    print("Data directory: ", beamline_config.get('directory', "None"))
-    print("Load file: ", beamline_config.get('loadfile', "None"))
+    """Print basic info about the current beamline setup"""
+    title = "Currently configured information"
+    infolist = []
+    infolist.append("User(s): " + RE.md.get('users', "None"))
+    infolist.append("Proposal ID: " + RE.md.get('proposal', "None"))
+    infolist.append("SAF: " + RE.md.get('saf', "None"))
+    infolist.append("Configuration directory: " + beamline_config_dir)
+    infolist.append("Data directory: " + beamline_config.get('directory', "None"))
+    infolist.append("Load file: " + beamline_config.get('loadfile', "None"))
+    boxed_text(title, infolist, "white")
