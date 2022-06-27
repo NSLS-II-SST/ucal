@@ -27,7 +27,8 @@ from ucal.plans.samples import (set_side, set_sample,
                                 load_standard_four_sided_bar,
                                 load_sample_dict, list_samples)
 from ucal.plans.scans import *
-from ucal.plans.scan_base import tes_calibrate, tes_take_noise, tes_gscan, tes_count, tes_scan
+from ucal.plans.scan_base import (tes_calibrate, tes_take_noise, tes_gscan, tes_count, tes_scan,
+                                  tes_take_projectors)
 from ucal.run_engine import RE
 from ucal.configuration import print_config_info, beamline_config, new_proposal
 from sst_funcs.configuration import print_builtins

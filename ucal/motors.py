@@ -52,10 +52,10 @@ if STATION_NAME == "sst_sim":
     from sst_common_sim.motors import tesz, eslit, i0upAu
 elif STATION_NAME == "ucal":
     from ucal_hw.motors import tesz
-    from ucal_hw.manipulator import (manipulator, i0upAu,
+    from ucal_hw.manipulator import (manipulator,
                                      manipx, manipy, manipz, manipr,
                                      samplex, sampley, samplez, sampler)
-    from sst_hw.motors import Exit_Slit as eslit
+    from sst_hw.motors import Exit_Slit as eslit, i0upAu
     from sst_hw.manipulator import multimesh
 
     eslit.name = "eslit"

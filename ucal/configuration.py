@@ -44,9 +44,9 @@ def print_config_info():
     """Print basic info about the current beamline setup"""
     title = "Currently configured information"
     infolist = []
-    infolist.append("User(s): " + RE.md.get('users', "None"))
-    infolist.append("Proposal ID: " + RE.md.get('proposal', "None"))
-    infolist.append("SAF: " + RE.md.get('saf', "None"))
+    infolist.append("User(s): " + ", ".join(RE.md.get('users', [])))
+    infolist.append("Proposal ID: " + str(RE.md.get('proposal', "None")))
+    infolist.append("SAF: " + str(RE.md.get('saf', "None")))
     infolist.append("Configuration directory: " + beamline_config_dir)
     infolist.append("Data directory: " + beamline_config.get('directory', "None"))
     infolist.append("Load file: " + beamline_config.get('loadfile', "None"))

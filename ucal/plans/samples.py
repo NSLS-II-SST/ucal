@@ -84,6 +84,7 @@ def set_side(side_num):
 
 
 def set_sample(sampleid, origin="center"):
+    print(f"Setting sample to {sampleid}")
     yield from abs_set(sampleholder, sampleid, origin=origin)
 
 

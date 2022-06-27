@@ -187,8 +187,8 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None):
     thres_pos = yield from threshold_adaptive(dets, motor,
                                               thresholds[detname],
                                               step=step, max_channel=max_channel)
-    yield from mv(motor, thres_pos)
-    ret = (yield from find_halfmax(rel_scan, dets, motor, start, stop, points,
+    yield from mv(motor, thres_pos + start)
+    ret = (yield from find_halfmax(rel_scan, dets, motor, 0, stop - start, points,
                                     max_channel=max_channel))
     return ret[0][1]
 
@@ -206,6 +206,7 @@ def find_x(invert=False, precision=0.1):
     return (yield from find_edge(GLOBAL_ACTIVE_DETECTORS, manipx, step, start, stop, points, max_channel=max_channel))
 
 def find_z(invert=False, precision=0.1):
+    """Find the z edge position"""
     print("Finding z edge position")
     if invert:
         step = -1
