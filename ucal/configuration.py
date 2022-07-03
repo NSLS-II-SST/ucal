@@ -45,9 +45,9 @@ def print_config_info():
     title = "Currently configured information"
     infolist = []
     infolist.append("User(s): " + ", ".join(RE.md.get('users', [])))
-    infolist.append("Proposal ID: " + str(RE.md.get('proposal', "None")))
-    infolist.append("SAF: " + str(RE.md.get('saf', "None")))
-    infolist.append("Configuration directory: " + beamline_config_dir)
-    infolist.append("Data directory: " + beamline_config.get('directory', "None"))
-    infolist.append("Load file: " + beamline_config.get('loadfile', "None"))
+    infolist.append(f"Proposal ID: {RE.md.get('proposal', 'None')}")
+    infolist.append(f"SAF: {RE.md.get('saf', 'None')}")
+    infolist.append(f"Configuration directory: " + beamline_config_dir)
+    infolist.append(f"Data directory: {beamline_config.get('directory', None)}")
+    infolist.append(f"Load file: {beamline_config.get('loadfile', None)}")
     boxed_text(title, infolist, "white")

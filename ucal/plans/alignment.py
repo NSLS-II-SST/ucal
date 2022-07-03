@@ -8,7 +8,9 @@ from ucal.plans.find_edges import (scan_r_coarse, scan_r_medium,
 from ucal.plans.samples import set_side, sample_move
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
+from sst_funcs.configuration import add_to_plan_list
 from sst_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
+from sst_funcs.printing import boxed_text
 from bluesky.plan_stubs import rd
 from bluesky.utils import RequestAbort
 import numpy as np
@@ -32,7 +34,7 @@ def find_beam_x_offset():
     yield from mv(manipr, 0, manipx, 0)
     return (x1 + x2)*0.5
 
-
+@add_to_plan_list
 def calibrate_beam_offset():
     x = yield from find_beam_x_offset()
     set_manipulator_origin(x=x)
@@ -145,6 +147,10 @@ def find_side_basis(nsides=4, x1=None, r1=None, x3=None, z=None, find_angle=Fals
     yield from mv(manipz, z)
     # Note, assumes a certain side to calibrate on!
     yield from mvr(manipx, 2)
+    try:
+        boxed_text("Raw positions", map(lambda x: "{x[0]}: {x[1]}".format(x=x), [('x1', x1), ('y1', y1), ('x3', x3), ('y3', y3), ('z', z), ('z2', z2), ('r1', r), ('z0', z0)]), 'white')
+    except:
+        print(x1, y1, x3, y3, z, z2, r1, z0)
     points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
     # Points we can plug into the basis for the next side
     next_side = {"x1": x2, "r1": r2, "x3": x4}
@@ -168,7 +174,7 @@ def calibrate_side(side_num, nsides=4):
     yield from update_manipulator_side(side_num, p1, p2, p3)
     # yield Msg("calibrate", sample_holder, side_num, p1, p2, p3)
 
-
+@add_to_plan_list
 def calibrate_sides(side_start, side_end, nsides=4):
     yield from mv(manipr, 0, manipx, 0)
     z = yield from find_z()

@@ -10,7 +10,7 @@ from ucal.plans.samples import sample_move
 from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
-from bluesky.plan_stubs import mv
+from bluesky.plan_stubs import mv, sleep
 from bluesky.preprocessors import run_decorator
 from sst_funcs.plans.batches import setup_batch
 import bluesky.plans as bp
@@ -144,6 +144,7 @@ tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"
 
 @add_to_scan_list
 def tes_take_noise():
+    """Close the shutter and take TES noise. Run after cryostat cycle"""
     @run_decorator(md={"scantype": "noise"})
     def inner_noise():
         beamline_config['last_cal'] = None
@@ -158,10 +159,11 @@ def tes_take_noise():
 
 @add_to_plan_list
 def tes_take_projectors():
+    """Take projector data for TES. Run with pulses from cal sample"""
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
-        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=True)
-        yield from time.sleep(30)
+        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=tes.setFilenamePattern)
+        yield from sleep(30)
         tes._file_end()
     return (yield from inner_projectors())
 
@@ -184,12 +186,14 @@ def _make_gscan_points(*args):
 
 @add_to_scan_list
 def tes_gscan(motor, *args, extra_dets=[], **kwargs):
-    """
-    A variable step scan of a motor, the TES detector, and the
-    basic beamline detectors. Other detectors may be added on the fly via
+    """A variable step scan of a motor, the TES detector, and the basic beamline detectors. 
+
+    Other detectors may be added on the fly via
     extra_dets
 
+    motor : The motor object to scan
     args : start, stop1, step1, stop2, step2, ...
+    extra_dets : A list of detectors to add for just this scan
     """
     points = _make_gscan_points(*args)
     # Move motor to start position first
