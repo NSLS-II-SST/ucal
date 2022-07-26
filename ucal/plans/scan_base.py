@@ -11,24 +11,12 @@ from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, sleep
-from bluesky.preprocessors import run_decorator
-from sst_funcs.plans.batches import setup_batch
+from bluesky.preprocessors import run_decorator, inject_md_wrapper
+from sst_funcs.plans.preprocessors import wrap_metadata
+from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
-import time
 from functools import wraps
-
-
-def wrap_metadata(param):
-    def decorator(func):
-        @wraps(func)
-        def inner(*args, md=None, **kwargs):
-            md = md or {}
-            _md = {}
-            _md.update(param)
-            _md.update(md)
-            return func(*args, md=_md, **kwargs)
-        return inner
-    return decorator
+import time
 
 
 def wrap_xas_setup(element):
@@ -162,7 +150,8 @@ def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
-        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=tes.setFilenamePattern)
+        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False,
+                           setFilenamePattern=tes.setFilenamePattern)
         yield from sleep(30)
         tes._file_end()
     return (yield from inner_projectors())
@@ -215,7 +204,8 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    cal_uid = yield from tes_count(int(time//exposure_time_s), exposure_time_s=exposure_time_s, md=_md)
+    cal_uid = yield from tes_count(int(time//exposure_time_s),
+                                   exposure_time_s=exposure_time_s, md=_md)
     yield from mv(tes.cal_flag, False)
     beamline_config['last_cal'] = cal_uid
     yield from set_exposure(pre_cal_exposure)
@@ -223,8 +213,9 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
 
 
 def xas_factory(energy_grid, edge):
+    @repeat
     @wrap_xas(edge)
-    def inner(repeat=1, batch=True, batch_md={}, **kwargs):
+    def inner(**kwargs):
         """Parameters
         ----------
         repeat : int
@@ -233,18 +224,11 @@ def xas_factory(energy_grid, edge):
             If True, and repeat > 1, group the scans in a batch run
         batch_md : dict
             Metadata that should be saved with the batch run
-        **kwargs : 
+        **kwargs :
             Arguments to be passed to tes_gscan
 
         """
-        if repeat > 1 and batch:
-            add_to_batch, close_batch = yield from setup_batch(batch_md)
-            for i in range(repeat):
-                yield from add_to_batch(tes_gscan(en.energy, *energy_grid, **kwargs))
-            yield from close_batch()
-        else:
-            for i in range(repeat):
-                yield from tes_gscan(en.energy, *energy_grid, **kwargs)
+        yield from tes_gscan(en.energy, *energy_grid, **kwargs)
     d = f"Perform an xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__
     return inner
