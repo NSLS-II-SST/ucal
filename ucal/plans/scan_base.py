@@ -168,24 +168,24 @@ def tes_take_projectors():
     return (yield from inner_projectors())
 
 
-def _make_gscan_points(*args):
+def _make_gscan_points(*args, shift=0):
     if len(args) < 3:
         raise TypeError(f"gscan requires at least estart, estop, and delta, recieved {args}")
     if len(args) % 2 == 0:
         raise TypeError("gscan received an even number of arguments. Either a step or a step-size is missing")
     start = float(args[0])
-    points = [start]
+    points = [start + shift]
     for stop, step in zip(args[1::2], args[2::2]):
         nextpoint = points[-1] + step
-        while nextpoint < stop - step/2.0:
+        while nextpoint < stop - step/2.0 + shift:
             points.append(nextpoint)
             nextpoint += step
-        points.append(stop)
+        points.append(stop + shift)
     return points
 
 
 @add_to_scan_list
-def tes_gscan(motor, *args, extra_dets=[], **kwargs):
+def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors. 
 
     Other detectors may be added on the fly via
@@ -195,7 +195,7 @@ def tes_gscan(motor, *args, extra_dets=[], **kwargs):
     args : start, stop1, step1, stop2, step2, ...
     extra_dets : A list of detectors to add for just this scan
     """
-    points = _make_gscan_points(*args)
+    points = _make_gscan_points(*args, shift=shift)
     # Move motor to start position first
     yield from mv(motor, points[0])
     return (yield from tes_list_scan(motor, points, extra_dets=extra_dets, **kwargs))
@@ -210,6 +210,7 @@ def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
 @add_to_scan_list
 def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     yield from mv(tes.cal_flag, True)
+    yield from set_edge("blank")
     yield from mv(en.energy, energy)
     pre_cal_exposure = tes.acquire_time.get()
     md = md or {}

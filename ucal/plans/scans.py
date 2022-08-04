@@ -15,7 +15,7 @@ _short_regions = {"Zn": [1010, 1015, 0.5, 1030, 0.125, 1040, 0.2, 1060, 0.25, 10
                    800, 0.2, 805, 0.5, 825, 1],
             "Fe": [697, 704, 0.5, 707, 0.2, 715, 0.1,
                    719, 0.5, 725, 0.1, 730, 0.5, 750, 1],
-            "Mn": [630, 635, 0.5, 683, 0.2, 657, 0.1, 670, 0.5, 690, 1]
+            "Mn": [625, 635, 0.5, 638, 0.2, 657, 0.1, 670, 0.5, 690, 1]
             }
 
 #def extend_region(energy_region):
@@ -28,13 +28,12 @@ tes_zn_xas = xas_factory([1010, 1015, 0.5, 1030, 0.125, 1040, 0.2,
 
 @wrap_xas("Cu")
 def tes_cu_xas(**kwargs):
-    yield from tes_gscan(en.energy, 915, 920, 0.5, 926, 0.25, 934.5, 0.17, 947,
-                         0.25, 954, 0.2, 970, 1, **kwargs)
-
+    yield from tes_gscan(en.energy,  915, 920, 0.5, 926, 0.25, 934.5, 0.17, 947,
+                         0.25, 954, 0.2, 960, 0.5, 980, 1, **kwargs)
 
 @wrap_xas("Ni")
 def tes_ni_xas(**kwargs):
-    yield from tes_gscan(en.energy, 840, 845, 0.5, 848, 0.2, 858, 0.1, 867,
+    yield from tes_gscan(en.energy, 830, 840, 1, 845, 0.5, 848, 0.2, 858, 0.1, 867,
                          0.2, 874, 0.1, 882, 0.5, 890, 1, **kwargs)
 
 
@@ -52,8 +51,8 @@ def tes_fe_xas(**kwargs):
 
 @wrap_xas("Mn")
 def tes_mn_xas(**kwargs):
-    yield from tes_gscan(en.energy, 630, 635, 0.5, 683, 0.2, 657, 0.1, 670,
-                         0.5, **kwargs)
+    yield from tes_gscan(en.energy, 625, 635, 0.5, 638, 0.2, 645, 0.1,
+                         650, 0.2, 655, 0.1, 670, 0.5, **kwargs)
 
 
 @wrap_xas("O")
