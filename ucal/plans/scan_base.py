@@ -16,7 +16,6 @@ from sst_funcs.plans.preprocessors import wrap_metadata
 from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
 from functools import wraps
-import time
 
 
 def wrap_xas_setup(element):
@@ -59,7 +58,8 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
 
     md = md or {}
     _md = {"sample_args": sampleholder.sample.read(),
-           "ref_args": refholder.sample.read()}
+           "ref_args": refholder.sample.read(),
+           "sample_md": sampleholder.current_sample_md()}
     if 'last_cal' in beamline_config:
         _md['last_cal'] = beamline_config['last_cal']
     if 'last_noise' in beamline_config:
@@ -100,7 +100,8 @@ def _tes_plan_wrapper(plan_function, plan_name):
                "sample_origin": sampleholder.sample.origin.get()}
         """
         _md = {"sample_args": sampleholder.sample.read(),
-               "ref_args": refholder.sample.read()}
+               "ref_args": refholder.sample.read(),
+               "sample_md": sampleholder.current_sample_md()}
         if 'last_cal' in beamline_config:
             _md['last_cal'] = beamline_config['last_cal']
         if 'last_noise' in beamline_config:
@@ -159,7 +160,7 @@ def tes_take_projectors():
 
 def _make_gscan_points(*args):
     if len(args) < 3:
-        raise TypeError(f"gscan requires at least estart, estop, and delta, recieved {args}")
+        raise TypeError(f"gscan requires at least estart, estop, and delta, received {args}")
     if len(args) % 2 == 0:
         raise TypeError("gscan received an even number of arguments. Either a step or a step-size is missing")
     start = float(args[0])
@@ -175,7 +176,7 @@ def _make_gscan_points(*args):
 
 @add_to_scan_list
 def tes_gscan(motor, *args, extra_dets=[], **kwargs):
-    """A variable step scan of a motor, the TES detector, and the basic beamline detectors. 
+    """A variable step scan of a motor, the TES detector, and the basic beamline detectors.
 
     Other detectors may be added on the fly via
     extra_dets
