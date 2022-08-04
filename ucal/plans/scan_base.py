@@ -11,24 +11,11 @@ from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, sleep
-from bluesky.preprocessors import run_decorator
-from sst_funcs.plans.batches import setup_batch
+from bluesky.preprocessors import run_decorator, inject_md_wrapper
+from sst_funcs.plans.preprocessors import wrap_metadata
+from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
-import time
 from functools import wraps
-
-
-def wrap_metadata(param):
-    def decorator(func):
-        @wraps(func)
-        def inner(*args, md=None, **kwargs):
-            md = md or {}
-            _md = {}
-            _md.update(param)
-            _md.update(md)
-            return func(*args, md=_md, **kwargs)
-        return inner
-    return decorator
 
 
 def wrap_xas_setup(element):
@@ -71,7 +58,8 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
 
     md = md or {}
     _md = {"sample_args": sampleholder.sample.read(),
-           "ref_args": refholder.sample.read()}
+           "ref_args": refholder.sample.read(),
+           "sample_md": sampleholder.current_sample_md()}
     if 'last_cal' in beamline_config:
         _md['last_cal'] = beamline_config['last_cal']
     if 'last_noise' in beamline_config:
@@ -112,7 +100,8 @@ def _tes_plan_wrapper(plan_function, plan_name):
                "sample_origin": sampleholder.sample.origin.get()}
         """
         _md = {"sample_args": sampleholder.sample.read(),
-               "ref_args": refholder.sample.read()}
+               "ref_args": refholder.sample.read(),
+               "sample_md": sampleholder.current_sample_md()}
         if 'last_cal' in beamline_config:
             _md['last_cal'] = beamline_config['last_cal']
         if 'last_noise' in beamline_config:
@@ -162,7 +151,8 @@ def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
-        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False, setFilenamePattern=tes.setFilenamePattern)
+        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False,
+                           setFilenamePattern=tes.setFilenamePattern)
         yield from sleep(30)
         tes._file_end()
     return (yield from inner_projectors())
@@ -170,7 +160,7 @@ def tes_take_projectors():
 
 def _make_gscan_points(*args, shift=0):
     if len(args) < 3:
-        raise TypeError(f"gscan requires at least estart, estop, and delta, recieved {args}")
+        raise TypeError(f"gscan requires at least estart, estop, and delta, received {args}")
     if len(args) % 2 == 0:
         raise TypeError("gscan received an even number of arguments. Either a step or a step-size is missing")
     start = float(args[0])
@@ -216,16 +206,18 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    cal_uid = yield from tes_count(int(time//exposure_time_s), exposure_time_s=exposure_time_s, md=_md)
+    cal_uid = yield from tes_count(int(time//exposure_time_s),
+                                   exposure_time_s=exposure_time_s, md=_md)
     yield from mv(tes.cal_flag, False)
     beamline_config['last_cal'] = cal_uid
     yield from set_exposure(pre_cal_exposure)
     return cal_uid
 
 
-def xas_factory(energy_grid, edge):
+def xas_factory(energy_grid, edge, name):
+    @repeat
     @wrap_xas(edge)
-    def inner(repeat=1, batch=True, batch_md={}, **kwargs):
+    def inner(**kwargs):
         """Parameters
         ----------
         repeat : int
@@ -234,18 +226,14 @@ def xas_factory(energy_grid, edge):
             If True, and repeat > 1, group the scans in a batch run
         batch_md : dict
             Metadata that should be saved with the batch run
-        **kwargs : 
+        **kwargs :
             Arguments to be passed to tes_gscan
 
         """
-        if repeat > 1 and batch:
-            add_to_batch, close_batch = yield from setup_batch(batch_md)
-            for i in range(repeat):
-                yield from add_to_batch(tes_gscan(en.energy, *energy_grid, **kwargs))
-            yield from close_batch()
-        else:
-            for i in range(repeat):
-                yield from tes_gscan(en.energy, *energy_grid, **kwargs)
+        yield from tes_gscan(en.energy, *energy_grid, **kwargs)
     d = f"Perform an xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__
+
+    inner.__qualname__ = name
+    inner.__name__ = name
     return inner
