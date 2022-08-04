@@ -212,7 +212,7 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     return cal_uid
 
 
-def xas_factory(energy_grid, edge):
+def xas_factory(energy_grid, edge, name):
     @repeat
     @wrap_xas(edge)
     def inner(**kwargs):
@@ -231,4 +231,7 @@ def xas_factory(energy_grid, edge):
         yield from tes_gscan(en.energy, *energy_grid, **kwargs)
     d = f"Perform an xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__
+
+    inner.__qualname__ = name
+    inner.__name__ = name
     return inner
