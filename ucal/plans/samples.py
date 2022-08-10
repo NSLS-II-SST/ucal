@@ -6,6 +6,7 @@ from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
 import csv
+import copy
 
 #filename = "../../examples/sample_load.csv"
 
@@ -14,16 +15,17 @@ def read_sample_csv(filename):
     with open(filename, 'r') as f:
         sampleReader = csv.reader(f)
         samplelist = [row for row in sampleReader]
-        # rownames = [n for n in samplelist[0] if n != ""]
-        rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
-                    "t", "tags"]
+        rownames = [n for n in samplelist[0] if n != ""]
+        #rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
+        #            "t", "tags"]
         samples = {}
         for sample in samplelist[1:]:
             sample_id = sample[0]
             sample_dict = {key: sample[rownames.index(key)] for
-                           key in rownames[1:-1]}
-            sample_tags = sample[rownames.index("tags"):]
-            sample_dict['tags'] = [t for t in sample_tags if t != ""]
+                           key in rownames[1:] if
+                           sample[rownames.index(key)] != ""}
+            #sample_tags = sample[rownames.index("tags"):]
+            #sample_dict['tags'] = [t for t in sample_tags if t != ""]
             samples[sample_id] = sample_dict
     return samples
 
@@ -35,11 +37,13 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
     if clear:
         holder.clear_samples()
     for sample_id, s in samples.items():
-        position = (float(s['x1']), float(s['y1']), float(s['x2']), float(s['y2']))
-        name = s['sample_name']
-        side = int(s['side'])
-        thickness = float(s['t'])
-        holder.add_sample(sample_id, name, position, side, thickness)
+        sdict = copy.deepcopy(s)
+        position = (float(sdict.pop('x1')), float(sdict.pop('y1')), float(sdict.pop('x2')), float(sdict.pop('y2')))
+        name = sdict.pop('sample_name')
+        description = sdict.pop('description', name)
+        side = int(sdict.pop('side'))
+        thickness = float(sdict.pop('t', 0))
+        holder.add_sample(sample_id, name, position, side, thickness, description=description, **sdict)
     return
 
 
@@ -111,4 +115,4 @@ def list_samples():
         if v['sample_id'] == 'null':
             pass
         else:
-            print(f"id: {v['sample_id']}, name: {v['sample_name']}: ")
+            print(f"id: {v['sample_id']}, name: {v['name']}: ")

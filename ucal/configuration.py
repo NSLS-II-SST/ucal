@@ -2,6 +2,8 @@ from ucal.run_engine import RE
 from sst_funcs.printing import boxed_text
 from sst_funcs.configuration import add_to_func_list
 from bluesky.utils import PersistentDict
+import uuid
+from datetime import datetime
 
 from . import STATION_NAME
 
@@ -18,6 +20,8 @@ def configure_user(users, proposal, cycle, saf):
     RE.md['saf'] = saf
     RE.md['cycle'] = cycle
     RE.md['scan_id'] = 0
+    RE.md['beamtime_start'] = datetime.today().isoformat()
+    RE.md['beamtime_uid'] = str(uuid.uuid4())
 
 
 def configure_beamline(proposal, year, cycle):

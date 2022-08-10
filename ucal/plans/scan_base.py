@@ -222,16 +222,12 @@ def xas_factory(energy_grid, edge, name):
         ----------
         repeat : int
             Number of times to repeat the scan
-        batch : bool
-            If True, and repeat > 1, group the scans in a batch run
-        batch_md : dict
-            Metadata that should be saved with the batch run
         **kwargs :
             Arguments to be passed to tes_gscan
 
         """
         yield from tes_gscan(en.energy, *energy_grid, **kwargs)
-    d = f"Perform an xas scan for {edge} with energy pattern {energy_grid} \n"
+    d = f"Perform an in-place xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__
 
     inner.__qualname__ = name
