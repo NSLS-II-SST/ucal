@@ -148,7 +148,7 @@ def find_side_basis(nsides=4, x1=None, r1=None, x3=None, z=None, find_angle=Fals
     # Note, assumes a certain side to calibrate on!
     yield from mvr(manipx, 2)
     try:
-        boxed_text("Raw positions", map(lambda x: "{x[0]}: {x[1]}".format(x=x), [('x1', x1), ('y1', y1), ('x3', x3), ('y3', y3), ('z', z), ('z2', z2), ('r1', r), ('z0', z0)]), 'white')
+        boxed_text("Raw positions", map(lambda x: "{x[0]}: {x[1]}".format(x=x), [('x1', x1), ('y1', y1), ('x3', x3), ('y3', y3), ('z', z), ('z2', z2), ('r1', r1), ('z0', z0)]), 'white')
     except:
         print(x1, y1, x3, y3, z, z2, r1, z0)
     points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
@@ -199,3 +199,52 @@ def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
                 print(f"Setting origin {i} to {val}")
                 manipulator.origin[i] = val
         beamline_config['manipulator_origin'] = list(manipulator.origin)
+
+
+def new_calibrate_sides(side_start, side_end, nsides=4):
+    yield from mv(manipr, 0, manipx, 0)
+    z = yield from find_z()
+    z0 = manipulator.origin[2]
+    x0 = manipulator.origin[0]
+    bump = 5
+    z1 = z + bump
+    z2 = z1 + 100
+    xr1 = find_sides_one_z(z1, side_start, side_end, nsides)
+    xr2 = find_sides_one_z(z2, side_start, side_end, nsides)
+    for n, side in enumerate(side_start, side_end + 1):
+        x1, r1 = xr1[n]
+        x2, r2 = xr1[n+1]
+        x3, _ = xr2[n]
+        x4, _ = xr2[n+1]
+        y1 = calculate_corner_y(x1, r1, x2, r2, nsides)
+        y3 = calculate_corner_y(x3, r1, x4, r2, nsides)
+        try:
+            boxed_text("Raw positions", map(lambda x: "{x[0]}: {x[1]}".format(x=x), [('x1', x1), ('y1', y1), ('x3', x3), ('y3', y3), ('z', z), ('z2', z2), ('r1', r1), ('z0', z0)]), 'white')
+        except:
+            print(x1, y1, x3, y3, z, z2, r1, z0)
+        points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
+        yield from update_manipulator_side(side, *points)
+
+
+def find_sides_one_z(z, side_start, side_end, nsides):
+    xr_list = []
+    x0 = manipulator.origin[0]
+    for side in range(side_start, side_end + 1):
+        yield from set_side(side)
+        yield from sample_move(0, 0, z)
+        x = yield from find_x()
+        r = manipr.position
+        x -= x0
+        x = np.abs(x)
+        xr_list.append((x, r))
+    if side == nsides:
+        xr_list.append(xr_list[0])
+    else:
+        yield from set_side(side+1)
+        yield from sample_move(0, 0, z)
+        x = yield from find_x()
+        r = manipr.position
+        x -= x0
+        x = np.abs(x)
+        xr_list.append((x, r))
+    return xr_list
