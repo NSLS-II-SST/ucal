@@ -209,9 +209,9 @@ def new_calibrate_sides(side_start, side_end, nsides=4):
     bump = 5
     z1 = z + bump
     z2 = z1 + 100
-    xr1 = find_sides_one_z(z1, side_start, side_end, nsides)
-    xr2 = find_sides_one_z(z2, side_start, side_end, nsides)
-    for n, side in enumerate(side_start, side_end + 1):
+    xr1 = yield from find_sides_one_z(z1, side_start, side_end, nsides)
+    xr2 = yield from find_sides_one_z(z2, side_start, side_end, nsides)
+    for n, side in enumerate(range(side_start, side_end + 1)):
         x1, r1 = xr1[n]
         x2, r2 = xr1[n+1]
         x3, _ = xr2[n]
@@ -231,7 +231,9 @@ def find_sides_one_z(z, side_start, side_end, nsides):
     x0 = manipulator.origin[0]
     for side in range(side_start, side_end + 1):
         yield from set_side(side)
-        yield from sample_move(0, 0, z)
+        yield from mv(manipz, z)
+        y = manipulator.sy.position
+        yield from sample_move(0, y, 0)
         x = yield from find_x()
         r = manipr.position
         x -= x0
@@ -241,7 +243,9 @@ def find_sides_one_z(z, side_start, side_end, nsides):
         xr_list.append(xr_list[0])
     else:
         yield from set_side(side+1)
-        yield from sample_move(0, 0, z)
+        yield from mv(manipz, z)
+        y = manipulator.sy.position
+        yield from sample_move(0, y, 0)
         x = yield from find_x()
         r = manipr.position
         x -= x0

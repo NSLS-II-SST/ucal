@@ -30,15 +30,18 @@ from ucal.plans.samples import (set_side, set_sample,
 from ucal.plans.scans import *
 from ucal.plans.scan_base import (tes_calibrate, tes_take_noise, tes_gscan,
                                   tes_count, tes_scan, tes_rel_scan,
-                                  tes_take_projectors)
+                                  tes_take_projectors, tes_calibrate_inplace)
 from ucal.run_engine import RE
 from ucal.configuration import print_config_info, beamline_config, new_proposal
 from sst_funcs.configuration import print_builtins
+from sst_funcs.plans.groups import group
 
 # Motor aliases
 energy = en.energy
 
 RE(set_exposure(1.0))
+tes.setFilenamePattern = False
+tes.path = '/home/xf07id1/data'
 
 sd = SupplementalData(baseline=[manipulator, eslit, i0upAu, tesz])
 RE.preprocessors.append(sd)

@@ -30,14 +30,20 @@ _default_regions = {"Zn": [1010, 1015, 0.5, 1030, 0.125, 1040, 0.2, 1060,
 
 #def extend_region(energy_region):
 
+_short_regions = {"C": [270, 278, 0.5, 282, 0.1, 287.5, 0.05, 290,
+                        0.1, 300, 0.2, 310, 0.4, 320, 0.5]}
 
 for e, region in _default_regions.items():
     name = f"{e.lower()}_xas"
     globals()[name] = xas_factory(region, e, name)
 
+for e, region in _short_regions.items():
+    name = f"{e.lower()}_short_xas"
+    globals()[name] = xas_factory(region, e, name)
+    
 #tes_zn_xas = xas_factory([1010, 1015, 0.5, 1030, 0.125, 1040, 0.2,
 #                          1060, 0.25, 1070, 0.5], "Zn")
-
+"""
 @wrap_xas("Cu")
 def tes_cu_xas(**kwargs):
     yield from tes_gscan(en.energy,  915, 920, 0.5, 926, 0.25, 934.5, 0.17, 947,
@@ -91,3 +97,4 @@ def tes_c_xas_long(**kwargs):
 @wrap_xas("Fe")
 def tes_fe_xas_short(**kwargs):
     yield from tes_gscan(en.energy, 700, 705, 1, 720, 0.5, 740, 1, **kwargs)
+"""
