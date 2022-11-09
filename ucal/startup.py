@@ -1,5 +1,4 @@
 from bluesky.plan_stubs import mv, mvr, abs_set
-from bluesky.preprocessors import SupplementalData
 # startup sequence for beamline
 import ucal.motors as ucal_motors
 import ucal.mirrors as ucal_mirrors
@@ -16,6 +15,7 @@ from ucal.detectors import (ucal_i400, dm7_i400, tes,
 from ucal.motors import (manipx, manipy, manipz, manipr, tesz,
                          manipulator, eslit, i0upAu, add_motor, list_motors,
                          remove_motor)
+from ucal.controllers import adr
 from ucal.energy import en
 from ucal.sampleholder import sampleholder
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
@@ -31,7 +31,7 @@ from ucal.plans.scans import *
 from ucal.plans.scan_base import (tes_calibrate, tes_take_noise, tes_gscan,
                                   tes_count, tes_scan, tes_rel_scan,
                                   tes_take_projectors, tes_calibrate_inplace)
-from ucal.run_engine import RE
+from ucal.run_engine import RE, ucal_sd
 from ucal.configuration import print_config_info, beamline_config, new_proposal
 from sst_funcs.configuration import print_builtins
 from sst_funcs.plans.groups import group
@@ -43,5 +43,4 @@ RE(set_exposure(1.0))
 tes.setFilenamePattern = False
 tes.path = '/home/xf07id1/data'
 
-sd = SupplementalData(baseline=[manipulator, eslit, i0upAu, tesz])
-RE.preprocessors.append(sd)
+ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, adr]
