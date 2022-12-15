@@ -201,7 +201,7 @@ def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
         beamline_config['manipulator_origin'] = list(manipulator.origin)
 
 
-def new_calibrate_sides(side_start, side_end, nsides=4):
+def new_calibrate_sides(side_start, side_end, nsides=4, findz=True):
     yield from mv(manipr, 0, manipx, 0)
     z = yield from find_z()
     z0 = manipulator.origin[2]

@@ -8,7 +8,7 @@ import ucal.valves as ucal_valves
 # convenience imports
 from ucal.shutters import psh10, psh7
 from ucal.mirrors import mir1, mir3, mir4
-from ucal.detectors import (ucal_i400, dm7_i400, tes,
+from ucal.detectors import (sc, i0, ref, tes,
                             add_detector, list_detectors,
                             activate_detector, deactivate_detector,
                             remove_detector)
@@ -41,6 +41,6 @@ energy = en.energy
 
 RE(set_exposure(1.0))
 tes.setFilenamePattern = False
-tes.path = '/home/xf07id1/data'
+tes.path = '/data/raw'
 
-ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, adr]
+ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz]
