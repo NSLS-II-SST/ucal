@@ -1,16 +1,16 @@
 # from sst_common.api import *
 import pytest
-import ucal_common
+import ucal
 import numpy as np
-ucal_common.STATION_NAME = "sst_sim"
-from ucal_common.motors import manipx, manipy, manipz, manipr
-from ucal_common.detectors import i1, sc, thresholds
-from ucal_common.plans.find_edges import (scan_z_medium, find_x_offset,
-                                         find_r_offset,
-                                         scan_r_medium, scan_r_fine,
-                                         scan_r_coarse, find_z_adaptive,
-                                         find_x_adaptive)
-from ucal_common.plans.alignment import (find_corner_x_r,
+ucal.STATION_NAME = "sst_sim"
+from ucal.motors import manipx, manipy, manipz, manipr
+from ucal.detectors import i1, sc, thresholds
+from ucal.plans.find_edges import (scan_z_medium, find_x_offset,
+                                   find_r_offset,
+                                   scan_r_medium, scan_r_fine,
+                                   scan_r_coarse, find_z_adaptive,
+                                   find_x_adaptive)
+from ucal.plans.alignment import (find_corner_x_r,
                                          find_corner_coordinates,
                                          efficient_find_side_basis,
                                          find_beam_x_offset)
