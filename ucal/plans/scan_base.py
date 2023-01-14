@@ -151,13 +151,20 @@ def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
     @run_decorator(md={"scantype": "projectors"})
     def inner_projectors():
-        tes.rpc.file_start(tes.path, write_ljh=True, write_off=False,
-                           setFilenamePattern=tes.setFilenamePattern)
-        yield from sleep(30)
-        tes._file_end()
+        #tes.rpc.file_start(tes.path, write_ljh=True, write_off=False,
+        #                   setFilenamePattern=tes.setFilenamePattern)
+        #yield from sleep(30)
+        #tes._file_end()
+        yield from call_obj(tes, "take_projectors", time=30)
     return (yield from inner_projectors())
 
-
+@add_to_plan_list
+def tes_setup():
+    yield from tes_take_noise()
+    yield from tes_take_projectors()
+    yield from call_obj(tes, "make_projectors")
+    return (yield from call_obj(tes, "set_projectors"))
+    
 def _make_gscan_points(*args, shift=0):
     if len(args) < 3:
         raise TypeError(f"gscan requires at least estart, estop, and delta, received {args}")
