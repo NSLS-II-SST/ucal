@@ -113,8 +113,8 @@ def activate_detector(det_or_name, plot=False):
     detector = get_detector(det_or_name)
     if detector not in GLOBAL_ACTIVE_DETECTORS:
         GLOBAL_ACTIVE_DETECTORS.append(detector)
-    if detector not in GLOBAL_PLOT_DETECTORS:
-        GLOBAL_PLOT_DETECTORS.append(detector)
+    if plot:
+        plot_detector(detector)
 
 
 @add_to_func_list
@@ -133,6 +133,19 @@ def deactivate_detector(det_or_name):
     if detector in GLOBAL_ACTIVE_DETECTORS:
         idx = GLOBAL_ACTIVE_DETECTORS.index(detector)
         GLOBAL_ACTIVE_DETECTORS.pop(idx)
+    unplot_detector(detector)
+
+
+@add_to_func_list
+def plot_detector(det_or_name):
+    detector = get_detector(det_or_name)
+    if detector not in GLOBAL_PLOT_DETECTORS:
+        GLOBAL_PLOT_DETECTORS.append(detector)
+
+
+@add_to_func_list
+def unplot_detector(det_or_name):
+    detector = get_detector(det_or_name)
     if detector in GLOBAL_PLOT_DETECTORS:
         idx = GLOBAL_PLOT_DETECTORS.index(detector)
         GLOBAL_PLOT_DETECTORS.pop(idx)
