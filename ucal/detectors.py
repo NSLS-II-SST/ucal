@@ -7,10 +7,10 @@ from sst_funcs.printing import boxed_text
 GLOBAL_DETECTORS = {}
 GLOBAL_DETECTOR_DESCRIPTIONS = {}
 GLOBAL_ACTIVE_DETECTORS = []
-SCAN_ACTIVE_DETECTORS = []
+GLOBAL_PLOT_DETECTORS = []
 
 
-def add_detector(det, description="", name=None, activate=True):
+def add_detector(det, description="", name=None, activate=True, plot=False):
     """Add a detector to the global detector buffer
 
     with an optional description, and an optional name to substitute
@@ -37,7 +37,7 @@ def add_detector(det, description="", name=None, activate=True):
     GLOBAL_DETECTORS[name] = det
     GLOBAL_DETECTOR_DESCRIPTIONS[name] = description
     if activate:
-        activate_detector(name)
+        activate_detector(name, plot=plot)
     return name
 
 
@@ -58,7 +58,11 @@ def list_detectors(describe=False):
             status = "active"
         else:
             status = "inactive"
-        text.append(f"{name}: {status}")
+        if det in GLOBAL_PLOT_DETECTORS:
+            plotted = "plotted"
+        else:
+            plotted = "not plotted"
+        text.append(f"{name}: {status}, {plotted}")
         if describe:
             text.append(f"    {GLOBAL_DETECTOR_DESCRIPTIONS[name]}")
     boxed_text(title, text, "white")
@@ -96,7 +100,7 @@ def get_detector(det_or_name):
 
 
 @add_to_func_list
-def activate_detector(det_or_name):
+def activate_detector(det_or_name, plot=False):
     """Activate a detector so that is is measured by default
 
     Parameters
@@ -109,6 +113,8 @@ def activate_detector(det_or_name):
     detector = get_detector(det_or_name)
     if detector not in GLOBAL_ACTIVE_DETECTORS:
         GLOBAL_ACTIVE_DETECTORS.append(detector)
+    if detector not in GLOBAL_PLOT_DETECTORS:
+        GLOBAL_PLOT_DETECTORS.append(detector)
 
 
 @add_to_func_list
@@ -127,6 +133,9 @@ def deactivate_detector(det_or_name):
     if detector in GLOBAL_ACTIVE_DETECTORS:
         idx = GLOBAL_ACTIVE_DETECTORS.index(detector)
         GLOBAL_ACTIVE_DETECTORS.pop(idx)
+    if detector in GLOBAL_PLOT_DETECTORS:
+        idx = GLOBAL_PLOT_DETECTORS.index(detector)
+        GLOBAL_PLOT_DETECTORS.pop(idx)
 
 
 def remove_detector(det_or_name):
@@ -144,6 +153,8 @@ def remove_detector(det_or_name):
         Detector not found in the global buffer
 
     """
+    detector = get_detector(det_or_name)
+    deactivate_detector(detector)
     if hasattr(det_or_name, "name"):
         name = det_or_name.name
     else:
@@ -168,7 +179,7 @@ elif STATION_NAME == "ucal":
 
 #add_detector(ucal_i400, "Small electric signals on ucal")
 #add_detector(dm7_i400, "Large electric signals on ucal")
-add_detector(sc, "Drain Current")
+add_detector(sc, "Drain Current", plot=True)
 add_detector(i0, "I0 mesh")
 add_detector(ref, "multimesh")
-add_detector(tes, "Transition-edge Sensor")
+add_detector(tes, "Transition-edge Sensor", plot=True)

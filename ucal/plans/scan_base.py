@@ -1,4 +1,5 @@
 from ucal.detectors import (tes, GLOBAL_ACTIVE_DETECTORS,
+                            GLOBAL_PLOT_DETECTORS,
                             activate_detector, deactivate_detector)
 from ucal.shutters import psh10
 from ucal.energy import en
@@ -34,6 +35,12 @@ def wrap_xas(element):
     return decorator
 
 
+def get_detector_plot_hints():
+    plot_y_md = []
+    for detector in GLOBAL_PLOT_DETECTORS:
+        plot_y_md += detector.hints.get('fields', [])
+    return plot_y_md
+
 @add_to_scan_list
 def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     """Count for a specified number of points
@@ -51,7 +58,7 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
     scanex = ScanExfiltrator(motor, en.energy.position)
     tes.scanexfiltrator = scanex
     for det in extra_dets:
-        activate_detector(det)
+        activate_detector(det, plot=True)
 
     if exposure_time_s is not None:
         yield from set_exposure(exposure_time_s)
@@ -64,6 +71,7 @@ def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, **kwargs):
         _md['last_cal'] = beamline_config['last_cal']
     if 'last_noise' in beamline_config:
         _md['last_noise'] = beamline_config['last_noise']
+    _md['plot_hints'] = {'x': ['time'], 'y': get_detector_plot_hints()}
 
     _md.update(md)
 
@@ -86,7 +94,7 @@ def _tes_plan_wrapper(plan_function, plan_name):
         tes.scanexfiltrator = scanex
 
         for det in extra_dets:
-            activate_detector(det)
+            activate_detector(det, plot=True)
 
         if exposure_time_s is not None:
             yield from set_exposure(exposure_time_s)
@@ -106,7 +114,8 @@ def _tes_plan_wrapper(plan_function, plan_name):
             _md['last_cal'] = beamline_config['last_cal']
         if 'last_noise' in beamline_config:
             _md['last_noise'] = beamline_config['last_noise']
-
+        _md['plot_hints'] = {'x': motor.hints.get('fields', []),
+                             'y': get_detector_plot_hints()}
         _md.update(md)
         ret = (yield from plan_function(GLOBAL_ACTIVE_DETECTORS, motor,
                                         *args, md=_md, **kwargs))
@@ -164,7 +173,8 @@ def tes_setup():
     yield from tes_take_projectors()
     yield from call_obj(tes, "make_projectors")
     return (yield from call_obj(tes, "set_projectors"))
-    
+
+
 def _make_gscan_points(*args, shift=0):
     if len(args) < 3:
         raise TypeError(f"gscan requires at least estart, estop, and delta, received {args}")
