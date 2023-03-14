@@ -8,7 +8,8 @@ import warnings
 
 
 def call_obj(obj, method, *args, **kwargs):
-    yield Msg("call_obj", obj, *args, method=method, **kwargs)
+    ret = yield Msg("call_obj", obj, *args, method=method, **kwargs)
+    return ret
 
 
 def update_manipulator_side(side, *args):
@@ -39,7 +40,7 @@ def close_shutter():
 
 def is_shutter_open():
     state = yield from rd(psh7.state)
-    if state is 1:
+    if state == 1:
         return False
     else:
         return True
