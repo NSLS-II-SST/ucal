@@ -3,7 +3,7 @@ from ucal.detectors import (tes, GLOBAL_ACTIVE_DETECTORS,
                             activate_detector, deactivate_detector)
 from ucal.shutters import psh10
 from ucal.energy import en
-from ucal.plans.plan_stubs import call_obj, set_exposure, close_shutter, open_shutter
+from ucal.plans.plan_stubs import call_obj, set_exposure, close_shutter, open_shutter, is_shutter_open
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.sampleholder import sampleholder
 from ucal.motors import manipulator
@@ -12,7 +12,8 @@ from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, sleep
-from bluesky.preprocessors import run_decorator, inject_md_wrapper
+from bluesky.preprocessors import run_decorator, inject_md_wrapper, subs_decorator
+from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
 from sst_funcs.plans.preprocessors import wrap_metadata
 from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
@@ -22,8 +23,9 @@ from functools import wraps
 def wrap_xas_setup(element):
     def decorator(func):
         @wraps(func)
-        def inner(*args, **kwargs):
-            yield from set_edge(element)
+        def inner(*args, auto_setup_xas=True, **kwargs):
+            if auto_setup_xas:
+                yield from set_edge(element)
             return (yield from func(*args, **kwargs))
         return inner
     return decorator
@@ -139,6 +141,34 @@ tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
 tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
 tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"))
 
+@add_to_scan_list
+def take_dark_counts():
+    
+    dc = DocumentCache()
+
+    @subs_decorator(dc)
+    def inner():
+        shutter_open = yield from is_shutter_open()
+        if shutter_open:
+            yield from close_shutter()
+
+        # Clear offsets first
+        for det in GLOBAL_ACTIVE_DETECTORS:
+            detname = det.name
+            if hasattr(det, 'offset'):
+                det.offset.set(0)
+
+        yield from bp.count(GLOBAL_ACTIVE_DETECTORS, 10, md={"scantype": "darkcounts"})
+        run = BlueskyRun(dc)
+        table = run.primary.read()
+        for det in GLOBAL_ACTIVE_DETECTORS:
+            detname = det.name
+            if hasattr(det, 'offset'):
+                dark_value = float(table[detname].mean().values)
+                det.offset.set(dark_value)
+        if shutter_open:
+            yield from open_shutter()
+    return (yield from inner())
 
 @add_to_scan_list
 def tes_take_noise():
@@ -147,9 +177,12 @@ def tes_take_noise():
     def inner_noise():
         beamline_config['last_cal'] = None
         beamline_config['last_noise'] = None
-        yield from close_shutter()
+        shutter_open = yield from is_shutter_open()
+        if shutter_open:
+            yield from close_shutter()
         yield from call_obj(tes, "take_noise")
-        yield from open_shutter()
+        if shutter_open:
+            yield from open_shutter()
     uid = yield from inner_noise()
     beamline_config['last_noise'] = uid
     return uid
@@ -164,11 +197,13 @@ def tes_take_projectors():
         #                   setFilenamePattern=tes.setFilenamePattern)
         #yield from sleep(30)
         #tes._file_end()
+        yield from open_shutter()
         yield from call_obj(tes, "take_projectors", time=30)
     return (yield from inner_projectors())
 
 @add_to_plan_list
 def tes_setup():
+    activate_detector('tes', plot=True)
     yield from tes_take_noise()
     yield from tes_take_projectors()
     yield from call_obj(tes, "make_projectors")

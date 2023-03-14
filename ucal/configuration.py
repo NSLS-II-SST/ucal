@@ -4,6 +4,8 @@ from sst_funcs.configuration import add_to_func_list
 from bluesky.utils import PersistentDict
 import uuid
 from datetime import datetime
+from os.path import join, exists
+from os import mkdir, chdir
 
 from . import STATION_NAME
 
@@ -30,6 +32,11 @@ def configure_beamline(proposal, year, cycle):
     beamline_config['cycle'] = cycle
     beamline_config['directory'] = get_proposal_directory(proposal, year, cycle)
     beamline_config['loadfile'] = None
+    bdir = join("/home/xf07id1/Documents/{}_beamtime".format(datetime.today().strftime("%Y%m%d")))
+    if not exists(bdir):
+        mkdir(bdir)
+    beamline_config['beamtime_directory'] = bdir
+    chdir(bdir)
 
 
 def get_proposal_directory(proposal, year, cycle):
@@ -53,5 +60,6 @@ def print_config_info():
     infolist.append(f"SAF: {RE.md.get('saf', 'None')}")
     infolist.append(f"Configuration directory: " + beamline_config_dir)
     infolist.append(f"Data directory: {beamline_config.get('directory', None)}")
+    infolist.append(f"Beamtime directory: {beamline_config.get('beamtime_directory', None)}")
     infolist.append(f"Load file: {beamline_config.get('loadfile', None)}")
     boxed_text(title, infolist, "white")

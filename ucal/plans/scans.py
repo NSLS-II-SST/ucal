@@ -43,7 +43,9 @@ for e, region in _default_regions.items():
 for e, region in _short_regions.items():
     name = f"{e.lower()}_short_xas"
     globals()[name] = xas_factory(region, e, name)
-    
+
+c_ru_xas = xas_factory([260, 263, 1, 282, 0.5, 292, 0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2], 'C', 'c_ru_xas')
+
 #tes_zn_xas = xas_factory([1010, 1015, 0.5, 1030, 0.125, 1040, 0.2,
 #                          1060, 0.25, 1070, 0.5], "Zn")
 """

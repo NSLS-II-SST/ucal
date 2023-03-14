@@ -201,9 +201,14 @@ def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
         beamline_config['manipulator_origin'] = list(manipulator.origin)
 
 
-def new_calibrate_sides(side_start, side_end, nsides=4, findz=True):
-    yield from mv(manipr, 0, manipx, 0)
-    z = yield from find_z()
+def new_calibrate_sides(side_start, side_end, nsides=4, findz=True, preserve=False):
+    if not preserve:
+        beamline_config['manipulator_calibration'] = {}
+    if findz:
+        yield from mv(manipr, 0, manipx, 0)
+        z = yield from find_z()
+    else:
+        z = manipz.position
     z0 = manipulator.origin[2]
     x0 = manipulator.origin[0]
     bump = 5
@@ -223,8 +228,15 @@ def new_calibrate_sides(side_start, side_end, nsides=4, findz=True):
         except:
             print(x1, y1, x3, y3, z, z2, r1, z0)
         points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
+        if 'manipulator_calibration' not in beamline_config:
+            beamline_config['manipulator_calibration'] = {}
+        beamline_config['manipulator_calibration'][f"{side}"] = points
         yield from update_manipulator_side(side, *points)
 
+def load_saved_manipulator_calibration():
+    if 'manipulator_calibration' in beamline_config:
+        for side, points in beamline_config['manipulator_calibration'].items():
+            yield from update_manipulator_side(int(side), *points) 
 
 def find_sides_one_z(z, side_start, side_end, nsides):
     xr_list = []
@@ -240,7 +252,18 @@ def find_sides_one_z(z, side_start, side_end, nsides):
         x = np.abs(x)
         xr_list.append((x, r))
     if side == nsides:
-        xr_list.append(xr_list[0])
+        if side_start == 1:
+            xr_list.append(xr_list[0])
+        else:
+            yield from mvr(manipr, 90)
+            yield from set_side(1)
+            y = manipulator.sy.position
+            yield from sample_move(0, y, 0)
+            x = yield from find_x()
+            r = manipr.position
+            x -= x0
+            x = np.abs(x)
+            xr_list.append((x, r))
     else:
         yield from set_side(side+1)
         yield from mv(manipz, z)

@@ -1,4 +1,5 @@
 from bluesky import Msg
+from bluesky.plan_stubs import rd
 from ucal.motors import manipulator
 from ucal.shutters import psh7
 from ucal.detectors import GLOBAL_ACTIVE_DETECTORS
@@ -35,3 +36,10 @@ def open_shutter():
 @add_to_plan_list
 def close_shutter():
     yield from psh7.close()
+
+def is_shutter_open():
+    state = yield from rd(psh7.state)
+    if state is 1:
+        return False
+    else:
+        return True
