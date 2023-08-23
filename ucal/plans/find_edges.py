@@ -4,6 +4,7 @@ from ucal.detectors import GLOBAL_ACTIVE_DETECTORS, sc, thresholds
 from sst_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive, find_halfmax
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
+from ucal.plans.flyscan_base import fly_scan
 
 # This should go into a beamline config file at some point
 max_channel = sc.name
@@ -166,7 +167,7 @@ def find_x_adaptive(precision=0.1, step=2):
                                           max_channel=max_channel))
 
 
-def find_edge(dets, motor, step, start, stop, points, max_channel=None):
+def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True):
     """
     Parameters
     -----------
@@ -188,8 +189,12 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None):
                                               thresholds[detname],
                                               step=step, max_channel=max_channel)
     yield from mv(motor, thres_pos + start)
-    ret = (yield from find_halfmax(rel_scan, dets, motor, 0, stop - start, points,
-                                    max_channel=max_channel))
+    if fly:
+        ret = (yield from find_halfmax(fly_scan, dets, motor, thres_pos + start, thres_pos + stop,
+                                       max_channel=max_channel, period=0.2))
+    else:
+        ret = (yield from find_halfmax(rel_scan, dets, motor, 0, stop - start, points,
+                                       max_channel=max_channel))
     return ret[0][1]
 
 def find_x(invert=False, precision=0.1):

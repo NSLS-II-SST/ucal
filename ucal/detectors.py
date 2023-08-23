@@ -188,7 +188,7 @@ def remove_detector(det_or_name):
 if STATION_NAME == "sst_sim":
     from sst_common_sim.api import ucal_i400, dm7_i400, thresholds, tes, sc, i0, ref
 elif STATION_NAME == "ucal":
-    from ucal_hw.detectors import thresholds, tes, sc, i0, ref, i0mir
+    from ucal_hw.detectors import thresholds, tes, sc, i0, ref, i0mir#, tes_mca
 
 #add_detector(ucal_i400, "Small electric signals on ucal")
 #add_detector(dm7_i400, "Large electric signals on ucal")
@@ -196,3 +196,4 @@ add_detector(sc, "Drain Current", plot=True)
 add_detector(i0, "I0 mesh")
 add_detector(ref, "multimesh")
 add_detector(tes, "Transition-edge Sensor", plot=True)
+#add_detector(tes_mca, "TES MCA Channels")

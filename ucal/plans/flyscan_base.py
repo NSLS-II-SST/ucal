@@ -77,7 +77,7 @@ def fly_scan(detectors, motor, *args, md=None, period=None):
         In general:
         .. code-block:: python
         
-            start1, stop1, speed1[, stop2, speed2, ...]
+            start1, stop1, speed1[, start2, stop2, speed2, ...]
     
     md : dict, optional
         metadata

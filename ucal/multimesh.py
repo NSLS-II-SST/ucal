@@ -21,7 +21,7 @@ for s in refsamples:
 ref_dict = {"c": 0, "n": 3, "o": 6, "f": 2, "ca": 2,
             "ti": 3, "v": 4, "cr": 6, "mn": 5, "fe": 6,
             "co": 6, "ni": 6, "photodiode": 8, "empty": 7, "blank": 7,
-            "zn": 7, "na": 7, "sr": 0}
+            "zn": 7, "na": 7, "sr": 0, "hopg": 1}
 
 
 def set_ref(refid):
