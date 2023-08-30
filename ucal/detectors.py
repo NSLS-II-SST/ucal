@@ -1,8 +1,9 @@
 from . import STATION_NAME
 
 from ophyd import Device
-from sst_funcs.configuration import add_to_func_list
+from sst_funcs.help import add_to_func_list
 from sst_funcs.printing import boxed_text
+from .instantiation import instantiateDevice
 
 GLOBAL_DETECTORS = {}
 GLOBAL_DETECTOR_DESCRIPTIONS = {}
@@ -184,11 +185,21 @@ def remove_detector(det_or_name):
     del GLOBAL_DETECTORS[name]
     del GLOBAL_DETECTOR_DESCRIPTIONS[name]
 
-
+"""
 if STATION_NAME == "sst_sim":
     from sst_common_sim.api import ucal_i400, dm7_i400, thresholds, tes, sc, i0, ref
 elif STATION_NAME == "ucal":
+
     from ucal_hw.detectors import thresholds, tes, sc, i0, ref, i0mir#, tes_mca
+"""
+
+sc = instantiateDevice("sc")
+i0 = instantiateDevice("i0")
+ref = instantiateDevice("ref")
+i0mir = instantiateDevice("i0mir")
+tes = instantiateDevice("tes")
+
+thresholds = {sc.name: .1, i0mir.name: 2e-11, ref.name: .1, i0.name: .1}
 
 #add_detector(ucal_i400, "Small electric signals on ucal")
 #add_detector(dm7_i400, "Large electric signals on ucal")

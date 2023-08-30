@@ -1,6 +1,6 @@
 from ucal.run_engine import RE
 from sst_funcs.printing import boxed_text
-from sst_funcs.configuration import add_to_func_list
+from sst_funcs.help import add_to_func_list
 from bluesky.utils import PersistentDict
 import uuid
 from datetime import datetime
