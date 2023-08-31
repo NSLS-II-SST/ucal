@@ -1,7 +1,7 @@
 from ucal.sampleholder import sampleholder
 from ucal.motors import samplex, sampley, samplez, sampler
 from ucal.configuration import beamline_config
-from sst_funcs.configuration import add_to_func_list, add_to_plan_list
+from sst_funcs.help import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath

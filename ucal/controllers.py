@@ -6,6 +6,6 @@ if STATION_NAME == "sst_sim":
 elif STATION_NAME == "ucal":
     from ucal_hw.controllers import adr
 """
-from .instantiation import instantiateDevice
+from .instantiation import findAndLoadDevice
 
-adr = instantiateDevice("adr")
+adr = findAndLoadDevice("adr")
