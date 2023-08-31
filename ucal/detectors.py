@@ -3,7 +3,7 @@ from . import STATION_NAME
 from ophyd import Device
 from sst_funcs.help import add_to_func_list
 from sst_funcs.printing import boxed_text
-from .instantiation import instantiateDevice
+from .instantiation import findAndLoadDevice
 
 GLOBAL_DETECTORS = {}
 GLOBAL_DETECTOR_DESCRIPTIONS = {}
@@ -192,11 +192,11 @@ elif STATION_NAME == "ucal":
     from ucal_hw.detectors import thresholds, tes, sc, i0, ref, i0mir
 """
 
-sc = instantiateDevice("sc")
-i0 = instantiateDevice("i0")
-ref = instantiateDevice("ref")
-i0mir = instantiateDevice("i0mir")
-tes = instantiateDevice("tes")
+sc = findAndLoadDevice("sc")
+i0 = findAndLoadDevice("i0")
+ref = findAndLoadDevice("ref")
+i0mir = findAndLoadDevice("i0mir")
+tes = findAndLoadDevice("tes")
 
 thresholds = {sc.name: .1, i0mir.name: 2e-11, ref.name: .1, i0.name: .1}
 

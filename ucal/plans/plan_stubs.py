@@ -2,7 +2,7 @@ from bluesky import Msg
 from ucal.motors import manipulator
 from ucal.shutters import psh7
 from ucal.detectors import GLOBAL_ACTIVE_DETECTORS
-from sst_funcs.configuration import add_to_plan_list
+from sst_funcs.help import add_to_plan_list
 import warnings
 
 

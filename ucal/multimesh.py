@@ -1,18 +1,13 @@
 from sst_base.sampleholder import SampleHolder, make_1d_bar
-from sst_base.manipulator import Manipulator1AxBase
-from sst_base.motors import PrettyMotor
-from ophyd import Component as Cpt
 from bluesky.plan_stubs import abs_set, mv
+from .instantiation import findAndLoadDevice
 
 
-class MultiMesh(Manipulator1AxBase):
-    x = Cpt(PrettyMotor, "MMesh}Mtr", name="Multimesh")
-
-
-multimesh = MultiMesh(None, "XF:07ID1-BI{I0Up-Ax:", name="i0upmultimesh")
+multimesh = findAndLoadDevice("multimesh")
 
 refholder = SampleHolder(manipulator=multimesh, name="i0up_multimesh")
 geometry = make_1d_bar(160)
+
 refholder.add_geometry(geometry)
 refsamples = [('0', "C", (16, 20), 0),
               ('1', "HOPG", (26.2, 30.2), 0),

@@ -10,7 +10,7 @@ from ucal.motors import manipulator
 from ucal.plans.samples import sample_move
 from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
-from sst_funcs.configuration import add_to_plan_list, add_to_scan_list
+from sst_funcs.help import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, sleep
 from bluesky.preprocessors import run_decorator, inject_md_wrapper
 from sst_funcs.plans.preprocessors import wrap_metadata

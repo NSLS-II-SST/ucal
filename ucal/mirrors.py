@@ -6,8 +6,8 @@ if STATION_NAME == "ucal":
 elif STATION_NAME == "sst_sim":
     from sst_common_sim.mirrors import mir1, mir3, mir4
 """
-from .instantiation import instantiateDevice
+from .instantiation import findAndLoadDevice
 
-mir1 = instantiateDevice("mir1")
-mir3 = instantiateDevice("mir3")
-mir4 = instantiateDevice("mir4")
+mir1 = findAndLoadDevice("mir1")
+mir3 = findAndLoadDevice("mir3")
+mir4 = findAndLoadDevice("mir4")

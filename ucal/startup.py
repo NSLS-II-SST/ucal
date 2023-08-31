@@ -33,7 +33,7 @@ from ucal.plans.scan_base import (tes_calibrate, tes_take_noise, tes_gscan,
                                   tes_take_projectors, tes_calibrate_inplace)
 from ucal.run_engine import RE, ucal_sd
 from ucal.configuration import print_config_info, beamline_config, new_proposal
-from sst_funcs.configuration import print_builtins
+from sst_funcs.help import print_builtins
 from sst_funcs.plans.groups import group
 
 # Motor aliases
