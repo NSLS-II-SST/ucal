@@ -189,7 +189,6 @@ def remove_detector(det_or_name):
 if STATION_NAME == "sst_sim":
     from sst_common_sim.api import ucal_i400, dm7_i400, thresholds, tes, sc, i0, ref
 elif STATION_NAME == "ucal":
-
     from ucal_hw.detectors import thresholds, tes, sc, i0, ref, i0mir#, tes_mca
 """
 
