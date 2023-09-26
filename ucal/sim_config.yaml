@@ -1,22 +1,22 @@
 controllers:
   adr:
     _target_: sst_base.sim.DummyObject
-    prefix: 'mini:adr'
+    prefix: 'SIM_SST:adr'
     name: 'adr'
 detectors:
   _default:
     _target_: sst_base.detectors.scalar.ADCBuffer
   i0:
-    prefix: "mini:i0:"
+    prefix: "SIM_SST:i0:"
     name: "ucal_i0up"
   i1:
-    prefix: "mini:i1:"
+    prefix: "SIM_SST:i1:"
     name: "ucal_i1"
   ref:
-    prefix: "mini:ref:"
+    prefix: "SIM_SST:ref:"
     name: "ucal_ref"
   sc:
-    prefix: "mini:sc:"
+    prefix: "SIM_SST:sc:"
     name: "ucal_sc"
   i0mir:
     _target_: sst_base.detectors.scalar.I400SingleCh
@@ -32,7 +32,7 @@ detectors:
 energy:
   energy:
     _target_: ucal_sim.energy.NewEnPos
-    prefix: "mini:energy:"
+    prefix: "SIM_SST:energy:"
     name: "en"
 gatevalves:
   _default:
@@ -76,22 +76,22 @@ motors:
     _target_: sst_base.motors.PrettyMotor
     kind: hinted
   Exit_Slit:
-    prefix: "mini:eslit:"
+    prefix: "SIM_SST:eslit:"
     name: "Exit Slit of Mono Vertical Gap"
   i0upAu:
-    prefix: "mini:i0upAu:"
+    prefix: "SIM_SST:i0upAu:"
     name: "i0upAu"
   tesz:
-    prefix: "mini:tesz:"
+    prefix: "SIM_SST:tesz:"
     name: "tesz"
 manipulators:
   manipulator:
     _target_: ucal.hw.ManipulatorBuilder
-    prefix: "mini:manipulator:"
+    prefix: "SIM_SST:manipulator:"
     name: "manip"
   multimesh:
     _target_: ucal.hw.MultiMeshBuilder
-    prefix: "mini:multimesh:"
+    prefix: "SIM_SST:multimesh:"
     name: "i0upmultimesh"
 shutters:
   _default:
@@ -100,22 +100,26 @@ shutters:
     openval: 0
     closeval: 1
   psh1:
-    prefix: "mini:psh1:"
+    prefix: "SIM_SST:psh1:"
     name: "Front-End Shutter"
     shutter_type: FE
   psh4:
-    prefix: "mini:psh4:"
+    prefix: "SIM_SST:psh4:"
     name: "Hutch Photon Shutter"
   psh10:
-    prefix: "mini:psh10:"
+    prefix: "SIM_SST:psh10:"
     name: "Upstream Photon Shutter"
   psh7:
-    prefix: "mini:psh7:"
+    prefix: "SIM_SST:psh7:"
     name: "Downstream Photon Shutter"
 signals:
   _default:
     _target_: ophyd.EpicsSignalRO
     kind: "normal"
   ring_current:
-    prefix: "mini:current"
+    prefix: "SIM_SST:current"
     name: "NSLS-II Ring Current"
+  sst_control:
+    prefix: "SIM_SST:Endstn-Sel"
+    name: "Endstation in Control"
+    string: True
