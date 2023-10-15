@@ -29,7 +29,7 @@ def setup_run_engine(engine):
     Function that yields a fully set-up and ready-to-go run engine
     """
     load_RE_commands(engine)
-    turn_on_checks(engine)
+    #turn_on_checks(engine)
     return engine
 
 RE = RunEngine(call_returns_result=True)
