@@ -11,5 +11,6 @@ setup(
     name="ucal",
     use_scm_version=True,
     packages=find_packages(),
+    package_data={"ucal": ["*.yaml"]},
     scripts=scripts
 )
