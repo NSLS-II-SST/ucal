@@ -9,3 +9,5 @@ else:
 """
 psh7 = findAndLoadDevice("psh7")
 psh10 = findAndLoadDevice("psh10")
+psh4 = findAndLoadDevice("psh4")
+psh1 = findAndLoadDevice("psh1")

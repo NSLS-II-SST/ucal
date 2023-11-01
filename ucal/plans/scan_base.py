@@ -51,6 +51,7 @@ def get_detector_plot_hints():
             plot_y_md += detector.hints.get('fields', [])
     return plot_y_md, plot_mca_md, style_hints
 
+
 @add_to_scan_list
 def tes_count(*args, extra_dets=[], exposure_time_s=None, md=None, plot_hints=None, **kwargs):
     """Count for a specified number of points

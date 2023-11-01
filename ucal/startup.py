@@ -32,10 +32,12 @@ from ucal.plans.scan_base import (tes_calibrate, tes_take_noise, tes_gscan,
                                   tes_count, tes_scan, tes_rel_scan,
                                   tes_take_projectors, tes_calibrate_inplace,
                                   tes_setup, take_dark_counts)
+from ucal.plans.energy import base_grating_to_1200, base_grating_to_250
 from ucal.run_engine import RE, ucal_sd
 from ucal.configuration import print_config_info, beamline_config, new_proposal
 from sst_funcs.help import print_builtins
 from sst_funcs.plans.groups import group
+from ucal.queueserver import request_update, get_status
 
 # Motor aliases
 energy = en.energy

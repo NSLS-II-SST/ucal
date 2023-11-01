@@ -4,11 +4,18 @@ from ophyd import Device
 from sst_funcs.help import add_to_func_list
 from sst_funcs.printing import boxed_text
 from .instantiation import findAndLoadDevice
+from .status import StatusList, StatusDict
+from .queueserver import add_status
 
-GLOBAL_DETECTORS = {}
-GLOBAL_DETECTOR_DESCRIPTIONS = {}
-GLOBAL_ACTIVE_DETECTORS = []
-GLOBAL_PLOT_DETECTORS = []
+GLOBAL_DETECTORS = StatusDict()
+GLOBAL_DETECTOR_DESCRIPTIONS = StatusDict()
+GLOBAL_ACTIVE_DETECTORS = StatusList()
+GLOBAL_PLOT_DETECTORS = StatusList()
+
+add_status("ACTIVE_DETECTORS", GLOBAL_ACTIVE_DETECTORS)
+add_status("DETECTOR_DESCRIPTIONS", GLOBAL_DETECTOR_DESCRIPTIONS)
+add_status("DETECTORS", GLOBAL_DETECTORS)
+add_status("PLOT_DETECTORS", GLOBAL_PLOT_DETECTORS)
 
 
 def add_detector(det, description="", name=None, activate=True, plot=False):

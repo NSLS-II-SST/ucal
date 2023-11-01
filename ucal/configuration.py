@@ -6,15 +6,23 @@ import uuid
 from datetime import datetime
 from os.path import join, exists
 from os import mkdir, chdir
-
+from ucal.status import StatusDict
+from ucal.queueserver import add_status
 from . import STATION_NAME
 
 if STATION_NAME == "sst_sim":
     beamline_config_dir = "/tmp/ucal_beamline_config"
+    beamline_dir = "/tmp/{}_beamtime"
+    proposal_dir = "/tmp/proposals/{year}-{cycle}/pass-{proposal}"
 elif STATION_NAME == "ucal":
     beamline_config_dir = "/nsls2/data/sst/shared/config/ucal/beamline_config"
+    beamline_dir = "/home/xf07id/Documents/{}_beamtime"
+    proposal_dir = "/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
 
 beamline_config = PersistentDict(beamline_config_dir)
+
+GLOBAL_USER_MD = StatusDict()
+add_status("USER_MD", GLOBAL_USER_MD)
 
 def configure_user(users, proposal, cycle, saf):
     RE.md['users'] = users
@@ -24,6 +32,12 @@ def configure_user(users, proposal, cycle, saf):
     RE.md['scan_id'] = 0
     RE.md['beamtime_start'] = datetime.today().isoformat()
     RE.md['beamtime_uid'] = str(uuid.uuid4())
+    GLOBAL_USER_MD['users'] = users
+    GLOBAL_USER_MD['proposal'] = proposal
+    GLOBAL_USER_MD['saf'] = saf
+    GLOBAL_USER_MD['cycle'] = cycle
+    GLOBAL_USER_MD['beamtime_start'] = datetime.today().isoformat()
+    GLOBAL_USER_MD['beamtime_uid'] = str(uuid.uuid4())
 
 
 def configure_beamline(proposal, year, cycle):
@@ -31,8 +45,9 @@ def configure_beamline(proposal, year, cycle):
     beamline_config['year'] = year
     beamline_config['cycle'] = cycle
     beamline_config['directory'] = get_proposal_directory(proposal, year, cycle)
+    GLOBAL_USER_MD['directory'] = beamline_config['directory']
     beamline_config['loadfile'] = None
-    bdir = join("/home/xf07id1/Documents/{}_beamtime".format(datetime.today().strftime("%Y%m%d")))
+    bdir = join(beamline_dir.format(datetime.today().strftime("%Y%m%d")))
     if not exists(bdir):
         mkdir(bdir)
     beamline_config['beamtime_directory'] = bdir
@@ -40,7 +55,8 @@ def configure_beamline(proposal, year, cycle):
 
 
 def get_proposal_directory(proposal, year, cycle):
-    return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
+    # return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
+    return proposal_dir.format(proposal=proposal, year=year, cycle=cycle)
 
 
 @add_to_func_list

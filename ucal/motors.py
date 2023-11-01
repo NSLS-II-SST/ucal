@@ -3,9 +3,14 @@
 from sst_funcs.help import add_to_func_list
 from sst_funcs.printing import boxed_text
 from .instantiation import findAndLoadDevice
+from .status import StatusDict
+from .queueserver import add_status
 
-GLOBAL_MOTORS = {}
-GLOBAL_MOTOR_DESCRIPTIONS = {}
+GLOBAL_MOTORS = StatusDict()
+GLOBAL_MOTOR_DESCRIPTIONS = StatusDict()
+
+add_status("MOTORS", GLOBAL_MOTORS)
+add_status("MOTOR_DESCRIPTIONS", GLOBAL_MOTOR_DESCRIPTIONS)
 
 
 def add_motor(motor, description="", name=None):

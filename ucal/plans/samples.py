@@ -7,8 +7,15 @@ from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
 import csv
 import copy
-
+from ucal.status import StatusDict
+from ucal.queueserver import add_status
 #filename = "../../examples/sample_load.csv"
+
+GLOBAL_SAMPLES = StatusDict()
+GLOBAL_SELECTED = StatusDict()
+
+add_status("SAMPLE_LIST", GLOBAL_SAMPLES)
+add_status("SAMPLE_SELECTED", GLOBAL_SELECTED)
 
 
 def read_sample_csv(filename):
@@ -36,6 +43,7 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
     """
     if clear:
         holder.clear_samples()
+        GLOBAL_SAMPLES.clear()
     for sample_id, s in samples.items():
         sdict = copy.deepcopy(s)
         position = (float(sdict.pop('x1')), float(sdict.pop('y1')), float(sdict.pop('x2')), float(sdict.pop('y2')))
@@ -43,6 +51,7 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
         description = sdict.pop('description', name)
         side = int(sdict.pop('side'))
         thickness = float(sdict.pop('t', 0))
+        GLOBAL_SAMPLES[sample_id] = {"name": name, "position": position, "side": side, "thickness": thickness, "description": description, **sdict}
         holder.add_sample(sample_id, name, position, side, thickness, description=description, **sdict)
     return
 
@@ -89,6 +98,11 @@ def set_side(side_num):
 
 def set_sample(sampleid, origin="center"):
     print(f"Setting sample to {sampleid}")
+    sample_info = GLOBAL_SAMPLES.get(str(sampleid), {})
+    GLOBAL_SELECTED.clear()
+    GLOBAL_SELECTED["sample_id"] = sampleid
+    GLOBAL_SELECTED["origin"] = origin
+    GLOBAL_SELECTED.update(sample_info)
     yield from abs_set(sampleholder, sampleid, origin=origin)
 
 
@@ -115,4 +129,4 @@ def list_samples():
         if v['sample_id'] == 'null':
             pass
         else:
-            print(f"id: {v['sample_id']}, name: {v['name']}: ")
+            print(f"id: {v['sample_id']}, name: {v['name']}")
