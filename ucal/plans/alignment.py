@@ -19,7 +19,28 @@ import numpy as np
 # derivative scan version
 # figure out if I can use bluesky-live instead? See thread
 
+def find_min_r(step, npts):
+    xlist = []
+    rcurr = manipr.position
+    
+    rlist = [rcurr + n*step -step*(npts-1)/2 for n in range(npts)]
+    for r in rlist:
+        yield from mv(manipr, r)
+        x = yield from find_x()
+        xlist.append(x)
+    minr = rlist[np.argmax(xlist)]
+    return minr
 
+def find_r_offset():
+    """
+    Works to find angle where bar is square to beam. Maybe want to subtract 0.5 deg
+    from result for safety, better not to have exposed 2nd side
+    """
+    minr = yield from find_min_r(2, 9)
+    yield from mv(manipr, minr)
+    minr2 = yield from find_min_r(0.5, 9)
+    return minr2
+    
 def find_beam_x_offset():
     tes_pos = yield from rd(tesz)
     if tes_pos < 40:

@@ -5,6 +5,7 @@ from ucal.multimesh import set_ref
 from sst_funcs.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from sst_funcs.plans.maximizers import find_max
 from bluesky.plans import rel_scan
+from sst_funcs.configuration import add_to_plan_list
 from ucal.shutters import psh4
 
 
@@ -104,7 +105,18 @@ def tune_1200():
                         energy=291.65,
                         pol=0,
                         k=1200)
+
+@add_to_plan_list
+def tune_grating():
+    grating = yield from bps.rd(en.monoen.gratingx.readback)
+    if "250l/mm" in grating:
+        yield from tune_250()
+    elif "1200l/mm" in grating:
+        yield from tune_1200()
+    else:
+        print("Grating must be either 250/mm or 1200l/mm")
     
+@add_to_plan_list
 def change_grating(grating, tune=True):
     if grating == 250:
         yield from base_grating_to_250()
