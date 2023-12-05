@@ -1,12 +1,13 @@
-from ucal.mirrors import mir4
+from ucal.mirrors import mir4, mir3
 from ucal.motors import manipz, i0upAu
 from ucal.energy import en
 from bluesky.plan_stubs import mv, rd
-from sst_funcs.configuration import add_to_plan_list
+from sst_funcs.help import add_to_plan_list
 
 
 @add_to_plan_list
 def setup_ucal():
+    """Set mirrors, i0upAu, and mono to default parameters"""
     yield from setup_mirrors()
     yield from setup_manipulators()
     yield from setup_mono()
@@ -21,8 +22,18 @@ def setup_mirrors():
     # pitch: -0.625
     # roll: 1.44e-5
 
-    yield from mv(mir4.x, 30, mir4.y, 0, mir4.z, 0.00199, mir4.yaw, 2.504, mir4.pitch, -0.625, mir4.roll, -0.0001666)
-
+    yield from mv(mir4.x, 30)
+    yield from mv(mir4.y, 0)
+    yield from mv(mir4.z, 0.00199)
+    yield from mv(mir4.yaw, 2.504)
+    yield from mv(mir4.pitch, -0.625)
+    yield from mv(mir4.roll, -0.0001666)
+    yield from mv(mir3.x, 26.5)
+    yield from mv(mir3.y, 18)
+    yield from mv(mir3.z, 0)
+    yield from mv(mir3.pitch, 7.8)
+    yield from mv(mir3.yaw, 0)
+    yield from mv(mir3.roll, 0)
 
 def setup_manipulators():
     yield from mv(i0upAu, 78)

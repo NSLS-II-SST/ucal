@@ -158,7 +158,7 @@ tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"
 
 @add_to_scan_list
 def take_dark_counts():
-    
+    """Take dark counts to zero current-amplifiers"""
     dc = DocumentCache()
 
     @subs_decorator(dc)
@@ -185,7 +185,6 @@ def take_dark_counts():
             yield from open_shutter()
     return (yield from inner())
 
-@add_to_scan_list
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
     @run_decorator(md={"scantype": "noise"})
@@ -203,7 +202,7 @@ def tes_take_noise():
     return uid
 
 
-@add_to_plan_list
+
 def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
     @run_decorator(md={"scantype": "projectors"})
@@ -217,7 +216,16 @@ def tes_take_projectors():
     return (yield from inner_projectors())
 
 @add_to_plan_list
-def tes_setup():
+def tes_setup(should_take_dark_counts=True):
+    """Set up TES after cryostat cycle. Must have counts from cal sample.
+
+    should_take_dark_counts: if True, take dark counts for the other
+    detectors at the same time.
+    """
+    if should_take_dark_counts:
+        yield from close_shutter()
+        deactivate_detector('tes')
+        yield from take_dark_counts()
     activate_detector('tes', plot=True)
     yield from tes_take_noise()
     yield from tes_take_projectors()
@@ -245,8 +253,7 @@ def _make_gscan_points(*args, shift=0):
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors. 
 
-    Other detectors may be added on the fly via
-    extra_dets
+    Other detectors may be added via extra_dets
 
     motor : The motor object to scan
     args : start, stop1, step1, stop2, step2, ...
@@ -260,12 +267,14 @@ def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
 
 @add_to_scan_list
 def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
+    """Take energy calibration for TES. Moves to specified sample"""
     yield from sample_move(0, 0, 45, sampleid)
     return (yield from tes_calibrate_inplace(time, exposure_time_s, energy=energy, md=md))
 
 
 @add_to_scan_list
 def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
+    """Take energy calibration for TES. Does not move sample"""
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
     yield from mv(en.energy, energy)
@@ -299,4 +308,6 @@ def xas_factory(energy_grid, edge, name):
 
     inner.__qualname__ = name
     inner.__name__ = name
+    inner._edge = edge
+    inner._short_doc = f"Do XAS for {edge} from {energy_grid[0]} to {energy_grid[-2]}"
     return inner

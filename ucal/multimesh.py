@@ -1,4 +1,5 @@
 from sst_base.sampleholder import SampleHolder, make_1d_bar
+from sst_funcs.help import add_to_plan_list
 from bluesky.plan_stubs import abs_set, mv
 from .instantiation import findAndLoadDevice
 
@@ -29,21 +30,18 @@ ref_dict = {"c": 0, "n": 3, "o": 6, "f": 2, "ca": 2,
 
 
 def set_ref(refid):
-    """
-    Moves multimesh to a selected sample id
+    """Moves multimesh to a selected sample id
 
     refid : sampleid for refholder
     """
     yield from abs_set(refholder, refid, origin="center")
     yield from mv(multimesh, 0)
 
-
+@add_to_plan_list
 def set_edge(edge):
-    """
-    Moves multimesh to a sample that is appropriate for the requested
-    x-ray edge
+    f"""Moves multimesh to a sample that is appropriate for the requested X-ray edge
 
-    edge : Element edge from ref_dict (c, n, o, etc)
+    edge : Element edge -- one of {ref_dict.keys()}
     if not found, defaults to CrFeCoNi sample
     """
     refid = ref_dict.get(edge.lower(), 6)

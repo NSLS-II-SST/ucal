@@ -18,12 +18,15 @@ detectors:
   i0:
     prefix: "XF:07ID-BI[ADC:2-Ch:0]"
     name: "ucal_i0up"
+    rescale: -1
   ref:
     prefix: "XF:07ID-BI[ADC:1-Ch:5]"
     name: "ucal_ref"
+    rescale: -1
   sc:
     prefix: "XF:07ID-BI[ADC:2-Ch:1]"
     name: "ucal_sc"
+    rescale: -1
   i0mir:
     _target_: sst_base.detectors.scalar.I400SingleCh
     prefix: "XF:07ID-BI{DM7:I400-1}:IC3_MON"
@@ -32,7 +35,7 @@ detectors:
     prefix: "XF:07ID-BI[ADC:2-Ch:2]"
     name: "m4cd"
   dm7diode:
-    prefix: "XF:07ID-BI[ADC:2-Ch:3]",
+    prefix: "XF:07ID-BI[ADC:2-Ch:3]"
     name: "dm7diode"
   tes:
     _target_: sst_tes.mca_tes.TESMCA
@@ -88,7 +91,7 @@ diode:
     name: "Shutter Open with Watcher"
 energy:
   energy:
-    _target_: sst_hw.new_energy.NewEnPos
+    _target_: ucal.new_energy.NewEnPos
     prefix: ""
     name: "en"
 gatevalves:
@@ -218,6 +221,10 @@ signals:
   sst_control:
     prefix: "XF:07ID1-CT{Bl-Ctrl}Endstn-Sel"
     name: "SST endstation in Control"
+    string: True
+  ring_status:
+    prefix: "SR-OPS{}Mode-Sts"
+    name: "NSLS-II Ring Status"
     string: True
 vacuum:
   _default:

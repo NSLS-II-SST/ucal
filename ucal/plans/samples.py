@@ -20,7 +20,7 @@ add_status("SAMPLE_SELECTED", GLOBAL_SELECTED)
 
 def read_sample_csv(filename):
     with open(filename, 'r') as f:
-        sampleReader = csv.reader(f)
+        sampleReader = csv.reader(f, skipinitialspace=True)
         samplelist = [row for row in sampleReader]
         rownames = [n for n in samplelist[0] if n != ""]
         #rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
@@ -88,8 +88,7 @@ def load_samples(filename):
 
 @add_to_plan_list
 def set_side(side_num):
-    """
-    Set sample to side, origin edge
+    """Set sample to side, origin edge
     side_num : int
     """
     sampleid = f"side{side_num}"
@@ -113,7 +112,15 @@ def set_sample_center(sampleid):
 def set_sample_edge(sampleid):
     yield from set_sample(sampleid, origin='edge')
 
-
+@add_to_plan_list
+def print_selected_sample():
+    """Print info about the currently selected sample"""
+    if GLOBAL_SELECTED.get("sample_id", None) is not None:
+        print(f"Current sample id: {GLOBAL_SELECTED['sample_id']}")
+        print(f"Current sample name: {GLOBAL_SELECTED.get('sample_name', '')}")
+    else:
+        print(f"No sample currently selected")
+        
 @add_to_plan_list
 def sample_move(x, y, r, sampleid=None, **kwargs):
     """Move to a specified point on a sample"""
@@ -124,6 +131,8 @@ def sample_move(x, y, r, sampleid=None, **kwargs):
 
 @add_to_func_list
 def list_samples():
+    """List the currently loaded samples"""
+    
     print("Samples loaded in sampleholder")
     for v in sampleholder.sample_md.values():
         if v['sample_id'] == 'null':

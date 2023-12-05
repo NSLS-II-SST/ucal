@@ -16,7 +16,7 @@ if STATION_NAME == "sst_sim":
     proposal_dir = "/tmp/proposals/{year}-{cycle}/pass-{proposal}"
 elif STATION_NAME == "ucal":
     beamline_config_dir = "/nsls2/data/sst/shared/config/ucal/beamline_config"
-    beamline_dir = "/home/xf07id/Documents/{}_beamtime"
+    beamline_dir = "/home/xf07id1/Documents/{}_beamtime"
     proposal_dir = "/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
 
 beamline_config = PersistentDict(beamline_config_dir)
@@ -53,7 +53,7 @@ def configure_beamline(proposal, year, cycle):
     beamline_config['beamtime_directory'] = bdir
     chdir(bdir)
 
-
+@add_to_func_list
 def get_proposal_directory(proposal, year, cycle):
     # return f"/nsls2/data/sst/proposals/{year}-{cycle}/pass-{proposal}"
     return proposal_dir.format(proposal=proposal, year=year, cycle=cycle)

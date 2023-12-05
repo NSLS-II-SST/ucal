@@ -5,7 +5,8 @@ from ucal.multimesh import set_ref
 from sst_funcs.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from sst_funcs.plans.maximizers import find_max
 from bluesky.plans import rel_scan
-from sst_funcs.configuration import add_to_plan_list
+from sst_funcs.help import add_to_plan_list
+from ucal.plans.configuration import setup_mono
 from ucal.shutters import psh4
 
 
@@ -22,7 +23,7 @@ def base_grating_to_250():
     #yield from bps.mv(mirror2.user_offset, 0.04) #0.0315)
     #yield from bps.mv(grating.user_offset, -0.0874)#-0.0959)
     yield from bps.mv(en.m3offset, 7.91)
-    yield from bps.mv(mono_en.cff, 1.52)
+    yield from bps.mv(mono_en.cff, 1.5)
     yield from bps.mv(en, 270)
     yield from psh4.open()
     print("the grating is now at 250 l/mm signifigant higher order")
@@ -108,6 +109,7 @@ def tune_1200():
 
 @add_to_plan_list
 def tune_grating():
+    """Tune grating offsets, should be run after grating change automatically"""
     grating = yield from bps.rd(en.monoen.gratingx.readback)
     if "250l/mm" in grating:
         yield from tune_250()
@@ -118,12 +120,18 @@ def tune_grating():
     
 @add_to_plan_list
 def change_grating(grating, tune=True):
+    """Change to specified grating, optionally tune afterwards
+
+    grating: either 250 or 1200
+    tune: if True, calibrate grating offsets after change"""
     if grating == 250:
         yield from base_grating_to_250()
+        yield from setup_mono()
         if tune:
             yield from tune_250()
     elif grating == 1200:
         yield from base_grating_to_1200()
+        yield from setup_mono()
         if tune:
             yield from tune_1200()
     else:
