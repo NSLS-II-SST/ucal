@@ -93,7 +93,7 @@ add_motor(manipz, "Manipulator Z", "manipz")
 add_motor(manipr, "Manipulator R", "manipr")
 add_motor(tesz, "TES Position", "tesz")
 add_motor(eslit, "Exit Slit", "eslit")
-add_motor(i0upAu, "I0 gold mesh")
+add_motor(i0upAu, "I0 gold mesh", "i0upAu")
 
 """
 Disabled 20211013, too complex for testing, unnecessary

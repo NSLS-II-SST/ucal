@@ -120,6 +120,7 @@ signals:
     prefix: "SIM_SST:current"
     name: "NSLS-II Ring Current"
   sst_control:
+    _target_: ophyd.EpicsSignal
     prefix: "SIM_SST:Endstn-Sel"
     name: "Endstation in Control"
     string: True

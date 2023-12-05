@@ -1,4 +1,5 @@
 from bluesky.plan_stubs import mv, mvr, abs_set
+from bluesky.plan_stubs import mv as move
 # startup sequence for beamline
 import ucal.motors as ucal_motors
 import ucal.mirrors as ucal_mirrors

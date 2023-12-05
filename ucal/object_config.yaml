@@ -32,7 +32,7 @@ detectors:
     prefix: "XF:07ID-BI[ADC:2-Ch:2]"
     name: "m4cd"
   dm7diode:
-    prefix: "XF:07ID-BI[ADC:2-Ch:3]",
+    prefix: "XF:07ID-BI[ADC:2-Ch:3]"
     name: "dm7diode"
   tes:
     _target_: sst_tes.mca_tes.TESMCA
