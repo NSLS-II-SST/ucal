@@ -1,5 +1,6 @@
-from .scan_base import xas_factory
+from .scan_base import wrap_xas, tes_gscan, xas_factory
 from ucal.queueserver import add_status
+from sst_funcs.help import add_to_xas_list
 from ucal.status import StatusDict
 
 GLOBAL_XAS_PLANS = StatusDict()
@@ -27,23 +28,33 @@ _default_regions = {"Na": [1055, 1065, 1, 1070, 0.2, 1080, 0.1, 1100, 0.2, 1140,
                           0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2],
                     "Sr": [245, 255, 1, 260, 0.5, 265, 0.2, 290, 0.1, 300, 0.2, 310, 0.4, 320, 1]}
 
+_short_regions = {"C": [270, 278, 0.5, 282, 0.1, 287.5, 0.05, 290,
+                        0.1, 300, 0.2, 310, 0.4, 320, 0.5],
+                  "O": [515, 520, 0.5, 526, 0.2, 535, 0.05, 545,
+                        0.1, 555, 0.5]}
 
 #def extend_region(energy_region):
+# Time info:
+# C:
+# N:
+# O: 10
+# Fe:
+# Co:
+# Ni:
+# Ce: 7:30
+# Cu: 4:30
+# Zn: 6:30
 
-_short_regions = {"C": [270, 278, 0.5, 282, 0.1, 287.5, 0.05, 290,
-                        0.1, 300, 0.2, 310, 0.4, 320, 0.5]}
 
 for e, region in _default_regions.items():
     name = f"{e.lower()}_xas"
-    globals()[name] = xas_factory(region, e, name)
+    add_to_xas_list(xas_factory(region, e, name))
     GLOBAL_XAS_PLANS[e] = name
 
 add_status("XAS_PLANS", GLOBAL_XAS_PLANS)
 
 for e, region in _short_regions.items():
     name = f"{e.lower()}_short_xas"
-    globals()[name] = xas_factory(region, e, name)
-
+    add_to_xas_list(xas_factory(region, e, name))
 
 c_ru_xas = xas_factory([260, 263, 1, 282, 0.5, 292, 0.1, 300, 0.2, 310, 0.4, 320, 0.5, 350, 2], 'C', 'c_ru_xas')
-
