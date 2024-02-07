@@ -51,26 +51,6 @@ def list_motors(describe=False):
     boxed_text(title, text, "white")
 
 
-"""
-if STATION_NAME == "sst_sim":
-    from sst_common_sim.api import (manipulator,
-                                    manipx, manipy, manipz, manipr,
-                                    samplex, sampley, samplez, sampler)#,
-                                    #multimesh)
-    from sst_common_sim.motors import tesz, eslit, i0upAu
-elif STATION_NAME == "ucal":
-    from ucal_hw.motors import tesz
-    from ucal_hw.manipulator import (manipulator,
-                                     manipx, manipy, manipz, manipr,
-                                     samplex, sampley, samplez, sampler)
-    from sst_hw.motors import Exit_Slit as eslit, i0upAu
-
-    from sst_hw.diagnostic import dm7
-    from sst_hw.manipulator import multimesh
-    eslit.name = "eslit"
-"""
-#Manipulator(None, "XF:07ID1-BI{UCAL-Ax:", origin=manip_origin,
-#                          name="manip")
 manipulator = findAndLoadDevice("manipulator")
 
 manipx = manipulator.x
@@ -94,23 +74,3 @@ add_motor(manipr, "Manipulator R", "manipr")
 add_motor(tesz, "TES Position", "tesz")
 add_motor(eslit, "Exit Slit", "eslit")
 add_motor(i0upAu, "I0 gold mesh", "i0upAu")
-
-"""
-Disabled 20211013, too complex for testing, unnecessary
-    motors = [samplex, sampley, samplez, sampler]
-
-    return SimpleNamespace(samplex=samplex,
-                           sampley=sampley,
-                           samplez=samplez,
-                           sampler=sampler,
-                           framex=framex,
-                           framey=framey,
-                           framez=framez,
-                           framer=framer,
-                           manipulator=manipulator,
-                           sample_holder=sample_holder,
-                           motors=motors)
-
-
-globals().update(_motors().__dict__)
-"""

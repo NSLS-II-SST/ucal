@@ -17,7 +17,7 @@ from ucal.plans.plan_stubs import (
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.sampleholder import sampleholder
 from ucal.motors import eslit as energy_slit
-from ucal.plans.samples import sample_move
+from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge, refholder
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_plan_list, add_to_scan_list
@@ -32,12 +32,12 @@ from functools import wraps
 
 def beamline_setup(func):
     @wraps(func)
-    def inner(*args, sample=None, eslit=None, dwell=None, **kwargs):
+    def inner(*args, sample=None, eslit=None, **kwargs):
         if sample is not None:
             yield from sample_move(0, 0, 45, sample)
         if eslit is not None:
             yield from mv(energy_slit, eslit)
-        return (yield from func(*args, exposure_time_s=dwell, **kwargs))
+        return (yield from func(*args, **kwargs))
 
     return inner
 
@@ -49,7 +49,6 @@ def wrap_xas_setup(element):
             if auto_setup_xas:
                 yield from set_edge(element)
             return (yield from func(*args, **kwargs))
-
         return inner
 
     return decorator
@@ -62,33 +61,91 @@ def wrap_xas(element):
                 wrap_xas_setup(element)(func)
             )
         )
-
     return decorator
 
 
 def get_detector_plot_hints():
     plot_y_md = []
-    plot_mca_md = []
+    plot_array_md = []
+    plot_image_md = []
     style_hints = {}
     for detector in GLOBAL_PLOT_DETECTORS:
         if hasattr(detector, "plot_hints"):
             h = detector.plot_hints()
             plot_y_md += h.get("y", [])
-            plot_mca_md += h.get("mca", [])
+            plot_array_md += h.get("array", [])
+            plot_image_md += h.get("image", [])
             style_hints.update(h.get("style_hints", {}))
         else:
             plot_y_md += detector.hints.get("fields", [])
-    return plot_y_md, plot_mca_md, style_hints
+    return plot_y_md, plot_array_md, plot_image_md, style_hints
+
+
+def _ucal_add_processing_md(func):
+    @wraps(func)
+    def _inner(*args, md=None, **kwargs):
+        md = md or {}
+        _md = {}
+        if "last_cal" in beamline_config:
+            _md["last_cal"] = beamline_config["last_cal"]
+        if "last_noise" in beamline_config:
+            _md["last_noise"] = beamline_config["last_noise"]
+        _md.update(md)
+        return (yield from func(*args, md=_md, **kwargs))
+    return _inner
+
+
+def _sst_setup_detectors(func):
+    @wraps(func)
+    def _inner(*args, extra_dets=[], dwell=None, **kwargs):
+        # Should check for redundancy
+        for det in extra_dets:
+            activate_detector(det, plot=True)
+
+        yield from set_exposure(dwell)
+
+        ret = yield from func(*args, **kwargs)
+
+        for det in extra_dets:
+            deactivate_detector(det)
+
+        return ret
+    return _inner
+
+
+def _sst_add_plot_md(func):
+    @wraps(func)
+    def _inner(*args, md=None, **kwargs):
+        md = md or {}
+        plot_hints = {"default": [], "auxiliary": []}
+        for det in GLOBAL_ACTIVE_DETECTORS:
+            if det in GLOBAL_PLOT_DETECTORS:
+                plot_hints['default'].append(det.name)
+            else:
+                plot_hints['auxiliary'].append(det.name)
+        _md = {'plot_hints': plot_hints}
+        _md.update(md)
+        return (yield from func(*args, md=_md, **kwargs))
+    return _inner
+
+
+def _sst_add_sample_md(func):
+    @wraps(func)
+    def _inner(*args, md=None, **kwargs):
+        md = md or {}
+        _md = {"sample_name": GLOBAL_SELECTED.get("name", ""),
+               "sample_id": GLOBAL_SELECTED.get("sample_id", ""),
+               "sample_desc": GLOBAL_SELECTED.get("description", ""),
+               "sample_set": GLOBAL_SELECTED.get("group", "")}
+        _md.update(md)
+        return (yield from func(*args, md=_md, **kwargs))
+    return _inner
 
 
 @add_to_scan_list
 @beamline_setup
 def tes_count(
     *args,
-    extra_dets=[],
-    exposure_time_s=None,
-    md=None,
-    plot_hints=None,
     **kwargs,
 ):
     """Count for a specified number of points
@@ -106,33 +163,15 @@ def tes_count(
     motor = dummymotor()
     scanex = ScanExfiltrator(motor, en.energy.position)
     tes.scanexfiltrator = scanex
-    for det in extra_dets:
-        activate_detector(det, plot=True)
 
-    yield from set_exposure(exposure_time_s)
+    @_ucal_add_processing_md
+    @_sst_setup_detectors
+    @_sst_add_sample_md
+    @_sst_add_plot_md
+    def _inner(*args, **kwargs):
+        yield from bp.count(*args, **kwargs)
 
-    md = md or {}
-    plot_hints = plot_hints or {}
-    _md = {
-        "sample_args": sampleholder.sample.read(),
-        "ref_args": refholder.sample.read(),
-        "sample_md": sampleholder.current_sample_md(),
-    }
-    if "last_cal" in beamline_config:
-        _md["last_cal"] = beamline_config["last_cal"]
-    if "last_noise" in beamline_config:
-        _md["last_noise"] = beamline_config["last_noise"]
-    yhints, mcahints, stylehints = get_detector_plot_hints()
-    _plot_hints = {"x": ["time"], "y": yhints, "mca": mcahints, "style": stylehints}
-    _plot_hints.update(plot_hints)
-    _md["plot_hints"] = _plot_hints
-
-    _md.update(md)
-
-    ret = yield from bp.count(GLOBAL_ACTIVE_DETECTORS, *args, md=_md, **kwargs)
-
-    for det in extra_dets:
-        deactivate_detector(det)
+    ret = yield from _inner(GLOBAL_ACTIVE_DETECTORS, *args, **kwargs)
 
     return ret
 
@@ -142,58 +181,16 @@ tes_count.__doc__ += bp.count.__doc__
 
 def _tes_plan_wrapper(plan_function, plan_name):
     @beamline_setup
-    def _inner(
-        motor,
-        *args,
-        extra_dets=[],
-        sample=None,
-        exposure_time_s=None,
-        md=None,
-        plot_hints=None,
-        **kwargs,
-    ):
+    @_ucal_add_processing_md
+    @_sst_setup_detectors
+    @_sst_add_sample_md
+    @_sst_add_plot_md
+    def _inner(motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-
-        for det in extra_dets:
-            activate_detector(det, plot=True)
-
-        yield from set_exposure(exposure_time_s)
-
-        md = md or {}
-        plot_hints = plot_hints or {}
-        """
-        idea for more simple scheme...
-        _md = {"sample_name": sampleholder.sample.sample_name.get(),
-               "sample_id": sampleholder.sample.sample_id.get(),
-               "sample_side": sampleholder.sample.side.get(),
-               "sample_origin": sampleholder.sample.origin.get()}
-        """
-        _md = {
-            "sample_args": sampleholder.sample.read(),
-            "ref_args": refholder.sample.read(),
-            "sample_md": sampleholder.current_sample_md(),
-        }
-        if "last_cal" in beamline_config:
-            _md["last_cal"] = beamline_config["last_cal"]
-        if "last_noise" in beamline_config:
-            _md["last_noise"] = beamline_config["last_noise"]
-        yhints, mcahints, stylehints = get_detector_plot_hints()
-        _plot_hints = {
-            "x": motor.hints.get("fields", []),
-            "y": yhints,
-            "mca": mcahints,
-            "style": stylehints,
-        }
-        _plot_hints.update(plot_hints)
-        _md["plot_hints"] = _plot_hints
-        _md.update(md)
         ret = yield from plan_function(
-            GLOBAL_ACTIVE_DETECTORS, motor, *args, md=_md, **kwargs
+            GLOBAL_ACTIVE_DETECTORS, motor, *args, **kwargs
         )
-
-        for det in extra_dets:
-            deactivate_detector(det)
 
         return ret
 
@@ -352,7 +349,7 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
     cal_uid = yield from tes_count(
-        int(time // exposure_time_s), exposure_time_s=exposure_time_s, md=_md
+        int(time // exposure_time_s), dwell=exposure_time_s, md=_md
     )
     yield from mv(tes.cal_flag, False)
     beamline_config["last_cal"] = cal_uid

@@ -117,7 +117,7 @@ def print_selected_sample():
     """Print info about the currently selected sample"""
     if GLOBAL_SELECTED.get("sample_id", None) is not None:
         print(f"Current sample id: {GLOBAL_SELECTED['sample_id']}")
-        print(f"Current sample name: {GLOBAL_SELECTED.get('sample_name', '')}")
+        print(f"Current sample name: {GLOBAL_SELECTED.get('name', '')}")
     else:
         print(f"No sample currently selected")
         

@@ -1,5 +1,3 @@
-from . import STATION_NAME
-
 from ophyd import Device
 from sst_funcs.help import add_to_func_list
 from sst_funcs.printing import boxed_text

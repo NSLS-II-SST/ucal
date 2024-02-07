@@ -40,7 +40,7 @@ def find_r_offset():
     yield from mv(manipr, minr)
     minr2 = yield from find_min_r(0.5, 9)
     return minr2
-    
+
 def find_beam_x_offset():
     tes_pos = yield from rd(tesz)
     if tes_pos < 40:
