@@ -6,8 +6,8 @@ import uuid
 from datetime import datetime
 from os.path import join, exists
 from os import mkdir, chdir
-from ucal.status import StatusDict
-from ucal.queueserver import add_status
+from sst_funcs.status import StatusDict
+from sst_funcs.queueserver import add_status
 from . import STATION_NAME
 
 if STATION_NAME == "sst_sim":

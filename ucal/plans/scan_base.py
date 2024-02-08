@@ -5,7 +5,6 @@ from ucal.detectors import (
     activate_detector,
     deactivate_detector,
 )
-from ucal.shutters import psh10
 from ucal.energy import en
 from ucal.plans.plan_stubs import (
     call_obj,
@@ -15,10 +14,9 @@ from ucal.plans.plan_stubs import (
     is_shutter_open,
 )
 from ucal.scan_exfiltrator import ScanExfiltrator
-from ucal.sampleholder import sampleholder
 from ucal.motors import eslit as energy_slit
 from ucal.plans.samples import sample_move, GLOBAL_SELECTED
-from ucal.multimesh import set_edge, refholder
+from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, sleep
@@ -104,7 +102,7 @@ def _sst_setup_detectors(func):
 
         yield from set_exposure(dwell)
 
-        ret = yield from func(*args, **kwargs)
+        ret = yield from func(GLOBAL_ACTIVE_DETECTORS, *args, **kwargs)
 
         for det in extra_dets:
             deactivate_detector(det)
@@ -142,6 +140,16 @@ def _sst_add_sample_md(func):
     return _inner
 
 
+def sst_base_scan_decorator(func):
+    @wraps(func)
+    @_sst_setup_detectors
+    @_sst_add_sample_md
+    @_sst_add_plot_md
+    def _inner(*args, **kwargs):
+        return (yield from func(*args, **kwargs))
+    return _inner
+
+
 @add_to_scan_list
 @beamline_setup
 def tes_count(
@@ -165,13 +173,11 @@ def tes_count(
     tes.scanexfiltrator = scanex
 
     @_ucal_add_processing_md
-    @_sst_setup_detectors
-    @_sst_add_sample_md
-    @_sst_add_plot_md
+    @sst_base_scan_decorator
     def _inner(*args, **kwargs):
         yield from bp.count(*args, **kwargs)
 
-    ret = yield from _inner(GLOBAL_ACTIVE_DETECTORS, *args, **kwargs)
+    ret = yield from _inner(*args, **kwargs)
 
     return ret
 
@@ -182,14 +188,12 @@ tes_count.__doc__ += bp.count.__doc__
 def _tes_plan_wrapper(plan_function, plan_name):
     @beamline_setup
     @_ucal_add_processing_md
-    @_sst_setup_detectors
-    @_sst_add_sample_md
-    @_sst_add_plot_md
-    def _inner(motor, *args, **kwargs):
+    @sst_base_scan_decorator
+    def _inner(dets, motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(
-            GLOBAL_ACTIVE_DETECTORS, motor, *args, **kwargs
+            dets, motor, *args, **kwargs
         )
 
         return ret
