@@ -1,13 +1,12 @@
 import bluesky.plan_stubs as bps
 from ucal.energy import en
-from ucal.detectors import ref
+from sst_funcs import ref, psh4
 from ucal.multimesh import set_ref
 from sst_funcs.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from sst_funcs.plans.maximizers import find_max
 from bluesky.plans import rel_scan
 from sst_funcs.help import add_to_plan_list
 from ucal.plans.configuration import setup_mono
-from ucal.shutters import psh4
 
 
 def base_grating_to_250():

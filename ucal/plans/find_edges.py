@@ -1,17 +1,20 @@
 import numpy as np
 from ucal.motors import manipx, manipy, manipz, manipr
-from ucal.detectors import GLOBAL_ACTIVE_DETECTORS, sc, thresholds
+#from ucal.detectors import sc, thresholds
+from sst_funcs.motors import get_motor
+from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_DETECTOR_THRESHOLDS
 from sst_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive, find_halfmax
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
-from ucal.plans.flyscan_base import fly_scan
+from sst_funcs.plans.flyscan_base import fly_scan
 
 # This should go into a beamline config file at some point
-max_channel = sc.name
+max_channel = "ucal_sc"
 # If we have a drain current detector on the manipulator,
 # as opposed to a detector that the manipulator shadows,
 # we will need to invert some of the maximum finding routines
 detector_on_manip = True
+
 
 
 def scan_z_offset(zstart, zstop, step_size):
@@ -131,11 +134,11 @@ def find_edge_adaptive(dets, motor, step, precision, max_channel=None):
         detname = dets[0].name
     else:
         detname = max_channel
-    if detname not in thresholds:
+    if detname not in GLOBAL_DETECTOR_THRESHOLDS:
         raise KeyError(f"{detname} has no threshold value and cannot be"
                        "used with an adaptive plan")
     thres_pos = yield from threshold_adaptive(dets, motor,
-                                              thresholds[detname],
+                                              GLOBAL_DETECTOR_THRESHOLDS[detname],
                                               step=step, max_channel=max_channel)
     yield from mvr(motor, step)
     return (yield from halfmax_adaptive(dets, motor, -1*step,
@@ -150,7 +153,6 @@ def find_z_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
-
     return (yield from find_edge_adaptive(GLOBAL_ACTIVE_DETECTORS, manipz, step, precision,
                                           max_channel=max_channel))
 
@@ -182,11 +184,11 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
         detname = dets[0].name
     else:
         detname = max_channel
-    if detname not in thresholds:
+    if detname not in GLOBAL_DETECTOR_THRESHOLDS:
         raise KeyError(f"{detname} has no threshold value and cannot be"
                        "used with an adaptive plan")
     thres_pos = yield from threshold_adaptive(dets, motor,
-                                              thresholds[detname],
+                                              GLOBAL_DETECTOR_THRESHOLDS[detname],
                                               step=step, max_channel=max_channel)
     yield from mv(motor, thres_pos + start)
     if fly:

@@ -1,10 +1,11 @@
+from sst_funcs import multimesh
 from sst_base.sampleholder import SampleHolder, make_1d_bar
 from sst_funcs.help import add_to_plan_list
 from bluesky.plan_stubs import abs_set, mv
-from .instantiation import findAndLoadDevice
+#from .instantiation import findAndLoadDevice
 
 
-multimesh = findAndLoadDevice("multimesh")
+#multimesh = findAndLoadDevice("multimesh")
 
 refholder = SampleHolder(manipulator=multimesh, name="i0up_multimesh")
 geometry = make_1d_bar(160)
@@ -36,6 +37,7 @@ def set_ref(refid):
     """
     yield from abs_set(refholder, refid, origin="center")
     yield from mv(multimesh, 0)
+
 
 @add_to_plan_list
 def set_edge(edge):

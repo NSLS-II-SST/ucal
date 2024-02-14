@@ -1,6 +1,5 @@
-
-from .signals import ring_current
-from .shutters import psh4, psh1, psh10, psh7
+from sst_funcs import ring_current
+from sst_funcs import psh4, psh1, psh10, psh7
 from bluesky.suspenders import SuspendBoolHigh, SuspendFloor, SuspendCeil, SuspendBoolLow, SuspendWhenChanged
 
 suspend_current = SuspendFloor(

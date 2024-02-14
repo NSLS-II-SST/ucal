@@ -1,6 +1,7 @@
 from bluesky.plan_stubs import mv, mvr
 # from bluesky.utils import Msg
-from ucal.motors import manipx, manipz, manipr, manipulator, tesz
+from ucal.motors import manipx, manipz, manipr, manipulator
+from sst_funcs import tesz
 from ucal.plans.find_edges import (scan_r_coarse, scan_r_medium,
                                           scan_x_coarse, scan_x_medium, scan_x_fine,
                                           find_x_offset, find_z_offset, find_x_adaptive,
@@ -9,6 +10,7 @@ from ucal.plans.samples import set_side, sample_move
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_plan_list
+from sst_funcs.motors import get_motor
 from sst_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 from sst_funcs.printing import boxed_text
 from bluesky.plan_stubs import rd

@@ -7,15 +7,8 @@ from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
 import csv
 import copy
-from ucal.status import StatusDict
-from ucal.queueserver import add_status
+from sst_funcs.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED
 #filename = "../../examples/sample_load.csv"
-
-GLOBAL_SAMPLES = StatusDict()
-GLOBAL_SELECTED = StatusDict()
-
-add_status("SAMPLE_LIST", GLOBAL_SAMPLES)
-add_status("SAMPLE_SELECTED", GLOBAL_SELECTED)
 
 
 def read_sample_csv(filename):
@@ -120,7 +113,7 @@ def print_selected_sample():
         print(f"Current sample name: {GLOBAL_SELECTED.get('name', '')}")
     else:
         print(f"No sample currently selected")
-        
+
 @add_to_plan_list
 def sample_move(x, y, r, sampleid=None, **kwargs):
     """Move to a specified point on a sample"""

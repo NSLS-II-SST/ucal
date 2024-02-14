@@ -1,5 +1,6 @@
-from ucal.mirrors import mir4, mir3
-from ucal.motors import manipz, i0upAu
+#from ucal.mirrors import mir4, mir3
+from sst_funcs import mir3, mir4, i0upAu
+from ucal.motors import manipz
 from ucal.energy import en
 from bluesky.plan_stubs import mv, rd
 from sst_funcs.help import add_to_plan_list
@@ -35,6 +36,7 @@ def setup_mirrors():
     yield from mv(mir3.yaw, 0)
     yield from mv(mir3.roll, 0)
 
+
 def setup_manipulators():
     yield from mv(i0upAu, 78)
 
@@ -43,7 +45,7 @@ def setup_mono():
     """
     Sane default mono parameters
     """
-    
+
     grating = yield from rd(en.monoen.gratingx.readback)
     mono = en.monoen
     if "1200l/mm" in grating:

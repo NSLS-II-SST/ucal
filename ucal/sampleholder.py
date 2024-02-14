@@ -1,5 +1,6 @@
 from sst_base.sampleholder import SampleHolder
-from ucal.motors import manipulator
+from sst_funcs import manipulator
+#from ucal.motors import manipulator
 
 sampleholder = SampleHolder(manipulator=manipulator, name="ucal_sampleholder")
 sampleholder.sample.sample_name.name = "sample_name"

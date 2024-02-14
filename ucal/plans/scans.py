@@ -1,9 +1,9 @@
 from .scan_base import wrap_xas, tes_gscan, xas_factory
-from ucal.queueserver import add_status
+from sst_funcs.queueserver import add_status
 from sst_funcs.help import add_to_xas_list
-from ucal.status import StatusDict
+from sst_funcs.globalVars import GLOBAL_XAS_PLANS
+from sst_funcs.status import StatusDict
 
-GLOBAL_XAS_PLANS = StatusDict()
 
 _default_regions = {"Na": [1055, 1065, 1, 1070, 0.2, 1080, 0.1, 1100, 0.2, 1140, 1.0],
                     "Zn": [1010, 1015, 0.5, 1030, 0.125, 1040, 0.2, 1060,

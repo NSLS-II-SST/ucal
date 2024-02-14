@@ -1,16 +1,10 @@
-from bluesky import Msg
+from sst_funcs.plans.plan_stubs import call_obj
+from sst_funcs.help import add_to_plan_list
 from bluesky.plan_stubs import rd, mv
 from ucal.motors import manipulator
-from ucal.shutters import psh7
-from ucal.detectors import GLOBAL_ACTIVE_DETECTORS
-from sst_funcs.help import add_to_plan_list
-import warnings
 
-GLOBAL_EXPOSURE_TIME = 1.0
+#from ucal.shutters import psh7
 
-def call_obj(obj, method, *args, **kwargs):
-    ret = yield Msg("call_obj", obj, *args, method=method, **kwargs)
-    return ret
 
 @add_to_plan_list
 def manipulator_to_loadlock():
@@ -29,19 +23,7 @@ def update_manipulator_side(side, *args):
     yield from call_obj(manipulator.holder, "update_side", side - 1, *args)
 
 
-@add_to_plan_list
-def set_exposure(time=None, extra_dets=[]):
-    """Sets the exposure time for all active detectors"""
-    global GLOBAL_EXPOSURE_TIME
-    if time is not None:
-        GLOBAL_EXPOSURE_TIME = time
-    for d in GLOBAL_ACTIVE_DETECTORS:
-        try:
-            if hasattr(d, "set_exposure"):
-                yield from call_obj(d, "set_exposure", GLOBAL_EXPOSURE_TIME)
-        except RuntimeError as ex:
-            warnings.warn(repr(ex), RuntimeWarning)
-
+'''
 
 @add_to_plan_list
 def open_shutter():
@@ -60,3 +42,4 @@ def is_shutter_open():
         return False
     else:
         return True
+'''

@@ -1,20 +1,19 @@
-from ucal.detectors import (
-    tes,
-    GLOBAL_ACTIVE_DETECTORS,
-    GLOBAL_PLOT_DETECTORS,
-    activate_detector,
-    deactivate_detector,
-)
-from ucal.energy import en
-from ucal.plans.plan_stubs import (
-    call_obj,
-    set_exposure,
+#from ucal.detectors import tes
+from sst_funcs import tes, Exit_Slit as energy_slit, en
+from sst_funcs.globalVars import (GLOBAL_ACTIVE_DETECTORS,
+                                  GLOBAL_PLOT_DETECTORS)
+from sst_funcs.detectors import (activate_detector,
+                                 deactivate_detector)
+#from ucal.energy import en
+from sst_funcs.plans.plan_stubs import (call_obj, set_exposure)
+from sst_funcs.plans.scan_decorators import sst_base_scan_decorator
+from sst_funcs.shutters import (
     close_shutter,
     open_shutter,
     is_shutter_open,
 )
 from ucal.scan_exfiltrator import ScanExfiltrator
-from ucal.motors import eslit as energy_slit
+#from ucal.motors import eslit as energy_slit
 from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
@@ -90,63 +89,6 @@ def _ucal_add_processing_md(func):
             _md["last_noise"] = beamline_config["last_noise"]
         _md.update(md)
         return (yield from func(*args, md=_md, **kwargs))
-    return _inner
-
-
-def _sst_setup_detectors(func):
-    @wraps(func)
-    def _inner(*args, extra_dets=[], dwell=None, **kwargs):
-        # Should check for redundancy
-        for det in extra_dets:
-            activate_detector(det, plot=True)
-
-        yield from set_exposure(dwell)
-
-        ret = yield from func(GLOBAL_ACTIVE_DETECTORS, *args, **kwargs)
-
-        for det in extra_dets:
-            deactivate_detector(det)
-
-        return ret
-    return _inner
-
-
-def _sst_add_plot_md(func):
-    @wraps(func)
-    def _inner(*args, md=None, **kwargs):
-        md = md or {}
-        plot_hints = {"default": [], "auxiliary": []}
-        for det in GLOBAL_ACTIVE_DETECTORS:
-            if det in GLOBAL_PLOT_DETECTORS:
-                plot_hints['default'].append(det.name)
-            else:
-                plot_hints['auxiliary'].append(det.name)
-        _md = {'plot_hints': plot_hints}
-        _md.update(md)
-        return (yield from func(*args, md=_md, **kwargs))
-    return _inner
-
-
-def _sst_add_sample_md(func):
-    @wraps(func)
-    def _inner(*args, md=None, **kwargs):
-        md = md or {}
-        _md = {"sample_name": GLOBAL_SELECTED.get("name", ""),
-               "sample_id": GLOBAL_SELECTED.get("sample_id", ""),
-               "sample_desc": GLOBAL_SELECTED.get("description", ""),
-               "sample_set": GLOBAL_SELECTED.get("group", "")}
-        _md.update(md)
-        return (yield from func(*args, md=_md, **kwargs))
-    return _inner
-
-
-def sst_base_scan_decorator(func):
-    @wraps(func)
-    @_sst_setup_detectors
-    @_sst_add_sample_md
-    @_sst_add_plot_md
-    def _inner(*args, **kwargs):
-        return (yield from func(*args, **kwargs))
     return _inner
 
 
