@@ -1,26 +1,37 @@
 import numpy as np
-from ucal.motors import manipx, manipy, manipz, manipr
-#from ucal.detectors import sc, thresholds
+from ucal.hw import manipx, manipy, manipz, manipr, sc
 from sst_funcs.motors import get_motor
 from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_DETECTOR_THRESHOLDS
-from sst_funcs.plans.maximizers import find_max_deriv, find_max, halfmax_adaptive, threshold_adaptive, find_halfmax
+from sst_funcs.plans.maximizers import (
+    find_max_deriv,
+    find_max,
+    halfmax_adaptive,
+    threshold_adaptive,
+    find_halfmax,
+)
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
 from sst_funcs.plans.flyscan_base import fly_scan
 
 # This should go into a beamline config file at some point
-max_channel = "ucal_sc"
+max_channel = sc.name
 # If we have a drain current detector on the manipulator,
 # as opposed to a detector that the manipulator shadows,
 # we will need to invert some of the maximum finding routines
 detector_on_manip = True
 
 
-
 def scan_z_offset(zstart, zstop, step_size):
-    nsteps = int(np.abs(zstop - zstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipz, zstart, zstop,
-                                    nsteps, max_channel=max_channel)
+    nsteps = int(np.abs(zstop - zstart) / step_size) + 1
+    ret = yield from find_max_deriv(
+        rel_scan,
+        GLOBAL_ACTIVE_DETECTORS,
+        manipz,
+        zstart,
+        zstop,
+        nsteps,
+        max_channel=max_channel,
+    )
     _, zoffset = ret[0]
     print(zoffset)
     return zoffset
@@ -42,9 +53,17 @@ def scan_r_offset(rstart, rstop, step_size):
     """
     Relative scan, find r that maximizes signal
     """
-    nsteps = int(np.abs(rstop - rstart)/step_size) + 1
-    ret = yield from find_max(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipr, rstart, rstop, nsteps,
-                              invert=detector_on_manip, max_channel=max_channel)
+    nsteps = int(np.abs(rstop - rstart) / step_size) + 1
+    ret = yield from find_max(
+        rel_scan,
+        GLOBAL_ACTIVE_DETECTORS,
+        manipr,
+        rstart,
+        rstop,
+        nsteps,
+        invert=detector_on_manip,
+        max_channel=max_channel,
+    )
     _, roffset = ret[0]
     print(roffset)
     return roffset
@@ -63,9 +82,16 @@ def scan_r_fine():
 
 
 def scan_x_offset(xstart, xstop, step_size):
-    nsteps = int(np.abs(xstop - xstart)/step_size) + 1
-    ret = yield from find_max_deriv(rel_scan, GLOBAL_ACTIVE_DETECTORS, manipx, xstart, xstop,
-                                    nsteps, max_channel=max_channel)
+    nsteps = int(np.abs(xstop - xstart) / step_size) + 1
+    ret = yield from find_max_deriv(
+        rel_scan,
+        GLOBAL_ACTIVE_DETECTORS,
+        manipx,
+        xstart,
+        xstop,
+        nsteps,
+        max_channel=max_channel,
+    )
     _, xoffset = ret[0]
     print(xoffset)
     return xoffset
@@ -135,14 +161,23 @@ def find_edge_adaptive(dets, motor, step, precision, max_channel=None):
     else:
         detname = max_channel
     if detname not in GLOBAL_DETECTOR_THRESHOLDS:
-        raise KeyError(f"{detname} has no threshold value and cannot be"
-                       "used with an adaptive plan")
-    thres_pos = yield from threshold_adaptive(dets, motor,
-                                              GLOBAL_DETECTOR_THRESHOLDS[detname],
-                                              step=step, max_channel=max_channel)
+        raise KeyError(
+            f"{detname} has no threshold value and cannot be"
+            "used with an adaptive plan"
+        )
+    thres_pos = yield from threshold_adaptive(
+        dets,
+        motor,
+        GLOBAL_DETECTOR_THRESHOLDS[detname],
+        step=step,
+        max_channel=max_channel,
+    )
     yield from mvr(motor, step)
-    return (yield from halfmax_adaptive(dets, motor, -1*step,
-                                        precision=precision, max_channel=max_channel))
+    return (
+        yield from halfmax_adaptive(
+            dets, motor, -1 * step, precision=precision, max_channel=max_channel
+        )
+    )
 
 
 def find_z_adaptive(precision=0.1, step=2):
@@ -153,8 +188,11 @@ def find_z_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
-    return (yield from find_edge_adaptive(GLOBAL_ACTIVE_DETECTORS, manipz, step, precision,
-                                          max_channel=max_channel))
+    return (
+        yield from find_edge_adaptive(
+            GLOBAL_ACTIVE_DETECTORS, manipz, step, precision, max_channel=max_channel
+        )
+    )
 
 
 def find_x_adaptive(precision=0.1, step=2):
@@ -165,8 +203,11 @@ def find_x_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
-    return (yield from find_edge_adaptive(GLOBAL_ACTIVE_DETECTORS, manipx, step, precision,
-                                          max_channel=max_channel))
+    return (
+        yield from find_edge_adaptive(
+            GLOBAL_ACTIVE_DETECTORS, manipx, step, precision, max_channel=max_channel
+        )
+    )
 
 
 def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True):
@@ -185,19 +226,34 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
     else:
         detname = max_channel
     if detname not in GLOBAL_DETECTOR_THRESHOLDS:
-        raise KeyError(f"{detname} has no threshold value and cannot be"
-                       "used with an adaptive plan")
-    thres_pos = yield from threshold_adaptive(dets, motor,
-                                              GLOBAL_DETECTOR_THRESHOLDS[detname],
-                                              step=step, max_channel=max_channel)
+        raise KeyError(
+            f"{detname} has no threshold value and cannot be"
+            "used with an adaptive plan"
+        )
+    thres_pos = yield from threshold_adaptive(
+        dets,
+        motor,
+        GLOBAL_DETECTOR_THRESHOLDS[detname],
+        step=step,
+        max_channel=max_channel,
+    )
     yield from mv(motor, thres_pos + start)
     if fly:
-        ret = (yield from find_halfmax(fly_scan, dets, motor, thres_pos + start, thres_pos + stop,
-                                       max_channel=max_channel, period=0.2))
+        ret = yield from find_halfmax(
+            fly_scan,
+            dets,
+            motor,
+            thres_pos + start,
+            thres_pos + stop,
+            max_channel=max_channel,
+            period=0.2,
+        )
     else:
-        ret = (yield from find_halfmax(rel_scan, dets, motor, 0, stop - start, points,
-                                       max_channel=max_channel))
+        ret = yield from find_halfmax(
+            rel_scan, dets, motor, 0, stop - start, points, max_channel=max_channel
+        )
     return ret[0][1]
+
 
 def find_x(invert=False, precision=0.1):
     print("Finding x edge position")
@@ -209,8 +265,19 @@ def find_x(invert=False, precision=0.1):
         step = 1
         start = -2
         stop = 2
-    points = int(np.abs(start - stop)/precision) + 1
-    return (yield from find_edge(GLOBAL_ACTIVE_DETECTORS, manipx, step, start, stop, points, max_channel=max_channel))
+    points = int(np.abs(start - stop) / precision) + 1
+    return (
+        yield from find_edge(
+            GLOBAL_ACTIVE_DETECTORS,
+            manipx,
+            step,
+            start,
+            stop,
+            points,
+            max_channel=max_channel,
+        )
+    )
+
 
 def find_z(invert=False, precision=0.1):
     """Find the z edge position"""
@@ -223,5 +290,15 @@ def find_z(invert=False, precision=0.1):
         step = 1
         start = -2
         stop = 2
-    points = int(np.abs(start - stop)/precision) + 1
-    return (yield from find_edge(GLOBAL_ACTIVE_DETECTORS, manipz, step, start, stop, points, max_channel=max_channel))
+    points = int(np.abs(start - stop) / precision) + 1
+    return (
+        yield from find_edge(
+            GLOBAL_ACTIVE_DETECTORS,
+            manipz,
+            step,
+            start,
+            stop,
+            points,
+            max_channel=max_channel,
+        )
+    )

@@ -1,11 +1,10 @@
-#from ucal.detectors import tes
-from sst_funcs import tes, Exit_Slit as energy_slit, en
-from sst_funcs.globalVars import (GLOBAL_ACTIVE_DETECTORS,
-                                  GLOBAL_PLOT_DETECTORS)
-from sst_funcs.detectors import (activate_detector,
-                                 deactivate_detector)
-#from ucal.energy import en
-from sst_funcs.plans.plan_stubs import (call_obj, set_exposure)
+# from ucal.detectors import tes
+from ucal.hw import tes, eslit as energy_slit, en
+from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS
+from sst_funcs.detectors import activate_detector, deactivate_detector
+
+# from ucal.energy import en
+from sst_funcs.plans.plan_stubs import call_obj, set_exposure
 from sst_funcs.plans.scan_decorators import sst_base_scan_decorator
 from sst_funcs.shutters import (
     close_shutter,
@@ -13,7 +12,6 @@ from sst_funcs.shutters import (
     is_shutter_open,
 )
 from ucal.scan_exfiltrator import ScanExfiltrator
-#from ucal.motors import eslit as energy_slit
 from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
@@ -46,6 +44,7 @@ def wrap_xas_setup(element):
             if auto_setup_xas:
                 yield from set_edge(element)
             return (yield from func(*args, **kwargs))
+
         return inner
 
     return decorator
@@ -58,6 +57,7 @@ def wrap_xas(element):
                 wrap_xas_setup(element)(func)
             )
         )
+
     return decorator
 
 
@@ -89,6 +89,7 @@ def _ucal_add_processing_md(func):
             _md["last_noise"] = beamline_config["last_noise"]
         _md.update(md)
         return (yield from func(*args, md=_md, **kwargs))
+
     return _inner
 
 
@@ -134,9 +135,7 @@ def _tes_plan_wrapper(plan_function, plan_name):
     def _inner(dets, motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-        ret = yield from plan_function(
-            dets, motor, *args, **kwargs
-        )
+        ret = yield from plan_function(dets, motor, *args, **kwargs)
 
         return ret
 

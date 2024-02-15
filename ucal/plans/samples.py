@@ -1,5 +1,5 @@
 from ucal.sampleholder import sampleholder
-from ucal.motors import samplex, sampley, samplez, sampler
+from ucal.hw import samplex, sampley, samplez, sampler
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
@@ -8,24 +8,27 @@ from os.path import abspath
 import csv
 import copy
 from sst_funcs.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED
-#filename = "../../examples/sample_load.csv"
+
+# filename = "../../examples/sample_load.csv"
 
 
 def read_sample_csv(filename):
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         sampleReader = csv.reader(f, skipinitialspace=True)
         samplelist = [row for row in sampleReader]
         rownames = [n for n in samplelist[0] if n != ""]
-        #rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
+        # rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
         #            "t", "tags"]
         samples = {}
         for sample in samplelist[1:]:
             sample_id = sample[0]
-            sample_dict = {key: sample[rownames.index(key)] for
-                           key in rownames[1:] if
-                           sample[rownames.index(key)] != ""}
-            #sample_tags = sample[rownames.index("tags"):]
-            #sample_dict['tags'] = [t for t in sample_tags if t != ""]
+            sample_dict = {
+                key: sample[rownames.index(key)]
+                for key in rownames[1:]
+                if sample[rownames.index(key)] != ""
+            }
+            # sample_tags = sample[rownames.index("tags"):]
+            # sample_dict['tags'] = [t for t in sample_tags if t != ""]
             samples[sample_id] = sample_dict
     return samples
 
@@ -39,13 +42,27 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
         GLOBAL_SAMPLES.clear()
     for sample_id, s in samples.items():
         sdict = copy.deepcopy(s)
-        position = (float(sdict.pop('x1')), float(sdict.pop('y1')), float(sdict.pop('x2')), float(sdict.pop('y2')))
-        name = sdict.pop('sample_name')
-        description = sdict.pop('description', name)
-        side = int(sdict.pop('side'))
-        thickness = float(sdict.pop('t', 0))
-        GLOBAL_SAMPLES[sample_id] = {"name": name, "position": position, "side": side, "thickness": thickness, "description": description, **sdict}
-        holder.add_sample(sample_id, name, position, side, thickness, description=description, **sdict)
+        position = (
+            float(sdict.pop("x1")),
+            float(sdict.pop("y1")),
+            float(sdict.pop("x2")),
+            float(sdict.pop("y2")),
+        )
+        name = sdict.pop("sample_name")
+        description = sdict.pop("description", name)
+        side = int(sdict.pop("side"))
+        thickness = float(sdict.pop("t", 0))
+        GLOBAL_SAMPLES[sample_id] = {
+            "name": name,
+            "position": position,
+            "side": side,
+            "thickness": thickness,
+            "description": description,
+            **sdict,
+        }
+        holder.add_sample(
+            sample_id, name, position, side, thickness, description=description, **sdict
+        )
     return
 
 
@@ -61,21 +78,21 @@ def load_samples_into_holder(filename, holder, **kwargs):
 def load_standard_two_sided_bar(filename):
     bar = make_two_sided_bar(13, 300, 2)
     sampleholder.add_geometry(bar)
-    beamline_config['loadfile'] = abspath(filename)
-    beamline_config['bar'] = "Standard 2-sided bar"
+    beamline_config["loadfile"] = abspath(filename)
+    beamline_config["bar"] = "Standard 2-sided bar"
     load_samples_into_holder(filename, sampleholder, clear=False)
 
 
 def load_standard_four_sided_bar(filename):
     bar = make_regular_polygon(24.5, 215, 4)
     sampleholder.add_geometry(bar)
-    beamline_config['loadfile'] = abspath(filename)
-    beamline_config['bar'] = "Standard 4-sided bar"
+    beamline_config["loadfile"] = abspath(filename)
+    beamline_config["bar"] = "Standard 4-sided bar"
     load_samples_into_holder(filename, sampleholder, clear=False)
 
 
 def load_samples(filename):
-    beamline_config['loadfile'] = abspath(filename)
+    beamline_config["loadfile"] = abspath(filename)
     load_samples_into_holder(filename, sampleholder)
 
 
@@ -103,7 +120,8 @@ def set_sample_center(sampleid):
 
 
 def set_sample_edge(sampleid):
-    yield from set_sample(sampleid, origin='edge')
+    yield from set_sample(sampleid, origin="edge")
+
 
 @add_to_plan_list
 def print_selected_sample():
@@ -113,6 +131,7 @@ def print_selected_sample():
         print(f"Current sample name: {GLOBAL_SELECTED.get('name', '')}")
     else:
         print(f"No sample currently selected")
+
 
 @add_to_plan_list
 def sample_move(x, y, r, sampleid=None, **kwargs):
@@ -125,10 +144,10 @@ def sample_move(x, y, r, sampleid=None, **kwargs):
 @add_to_func_list
 def list_samples():
     """List the currently loaded samples"""
-    
+
     print("Samples loaded in sampleholder")
     for v in sampleholder.sample_md.values():
-        if v['sample_id'] == 'null':
+        if v["sample_id"] == "null":
             pass
         else:
             print(f"id: {v['sample_id']}, name: {v['name']}")

@@ -1,26 +1,34 @@
-from sst_base.manipulator import Manipulator4AxBase, Manipulator1AxBase
-from sst_base.motors import FlyableMotor, PrettyMotor
-from sst_funcs.geometry.linalg import vec
-from ophyd import Component as Cpt
+from sst_funcs.hw import manipulator, en, Exit_Slit as eslit
+from sst_funcs.hw import *
+from sst_funcs.motors import add_motor
 
-# Note, multimesh is in sst_hw
-manip_origin = vec(0, 0, 464, 0)
+manipx = manipulator.x
+manipy = manipulator.y
+manipz = manipulator.z
+manipr = manipulator.r
 
+samplex = manipulator.sx
+sampley = manipulator.sy
+samplez = manipulator.sz
+sampler = manipulator.sr
 
-class Manipulator(Manipulator4AxBase):
-    x = Cpt(FlyableMotor, "SampX}Mtr", name="x", kind='hinted')
-    y = Cpt(FlyableMotor, "SampY}Mtr",  name="y", kind='hinted')
-    z = Cpt(FlyableMotor, "SampZ}Mtr",  name="z", kind='hinted')
-    r = Cpt(FlyableMotor, "SampTh}Mtr", name="r", kind='hinted')
+add_motor(manipx, "Manipulator X", "manipx")
+add_motor(manipy, "Manipulator Y", "manipy")
+add_motor(manipz, "Manipulator Z", "manipz")
+add_motor(manipr, "Manipulator R", "manipr")
 
+ip = get_ipython()
 
-def ManipulatorBuilder(prefix, *, name, **kwargs):
-    return Manipulator(None, prefix, origin=manip_origin, name=name, **kwargs)
+ip.user_ns['manipx'] = manipx
+ip.user_ns['manipy'] = manipy
+ip.user_ns['manipz'] = manipz
+ip.user_ns['manipr'] = manipr
+ip.user_ns['samplex'] = samplex
+ip.user_ns['sampley'] = sampley
+ip.user_ns['samplez'] = samplez
+ip.user_ns['sampler'] = sampler
 
+en.rotation_motor = manipr
+energy = en.energy
 
-class MultiMesh(Manipulator1AxBase):
-    x = Cpt(PrettyMotor, "MMesh}Mtr", name="Multimesh")
-
-
-def MultiMeshBuilder(prefix, *, name, **kwargs):
-    return MultiMesh(None, prefix, name=name, **kwargs)
+ip.user_ns['energy'] = energy

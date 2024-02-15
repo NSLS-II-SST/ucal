@@ -1,7 +1,6 @@
-#from ucal.mirrors import mir4, mir3
-from sst_funcs import mir3, mir4, i0upAu
-from ucal.motors import manipz
-from ucal.energy import en
+# from ucal.mirrors import mir4, mir3
+from ucal.hw import mir3, mir4, i0upAu
+from ucal.hw import manipz, en
 from bluesky.plan_stubs import mv, rd
 from sst_funcs.help import add_to_plan_list
 
@@ -57,6 +56,6 @@ def setup_mono():
         yield from mv(mono.grating.user_offset, -54.3276)
         yield from mv(mono.mirror2.user_offset, 37.0976)
 
+
 # Eventually need a cleanup ucal function that moves manipulator out of the way but this is
 # too dangerous without any interlocks
-    
