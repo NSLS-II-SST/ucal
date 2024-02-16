@@ -56,6 +56,7 @@ from ucal.plans.scan_base import (
     tes_rel_scan,
     tes_take_projectors,
 )
+import ucal.plans.scans
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE, ucal_sd
