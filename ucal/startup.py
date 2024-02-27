@@ -18,6 +18,7 @@ from bluesky.plan_stubs import mv as move
 #                         manipulator, eslit, i0upAu)
 
 import sst_funcs
+import sst_funcs.hw
 from sst_funcs.detectors import (
     add_detector,
     list_detectors,
@@ -29,7 +30,6 @@ from sst_funcs.detectors import (
     plot_detector_set,
 )
 from sst_funcs.motors import add_motor, list_motors, remove_motor
-from .hw import tes, manipulator, eslit, i0upAu, tesz, adr
 import ucal.plans
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
 from ucal.plans.alignment import (
@@ -74,4 +74,6 @@ RE(set_exposure(1.0))
 tes.setFilenamePattern = False
 tes.path = "/data/raw"
 
-ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, adr]
+plot_detector_set("default")
+
+ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz] #, adr]
