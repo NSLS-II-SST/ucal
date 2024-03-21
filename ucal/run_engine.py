@@ -3,6 +3,7 @@ from ucal.suspenders import suspend_current, suspend_shutter1
 from bluesky import RunEngine
 from bluesky.preprocessors import SupplementalData
 from bluesky.utils import PersistentDict
+from bluesky_queueserver import is_re_worker_active
 from . import STATION_NAME
 
 if STATION_NAME == "sst_sim":
@@ -37,7 +38,10 @@ def setup_run_engine(engine):
     return engine
 
 
-RE = RunEngine(call_returns_result=True)
+if is_re_worker_active():
+    RE = RunEngine(call_returns_result=False)
+else:
+    RE = RunEngine(call_returns_result=True)
 RE = setup_run_engine(RE)
 RE.md = PersistentDict(beamline_metadata_dir)
 ucal_sd = SupplementalData()
