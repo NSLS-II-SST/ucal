@@ -77,4 +77,4 @@ tes.path = "/data/raw"
 
 activate_detector_set("default")
 
-ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz] #, adr]
+ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]
