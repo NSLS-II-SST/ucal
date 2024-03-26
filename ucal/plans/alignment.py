@@ -54,24 +54,24 @@ def find_r_offset():
     return minr2
 
 
-def find_beam_x_offset():
+def find_beam_x_offset(side=1, rdiff=180):
     tes_pos = yield from rd(tesz)
     if tes_pos < 40:
         print("TES too close, move back to 40 mm to continue")
         raise RequestAbort
-    yield from set_side(1)
+    yield from set_side(side)
     # We want to move off the sample
-    yield from sample_move(-1, 5, 45)
+    yield from sample_move(-1, 5, 5)
     x1 = yield from find_x()
-    yield from sample_move(-1, 5, 45 + 180)
+    yield from sample_move(-1, 5, 5 + rdiff)
     x2 = yield from find_x(invert=True)
     yield from mv(manipr, 0, manipx, 0)
     return (x1 + x2) * 0.5
 
 
 @add_to_plan_list
-def calibrate_beam_offset():
-    x = yield from find_beam_x_offset()
+def calibrate_beam_offset(*args, **kwargs):
+    x = yield from find_beam_x_offset(*args, **kwargs)
     set_manipulator_origin(x=x)
     return x
 
@@ -301,6 +301,7 @@ def new_calibrate_sides(side_start, side_end, nsides=4, findz=True, preserve=Fal
         if "manipulator_calibration" not in beamline_config:
             beamline_config["manipulator_calibration"] = {}
         beamline_config["manipulator_calibration"][f"{side}"] = points
+        beamline_config.flush()
         yield from update_manipulator_side(side, *points)
 
 
@@ -308,6 +309,8 @@ def load_saved_manipulator_calibration():
     if "manipulator_calibration" in beamline_config:
         for side, points in beamline_config["manipulator_calibration"].items():
             yield from update_manipulator_side(int(side), *points)
+    if "manipulator_origin" in beamline_config:
+        set_manipulator_origin()
 
 
 def find_sides_one_z(z, side_start, side_end, nsides):

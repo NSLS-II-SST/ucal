@@ -27,10 +27,12 @@ from sst_funcs.detectors import (
     remove_detector,
     plot_detector,
     unplot_detector,
-    plot_detector_set,
+    activate_detector_set,
 )
 from sst_funcs.motors import add_motor, list_motors, remove_motor
+from ucal.hw import *
 import ucal.plans
+
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
 from ucal.plans.alignment import (
     calibrate_beam_offset,
@@ -57,6 +59,7 @@ from ucal.plans.scan_base import (
     tes_take_projectors,
 )
 import ucal.plans.scans
+import sst_funcs.plans.scans
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE, ucal_sd
@@ -74,6 +77,6 @@ RE(set_exposure(1.0))
 tes.setFilenamePattern = False
 tes.path = "/data/raw"
 
-plot_detector_set("default")
+activate_detector_set("default")
 
-ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz] #, adr]
+ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]

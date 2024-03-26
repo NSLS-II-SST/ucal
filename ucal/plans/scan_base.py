@@ -23,10 +23,11 @@ from sst_funcs.plans.preprocessors import wrap_metadata
 from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
 from functools import wraps
+from sst_funcs.utils import merge_func
 
 
 def beamline_setup(func):
-    @wraps(func)
+    @merge_func(func)
     def inner(*args, sample=None, eslit=None, **kwargs):
         if sample is not None:
             yield from sample_move(0, 0, 45, sample)
@@ -39,7 +40,7 @@ def beamline_setup(func):
 
 def wrap_xas_setup(element):
     def decorator(func):
-        @wraps(func)
+        @merge_func(func)
         def inner(*args, auto_setup_xas=True, **kwargs):
             if auto_setup_xas:
                 yield from set_edge(element)
@@ -79,7 +80,7 @@ def get_detector_plot_hints():
 
 
 def _ucal_add_processing_md(func):
-    @wraps(func)
+    @merge_func(func)
     def _inner(*args, md=None, **kwargs):
         md = md or {}
         _md = {}
@@ -117,6 +118,7 @@ def tes_count(
 
     @_ucal_add_processing_md
     @sst_base_scan_decorator
+    @merge_func(bp.count)
     def _inner(*args, **kwargs):
         yield from bp.count(*args, **kwargs)
 
@@ -132,10 +134,11 @@ def _tes_plan_wrapper(plan_function, plan_name):
     @beamline_setup
     @_ucal_add_processing_md
     @sst_base_scan_decorator
-    def _inner(dets, motor, *args, **kwargs):
+    @merge_func(plan_function, ['motor'])
+    def _inner(detectors, motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
-        ret = yield from plan_function(dets, motor, *args, **kwargs)
+        ret = yield from plan_function(detectors, motor, *args, **kwargs)
 
         return ret
 
@@ -145,7 +148,7 @@ Other detectors may be added on the fly via extra_dets
 ---------------------------------------------------------
 """
 
-    _inner.__doc__ = d + plan_function.__doc__
+    _inner.__doc__ = d + _inner.__doc__
     _inner.__name__ = plan_name
     return _inner
 
@@ -231,7 +234,7 @@ def tes_setup(should_take_dark_counts=True):
         yield from close_shutter()
         deactivate_detector("tes")
         yield from take_dark_counts()
-    activate_detector("tes", plot=True)
+    activate_detector("tes")
     yield from tes_take_noise()
     yield from tes_take_projectors()
     yield from call_obj(tes, "make_projectors")
@@ -259,6 +262,7 @@ def _make_gscan_points(*args, shift=0):
 
 
 @add_to_scan_list
+@merge_func(tes_list_scan, omit_params=['points'], exclude_wrapper_args=False)
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors.
 
@@ -305,6 +309,8 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
 def xas_factory(energy_grid, edge, name):
     @repeat
     @wrap_xas(edge)
+    @wrap_metadata({"plan_name": name})
+    @merge_func(tes_gscan, omit_params=['motor', 'args'])
     def inner(**kwargs):
         """Parameters
         ----------

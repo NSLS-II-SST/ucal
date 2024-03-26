@@ -1,5 +1,5 @@
 import numpy as np
-from ucal.hw import manipx, manipy, manipz, manipr, sc
+from ucal.hw import manipx, manipy, manipz, manipr, sc, i1
 from sst_funcs.motors import get_motor
 from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_DETECTOR_THRESHOLDS
 from sst_funcs.plans.maximizers import (
@@ -14,11 +14,11 @@ from bluesky.plans import rel_scan
 from sst_funcs.plans.flyscan_base import fly_scan
 
 # This should go into a beamline config file at some point
-max_channel = sc.name
+max_channel = i1.name
 # If we have a drain current detector on the manipulator,
 # as opposed to a detector that the manipulator shadows,
 # we will need to invert some of the maximum finding routines
-detector_on_manip = True
+detector_on_manip = False
 
 
 def scan_z_offset(zstart, zstop, step_size):
@@ -237,6 +237,7 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
         step=step,
         max_channel=max_channel,
     )
+    print(f"Found Threshold {thres_pos} for {motor.name}, moving to {thres_pos + start}")
     yield from mv(motor, thres_pos + start)
     if fly:
         ret = yield from find_halfmax(
@@ -252,11 +253,16 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
         ret = yield from find_halfmax(
             rel_scan, dets, motor, 0, stop - start, points, max_channel=max_channel
         )
+    print(f"Found halfmax {ret[0][1]} for {motor.name}")
     return ret[0][1]
 
 
 def find_x(invert=False, precision=0.1):
     print("Finding x edge position")
+
+    if not detector_on_manip:
+        invert = not invert
+    
     if invert:
         step = -1
         start = 2
@@ -282,10 +288,13 @@ def find_x(invert=False, precision=0.1):
 def find_z(invert=False, precision=0.1):
     """Find the z edge position"""
     print("Finding z edge position")
+    if not detector_on_manip:
+        invert = not invert
+
     if invert:
         step = -1
-        start = -2
-        stop = 2
+        start = 2
+        stop = -2
     else:
         step = 1
         start = -2

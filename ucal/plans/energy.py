@@ -47,6 +47,10 @@ def base_grating_to_1200():
     print("the grating is now at 1200 l/mm")
     return 1
 
+def setup_mono():
+    yield from bps.mv(mono_en.cff, 2.05)
+    yield from bps.mv(en.m3offset, 7.91)
+    
 
 def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=250):
     # RE(load_sample(sample_by_name(bar, 'HOPG')))
