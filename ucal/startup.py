@@ -18,7 +18,7 @@ from bluesky.plan_stubs import mv as move
 #                         manipulator, eslit, i0upAu)
 
 import sst_funcs
-import sst_funcs.hw
+from ucal.hw import *
 from sst_funcs.detectors import (
     add_detector,
     list_detectors,
