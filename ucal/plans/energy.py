@@ -47,12 +47,19 @@ def base_grating_to_1200():
     print("the grating is now at 1200 l/mm")
     return 1
 
-def setup_mono():
-    yield from bps.mv(mono_en.cff, 2.05)
-    yield from bps.mv(en.m3offset, 7.91)
-    
 
-def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=250):
+def setup_mono():
+    mono_en = en.monoen
+    monotype = mono_en.gratingx.readback.get()
+    if "250l/mm" in monotype:
+        yield from bps.mv(en.m3offset, 7.91)
+        yield from bps.mv(mono_en.cff, 1.5)
+    elif "1200" in monotype:
+        yield from bps.mv(mono_en.cff, 2.05)
+        yield from bps.mv(en.m3offset, 7.91)
+
+
+def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=250, auto_accept=True):
     # RE(load_sample(sample_by_name(bar, 'HOPG')))
     # RE(tune_pgm(cs=[1.35,1.37,1.385,1.4,1.425,1.45],ms=[1,1,1,1,1],energy=291.65,pol=90,k=250))
     # RE(tune_pgm(cs=[1.55,1.6,1.65,1.7,1.75,1.8],ms=[1,1,1,1,1],energy=291.65,pol=90,k=1200))
@@ -101,28 +108,31 @@ def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k
     return fit
 
 
-def tune_250():
+def tune_250(auto_accept=True):
     yield from set_ref(1)
     yield from tune_pgm(
-        cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=250
-    )
+        cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0,
+        k=250, auto_accept=auto_accept)
 
 
-def tune_1200():
+def tune_1200(auto_accept=True):
     yield from set_ref(1)
     yield from tune_pgm(
-        cs=[2.0, 2.05, 2.1, 2.15], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=1200
-    )
+        cs=[2.0, 2.05, 2.1, 2.15], ms=[1, 1, 1, 1], energy=291.65, pol=0,
+        k=1200, auto_accept=auto_accept)
 
 
 @add_to_plan_list
-def tune_grating():
+def tune_grating(auto_accept=True):
     """Tune grating offsets, should be run after grating change automatically"""
     grating = yield from bps.rd(en.monoen.gratingx.readback)
+
     if "250l/mm" in grating:
-        yield from tune_250()
+        yield from setup_mono()
+        yield from tune_250(auto_accept=auto_accept)
     elif "1200l/mm" in grating:
-        yield from tune_1200()
+        yield from setup_mono()
+        yield from tune_1200(auto_accept=auto_accept)
     else:
         print("Grating must be either 250/mm or 1200l/mm")
 
@@ -135,12 +145,10 @@ def change_grating(grating, tune=True):
     tune: if True, calibrate grating offsets after change"""
     if grating == 250:
         yield from base_grating_to_250()
-        yield from setup_mono()
         if tune:
             yield from tune_250()
     elif grating == 1200:
         yield from base_grating_to_1200()
-        yield from setup_mono()
         if tune:
             yield from tune_1200()
     else:
