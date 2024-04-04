@@ -16,19 +16,26 @@ from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_plan_list, add_to_scan_list
-from bluesky.plan_stubs import mv, sleep
-from bluesky.preprocessors import run_decorator, inject_md_wrapper, subs_decorator
+from bluesky.plan_stubs import mv
+from bluesky.preprocessors import run_decorator, subs_decorator
 from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
 from sst_funcs.plans.preprocessors import wrap_metadata
 from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
-from functools import wraps
 from sst_funcs.utils import merge_func
 
 
 def beamline_setup(func):
     @merge_func(func)
     def inner(*args, sample=None, eslit=None, **kwargs):
+        """
+        Parameters
+        ----------
+        sample : int or str, optional
+            The sample id. If not None, the sample is moved into the beam at a 45 degree angle.
+        eslit : float, optional
+            If not None, will change the beamline exit slit. Note that currently, eslit values are given as -2* the desired exit slit size in mm.
+        """
         if sample is not None:
             yield from sample_move(0, 0, 45, sample)
         if eslit is not None:
@@ -60,6 +67,10 @@ def wrap_xas(element):
         )
 
     return decorator
+
+
+def wrap_xes(func):
+    return wrap_metadata({"scantype": "xes"})(func)
 
 
 def get_detector_plot_hints():
@@ -96,7 +107,7 @@ def _ucal_add_processing_md(func):
 
 @add_to_scan_list
 @beamline_setup
-def tes_count(
+def tes_count_old(
     *args,
     **kwargs,
 ):
@@ -118,6 +129,7 @@ def tes_count(
 
     @_ucal_add_processing_md
     @sst_base_scan_decorator
+    @wrap_xes
     @merge_func(bp.count)
     def _inner(*args, **kwargs):
         yield from bp.count(*args, **kwargs)
@@ -127,14 +139,39 @@ def tes_count(
     return ret
 
 
-tes_count.__doc__ += bp.count.__doc__
+def _tes_count_plan_wrapper(plan_function, plan_name):
+    class dummymotor:
+        name = "time"
+        egu = "index"
+
+    @beamline_setup
+    @_ucal_add_processing_md
+    @sst_base_scan_decorator
+    @merge_func(plan_function)
+    def _inner(*args, **kwargs):
+        motor = dummymotor()
+        scanex = ScanExfiltrator(motor, en.energy.position)
+        tes.scanexfiltrator = scanex
+        ret = yield from plan_function(*args, **kwargs)
+
+        return ret
+
+    d = f"""Modifies {plan_function.__name__} to automatically fill
+dets with the TES detector and basic beamline detectors.
+Other detectors may be added on the fly via extra_dets
+---------------------------------------------------------
+"""
+
+    _inner.__doc__ = d + _inner.__doc__
+    _inner.__name__ = plan_name
+    return _inner
 
 
 def _tes_plan_wrapper(plan_function, plan_name):
     @beamline_setup
     @_ucal_add_processing_md
     @sst_base_scan_decorator
-    @merge_func(plan_function, ['motor'])
+    @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, en.energy.position)
         tes.scanexfiltrator = scanex
@@ -153,6 +190,8 @@ Other detectors may be added on the fly via extra_dets
     return _inner
 
 
+tes_count = add_to_scan_list(_tes_count_plan_wrapper(bp.count, "tes_count"))
+tes_xes = add_to_scan_list(wrap_metadata({"plan_name": "xes"})(wrap_xes(tes_count)))
 tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
 tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
 tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"))
@@ -262,7 +301,7 @@ def _make_gscan_points(*args, shift=0):
 
 
 @add_to_scan_list
-@merge_func(tes_list_scan, omit_params=['points'], exclude_wrapper_args=False)
+@merge_func(tes_list_scan, omit_params=["points"], exclude_wrapper_args=False)
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors.
 
@@ -279,7 +318,7 @@ def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
 
 
 @add_to_scan_list
-def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
+def tes_calibrate_old(time, sampleid, exposure_time_s=10, energy=980, md=None):
     """Take energy calibration for TES. Moves to specified sample"""
     yield from sample_move(0, 0, 45, sampleid)
     return (
@@ -288,8 +327,29 @@ def tes_calibrate(time, sampleid, exposure_time_s=10, energy=980, md=None):
 
 
 @add_to_scan_list
-def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
-    """Take energy calibration for TES. Does not move sample"""
+@merge_func(tes_count, ["num", "delay"])
+def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
+    """
+    Perform an in-place energy calibration for the TES detector.
+
+    Parameters
+    ----------
+    time : float
+        The total length of time to perform the calibration for.
+    dwell : float, optional
+        The time per point during calibration, by default 10.
+    energy : float, optional
+        The beamline monochromator position to set for the calibration, by default 980.
+    md : dict, optional
+        Extra metadata to pass to the RunEngine, by default None.
+    **kwargs : dict
+        Additional keyword arguments to pass to the underlying `tes_count` function.
+
+    Returns
+    -------
+    cal_uid : str
+        The unique identifier for the calibration run.
+    """
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
     yield from mv(en.energy, energy)
@@ -297,9 +357,7 @@ def tes_calibrate_inplace(time, exposure_time_s=10, energy=980, md=None):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    cal_uid = yield from tes_count(
-        int(time // exposure_time_s), dwell=exposure_time_s, md=_md
-    )
+    cal_uid = yield from tes_count(int(time // dwell), dwell=dwell, md=_md, **kwargs)
     yield from mv(tes.cal_flag, False)
     beamline_config["last_cal"] = cal_uid
     yield from set_exposure(pre_cal_exposure)
@@ -310,7 +368,7 @@ def xas_factory(energy_grid, edge, name):
     @repeat
     @wrap_xas(edge)
     @wrap_metadata({"plan_name": name})
-    @merge_func(tes_gscan, omit_params=['motor', 'args'])
+    @merge_func(tes_gscan, omit_params=["motor", "args"])
     def inner(**kwargs):
         """Parameters
         ----------
