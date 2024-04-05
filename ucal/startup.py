@@ -63,7 +63,7 @@ import sst_funcs.plans.scans
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
-from ucal.configuration import beamline_config, new_proposal
+from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
 from ucal.sampleholder import sampleholder
 from sst_funcs.help import GLOBAL_IMPORT_DICTIONARY
 from sst_funcs.plans.groups import group
@@ -76,7 +76,7 @@ for key in GLOBAL_IMPORT_DICTIONARY:
 RE(set_exposure(1.0))
 tes.setFilenamePattern = False
 tes.path = "/data/raw"
-
+load_saved_configuration()
 activate_detector_set("default")
 
 # ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]

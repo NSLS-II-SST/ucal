@@ -24,6 +24,21 @@ beamline_config = PersistentDict(beamline_config_dir)
 GLOBAL_USER_MD = StatusDict()
 add_status("USER_MD", GLOBAL_USER_MD)
 
+def load_saved_configuration():
+    proposal = RE.md.get('proposal', "")
+    cycle = RE.md.get('cycle', "")
+    users = RE.md.get('users', [])
+    saf = RE.md.get('saf', "")
+    beamtime_start = RE.md.get('beamtime_start', '')
+    beamtime_uid = RE.md.get('beamtime_uid', '')
+    GLOBAL_USER_MD['users'] = users
+    GLOBAL_USER_MD['proposal'] = proposal
+    GLOBAL_USER_MD['saf'] = saf
+    GLOBAL_USER_MD['cycle'] = cycle
+    GLOBAL_USER_MD['beamtime_start'] = beamtime_start
+    GLOBAL_USER_MD['beamtime_uid'] = beamtime_uid
+    
+
 def configure_user(users, proposal, cycle, saf):
     RE.md['users'] = users
     RE.md['proposal'] = proposal
