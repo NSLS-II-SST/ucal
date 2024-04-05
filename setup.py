@@ -12,5 +12,8 @@ setup(
     use_scm_version=True,
     packages=find_packages(),
     package_data={"ucal": ["*.yaml"]},
-    scripts=scripts
+    scripts=scripts,
+    entry_points={"sst_gui.plans": ["ucal-tes-count=ucal.qt.plans.tesBasic:TESCountWidget",
+                                    "ucal-tes-scan=ucal.qt.plans.tesBasic:TESScanWidget",
+                                    "ucal-tes-cal=ucal.qt.plans.tesBasic:TESCalibrateWidget"]}
 )

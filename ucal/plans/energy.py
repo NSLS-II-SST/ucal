@@ -100,7 +100,10 @@ def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k
         mirror_measured, grating_measured, m_measured, energy_measured, k
     )
     print(fit)
-    accept = input("Accept these values and set the offset (y/n)? ")
+    if not auto_accept:
+        accept = input("Accept these values and set the offset (y/n)? ")
+    else:
+        accept = "y"
     if accept in ["y", "Y", "yes"]:
         yield from bps.mvr(
             mirror2.user_offset, -fit.x[0], grating.user_offset, -fit.x[1]

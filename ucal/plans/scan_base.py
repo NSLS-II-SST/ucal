@@ -27,7 +27,7 @@ from sst_funcs.utils import merge_func
 
 def beamline_setup(func):
     @merge_func(func)
-    def inner(*args, sample=None, eslit=None, **kwargs):
+    def inner(*args, sample=None, eslit=None, energy=None, **kwargs):
         """
         Parameters
         ----------
@@ -40,6 +40,8 @@ def beamline_setup(func):
             yield from sample_move(0, 0, 45, sample)
         if eslit is not None:
             yield from mv(energy_slit, eslit)
+        if energy is not None:
+            yield from mv(en.energy, energy)
         return (yield from func(*args, **kwargs))
 
     return inner
@@ -191,7 +193,7 @@ Other detectors may be added on the fly via extra_dets
 
 
 tes_count = add_to_scan_list(_tes_count_plan_wrapper(bp.count, "tes_count"))
-tes_xes = add_to_scan_list(wrap_metadata({"plan_name": "xes"})(wrap_xes(tes_count)))
+tes_xes = add_to_scan_list(wrap_metadata({"plan_name": "tes_xes"})(wrap_xes(tes_count)))
 tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
 tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
 tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"))
