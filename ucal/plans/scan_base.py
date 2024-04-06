@@ -20,7 +20,6 @@ from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator, subs_decorator
 from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
 from sst_funcs.plans.preprocessors import wrap_metadata
-from sst_funcs.plans.groups import repeat
 import bluesky.plans as bp
 from sst_funcs.utils import merge_func
 
@@ -36,6 +35,7 @@ def beamline_setup(func):
         eslit : float, optional
             If not None, will change the beamline exit slit. Note that currently, eslit values are given as -2* the desired exit slit size in mm.
         """
+
         if sample is not None:
             yield from sample_move(0, 0, 45, sample)
         if eslit is not None:
@@ -193,7 +193,13 @@ Other detectors may be added on the fly via extra_dets
 
 
 tes_count = add_to_scan_list(_tes_count_plan_wrapper(bp.count, "tes_count"))
-tes_xes = add_to_scan_list(wrap_metadata({"plan_name": "tes_xes"})(wrap_xes(tes_count)))
+
+@add_to_scan_list
+@merge_func(tes_count, use_func_name=False)
+def tes_xes(*args, **kwargs):
+    _inner = wrap_metadata({"plan_name": "tes_xes"})(wrap_xes(tes_count))
+    return (yield from _inner(*args, **kwargs))
+
 tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
 tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
 tes_list_scan = add_to_scan_list(_tes_plan_wrapper(bp.list_scan, "tes_list_scan"))
@@ -265,6 +271,7 @@ def tes_take_projectors():
 
 
 @add_to_plan_list
+@beamline_setup
 def tes_setup(should_take_dark_counts=True):
     """Set up TES after cryostat cycle. Must have counts from cal sample.
 
@@ -303,7 +310,7 @@ def _make_gscan_points(*args, shift=0):
 
 
 @add_to_scan_list
-@merge_func(tes_list_scan, omit_params=["points"], exclude_wrapper_args=False)
+@merge_func(tes_list_scan, omit_params=["points"], exclude_wrapper_args=False, use_func_name=False)
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors.
 
@@ -329,7 +336,7 @@ def tes_calibrate_old(time, sampleid, exposure_time_s=10, energy=980, md=None):
 
 
 @add_to_scan_list
-@merge_func(tes_count, ["num", "delay"])
+@merge_func(tes_count, ["num", "delay"], use_func_name=False)
 def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     """
     Perform an in-place energy calibration for the TES detector.
@@ -367,7 +374,6 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
 
 
 def xas_factory(energy_grid, edge, name):
-    @repeat
     @wrap_xas(edge)
     @wrap_metadata({"plan_name": name})
     @merge_func(tes_gscan, omit_params=["motor", "args"])

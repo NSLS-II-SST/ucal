@@ -53,13 +53,13 @@ from ucal.plans.scan_base import (
     tes_calibrate,
     tes_take_noise,
     tes_gscan,
-    tes_scan,
-    tes_count,
     tes_rel_scan,
     tes_take_projectors,
 )
 import ucal.plans.scans
+from ucal.plans.plan_stubs import *
 import sst_funcs.plans.scans
+from ucal.plans.tes_setup import *
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
