@@ -3,6 +3,7 @@ from sst_funcs.detectors import deactivate_detector, activate_detector
 from sst_funcs.plans.plan_stubs import call_obj, wait_for_signal_equals
 from sst_funcs.shutters import close_shutter
 from sst_funcs.help import add_to_plan_list
+from bluesky.plan_stubs import sleep
 
 def tes_end_file():
     yield from call_obj(tes, "_file_end")
@@ -19,6 +20,8 @@ def tes_shutoff(should_close_shutter=True):
 @add_to_plan_list
 def tes_cycle_cryostat(wait=False):
     yield from call_obj(adr, "start_cycle")
+    # Needs a minute to switch from control to going to mag up
+    yield from sleep(60)
     if wait:
         yield from tes_wait_for_cycle()
 
