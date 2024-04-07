@@ -5,9 +5,6 @@ from ucal.hw import manipulator
 from ucal.hw import tes
 # from ucal.shutters import psh7
 
-@add_to_plan_list
-def end_tes_file():
-    yield from call_obj(tes, "_file_close")
 
 @add_to_plan_list
 def manipulator_to_loadlock():
