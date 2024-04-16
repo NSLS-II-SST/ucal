@@ -1,5 +1,5 @@
 from ucal.sampleholder import sampleholder
-from ucal.hw import samplex, sampley, samplez, sampler
+from ucal.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
 from ucal.configuration import beamline_config
 from sst_funcs.help import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
@@ -140,6 +140,13 @@ def sample_move(x, y, r, sampleid=None, **kwargs):
         yield from set_sample(sampleid, **kwargs)
     yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
 
+@add_to_plan_list
+def manual_sample_move(x, y, z, r, name, sample_id=-1):
+    GLOBAL_SELECTED.clear()
+    GLOBAL_SELECTED["sample_id"] = sample_id
+    GLOBAL_SELECTED["name"] = name
+    GLOBAL_SELECTED["origin"] = "manual"
+    yield from mv(manipx, x, manipy, y, manipz, z, manipr, r)
 
 @add_to_func_list
 def list_samples():
