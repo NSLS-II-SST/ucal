@@ -3,6 +3,7 @@ from sst_base.sampleholder import SampleHolder, make_1d_bar
 from sst_funcs.help import add_to_plan_list
 from bluesky.plan_stubs import abs_set, mv
 
+# Need to somehow have a second-pass configuration, or linked configuration, or something
 refholder = SampleHolder(manipulator=multimesh, name="i0up_multimesh")
 geometry = make_1d_bar(160)
 

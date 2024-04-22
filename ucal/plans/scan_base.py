@@ -1,6 +1,6 @@
-# from ucal.detectors import tes
-from ucal.hw import tes, eslit as energy_slit, en
-from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS
+# from ucal.hw import tes, eslit as energy_slit, en
+from ucal.hw import tes
+from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS, GLOBAL_ENERGY
 from sst_funcs.detectors import activate_detector, deactivate_detector
 
 # from ucal.energy import en
@@ -39,9 +39,9 @@ def beamline_setup(func):
         if sample is not None:
             yield from sample_move(0, 0, 45, sample)
         if eslit is not None:
-            yield from mv(energy_slit, eslit)
+            yield from mv(GLOBAL_ENERGY['slit'], eslit)
         if energy is not None:
-            yield from mv(en.energy, energy)
+            yield from mv(GLOBAL_ENERGY['energy'], energy)
         return (yield from func(*args, **kwargs))
 
     return inner
@@ -152,7 +152,7 @@ def _tes_count_plan_wrapper(plan_function, plan_name):
     @merge_func(plan_function)
     def _inner(*args, **kwargs):
         motor = dummymotor()
-        scanex = ScanExfiltrator(motor, en.energy.position)
+        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY['energy'].position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(*args, **kwargs)
 
@@ -175,7 +175,7 @@ def _tes_plan_wrapper(plan_function, plan_name):
     @sst_base_scan_decorator
     @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
-        scanex = ScanExfiltrator(motor, en.energy.position)
+        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY['energy'].position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(detectors, motor, *args, **kwargs)
 
@@ -361,7 +361,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     """
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
-    yield from mv(en.energy, energy)
+    yield from mv(GLOBAL_ENERGY['energy'], energy)
     pre_cal_exposure = tes.acquire_time.get()
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
@@ -386,7 +386,7 @@ def xas_factory(energy_grid, edge, name):
             Arguments to be passed to tes_gscan
 
         """
-        yield from tes_gscan(en.energy, *energy_grid, **kwargs)
+        yield from tes_gscan(GLOBAL_ENERGY['energy'], *energy_grid, **kwargs)
 
     d = f"Perform an in-place xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__

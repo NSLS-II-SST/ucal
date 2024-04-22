@@ -15,5 +15,6 @@ setup(
     scripts=scripts,
     entry_points={"sst_gui.plans": ["ucal-tes-count=ucal.qt.plans.tesBasic:TESCountWidget",
                                     "ucal-tes-scan=ucal.qt.plans.tesBasic:TESScanWidget",
-                                    "ucal-tes-cal=ucal.qt.plans.tesBasic:TESCalibrateWidget"]}
+                                    "ucal-tes-cal=ucal.qt.plans.tesBasic:TESCalibrateWidget"],
+                  "nbs.startup": "ucal=ucal.startup:main"}
 )

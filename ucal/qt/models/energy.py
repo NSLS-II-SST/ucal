@@ -4,7 +4,7 @@ from sst_gui.loaders import modelFromOphyd
 
 
 def energyFromOphyd(prefix, group=None, label=None, **kwargs):
-    return modelFromOphyd(prefix, group, label, modelClass=EnergyModel)
+    return modelFromOphyd(prefix, group, label, modelClass=EnergyModel, **kwargs)
 
 
 class EnergyModel:

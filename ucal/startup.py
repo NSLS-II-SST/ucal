@@ -73,10 +73,13 @@ for key in GLOBAL_IMPORT_DICTIONARY:
     if key not in globals():
         globals()[key] = GLOBAL_IMPORT_DICTIONARY[key]
 
-RE(set_exposure(1.0))
-tes.setFilenamePattern = False
-tes.path = "/data/raw"
-load_saved_configuration()
-activate_detector_set("default")
+
+def main():
+    print("UCAL Startup")
+    RE(set_exposure(1.0))
+    tes.setFilenamePattern = False
+    tes.path = "/data/raw"
+    load_saved_configuration()
+    activate_detector_set("default")
 
 # ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]
