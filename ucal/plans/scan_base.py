@@ -308,7 +308,14 @@ def _make_gscan_points(*args, shift=0):
         points.append(stop + shift)
     return points
 
-
+@add_to_scan_list
+@beamline_setup
+@_ucal_add_processing_md
+@sst_base_scan_decorator
+@merge_func(fly_scan, ["detectors", "motor"])
+def tes_flyscan(detectors, *args, **kwargs):
+    yield from fly_scan(detectors, en, *args, **kwargs)
+    
 @add_to_scan_list
 @merge_func(tes_list_scan, omit_params=["points"], exclude_wrapper_args=False, use_func_name=False)
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
