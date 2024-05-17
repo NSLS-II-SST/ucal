@@ -1,4 +1,4 @@
-from sst_funcs.run_engine import RE, generic_cmd
+from sst_funcs.run_engine import create_run_engine, generic_cmd
 from ucal.suspenders import suspend_current, suspend_shutter1
 from bluesky.utils import PersistentDict
 from . import STATION_NAME
@@ -33,6 +33,6 @@ def setup_run_engine(engine):
     # turn_on_checks(engine)
     return engine
 
-
+RE = create_run_engine()
 RE = setup_run_engine(RE)
 RE.md = PersistentDict(beamline_metadata_dir)

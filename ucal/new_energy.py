@@ -48,10 +48,11 @@ class FMB_Mono_Grating_Type(PVPositioner):
     clear_encoder_loss = Cpt(EpicsSignal, '_ENC_LSS_CLR_CMD.PROC')
     done = Cpt(EpicsSignal, '_AXIS_STS')
 
+
 class Monochromator(DeadbandMixin, PVPositioner):
     setpoint = Cpt(EpicsSignal, ":ENERGY_SP", kind="normal")
     readback = Cpt(EpicsSignalRO, ":ENERGY_MON", kind="hinted")
-    
+
     grating = Cpt(PrettyMotorFMBO, "GrtP}Mtr", name="Mono Grating", kind="config")
     mirror2 = Cpt(PrettyMotorFMBO, "MirP}Mtr", name="Mono Mirror", kind="config")
     cff = Cpt(EpicsSignal, ":CFF_SP", name="Mono CFF", kind="config", auto_monitor=True)

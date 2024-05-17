@@ -11,6 +11,7 @@ from sst_funcs.shutters import (
     open_shutter,
     is_shutter_open,
 )
+from sst_funcs.plans.flyscan_base import fly_scan
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge

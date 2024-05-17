@@ -1,10 +1,5 @@
 from ..widgets.energy import EnergyControl, EnergyMonitor
 from sst_gui.models import EnergyAxesModel, PVPositionerModel, PVModel
-from sst_gui.loaders import modelFromOphyd
-
-
-def energyFromOphyd(prefix, group=None, label=None, **kwargs):
-    return modelFromOphyd(prefix, group, label, modelClass=EnergyModel, **kwargs)
 
 
 class EnergyModel:
@@ -16,7 +11,7 @@ class EnergyModel:
         name,
         obj,
         group,
-        label,
+        long_name,
         **kwargs,
     ):
         print("Initializing Energy")
@@ -27,13 +22,13 @@ class EnergyModel:
             name=obj.monoen.gratingx.name,
             obj=obj.monoen.gratingx,
             group=group,
-            label=f"{name} Grating",
+            long_name=f"{name} Grating",
         )
         self.cff = PVModel(
-            obj.monoen.cff.name, obj.monoen.cff, group=group, label=f"{name} CFF"
+            obj.monoen.cff.name, obj.monoen.cff, group=group, long_name=f"{name} CFF"
         )
         self.group = group
-        self.label = label
+        self.label = long_name
         for key, value in kwargs.items():
             setattr(self, key, value)
         print("Done Initializing Energy")
