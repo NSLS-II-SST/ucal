@@ -33,6 +33,6 @@ def setup_run_engine(engine):
     # turn_on_checks(engine)
     return engine
 
-RE = create_run_engine()
+RE = create_run_engine(setup=True)
 RE = setup_run_engine(RE)
 RE.md = PersistentDict(beamline_metadata_dir)
