@@ -1,6 +1,6 @@
-from sst_funcs.hw import manipulator, en, Exit_Slit as eslit
-from sst_funcs.hw import *
-from sst_funcs.motors import add_motor
+from nbs_bl.hw import manipulator, en, Exit_Slit as eslit
+from nbs_bl.hw import *
+from nbs_bl.motors import add_motor
 
 add_motor(manipx, "Manipulator X", "manipx")
 add_motor(manipy, "Manipulator Y", "manipy")

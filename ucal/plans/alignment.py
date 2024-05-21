@@ -18,9 +18,9 @@ from ucal.plans.find_edges import (
 from ucal.plans.samples import set_side, sample_move
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
-from sst_funcs.help import add_to_plan_list
-from sst_funcs.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
-from sst_funcs.printing import boxed_text
+from nbs_bl.help import add_to_plan_list
+from nbs_bl.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
+from nbs_bl.printing import boxed_text
 from bluesky.plan_stubs import rd
 from bluesky.utils import RequestAbort
 import numpy as np

@@ -1,8 +1,8 @@
 from ucal.hw import tes, adr
-from sst_funcs.detectors import deactivate_detector, activate_detector
-from sst_funcs.plans.plan_stubs import call_obj, wait_for_signal_equals
-from sst_funcs.shutters import close_shutter
-from sst_funcs.help import add_to_plan_list
+from nbs_bl.detectors import deactivate_detector, activate_detector
+from nbs_bl.plans.plan_stubs import call_obj, wait_for_signal_equals
+from nbs_bl.shutters import close_shutter
+from nbs_bl.help import add_to_plan_list
 from bluesky.plan_stubs import sleep
 
 def tes_end_file():

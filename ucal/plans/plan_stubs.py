@@ -1,5 +1,5 @@
-from sst_funcs.plans.plan_stubs import call_obj
-from sst_funcs.help import add_to_plan_list
+from nbs_bl.plans.plan_stubs import call_obj
+from nbs_bl.help import add_to_plan_list
 from bluesky.plan_stubs import rd, mv
 from ucal.hw import manipulator
 from ucal.hw import tes

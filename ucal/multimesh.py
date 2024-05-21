@@ -1,6 +1,6 @@
 from ucal.hw import multimesh
 from sst_base.sampleholder import SampleHolder, make_1d_bar
-from sst_funcs.help import add_to_plan_list
+from nbs_bl.help import add_to_plan_list
 from bluesky.plan_stubs import abs_set, mv
 
 # Need to somehow have a second-pass configuration, or linked configuration, or something

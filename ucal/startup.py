@@ -17,9 +17,9 @@ from bluesky.plan_stubs import mv as move
 # from ucal.motors import (manipx, manipy, manipz, manipr, tesz,
 #                         manipulator, eslit, i0upAu)
 
-import sst_funcs
+import nbs_bl
 from ucal.hw import *
-from sst_funcs.detectors import (
+from nbs_bl.detectors import (
     add_detector,
     list_detectors,
     activate_detector,
@@ -29,7 +29,7 @@ from sst_funcs.detectors import (
     unplot_detector,
     activate_detector_set,
 )
-from sst_funcs.motors import add_motor, list_motors, remove_motor
+from nbs_bl.motors import add_motor, list_motors, remove_motor
 import ucal.plans
 
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
@@ -58,16 +58,16 @@ from ucal.plans.scan_base import (
 )
 import ucal.plans.scans
 from ucal.plans.plan_stubs import *
-import sst_funcs.plans.scans
+import nbs_bl.plans.scans
 from ucal.plans.tes_setup import *
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
 from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
 from ucal.sampleholder import sampleholder
-from sst_funcs.help import GLOBAL_IMPORT_DICTIONARY
-from sst_funcs.plans.groups import group
-from sst_funcs.queueserver import request_update, get_status
+from nbs_bl.help import GLOBAL_IMPORT_DICTIONARY
+from nbs_bl.plans.groups import group
+from nbs_bl.queueserver import request_update, get_status
 
 for key in GLOBAL_IMPORT_DICTIONARY:
     if key not in globals():

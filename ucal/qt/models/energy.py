@@ -1,5 +1,5 @@
 from ..widgets.energy import EnergyControl, EnergyMonitor
-from sst_gui.models import EnergyAxesModel, PVPositionerModel, PVModel
+from nbs_gui.models import EnergyAxesModel, PVPositionerModel, PVModel
 
 
 class EnergyModel:

@@ -1,13 +1,13 @@
 from ucal.sampleholder import sampleholder
 from ucal.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
 from ucal.configuration import beamline_config
-from sst_funcs.help import add_to_func_list, add_to_plan_list
+from nbs_bl.help import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
 import csv
 import copy
-from sst_funcs.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED
+from nbs_bl.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED
 
 # filename = "../../examples/sample_load.csv"
 

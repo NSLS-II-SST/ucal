@@ -1,7 +1,7 @@
 import numpy as np
 from ucal.hw import manipx, manipy, manipz, manipr
-from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_DETECTOR_THRESHOLDS, GLOBAL_ALIGNMENT_DETECTOR
-from sst_funcs.plans.maximizers import (
+from nbs_bl.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_DETECTOR_THRESHOLDS, GLOBAL_ALIGNMENT_DETECTOR
+from nbs_bl.plans.maximizers import (
     find_max_deriv,
     find_max,
     halfmax_adaptive,
@@ -10,7 +10,7 @@ from sst_funcs.plans.maximizers import (
 )
 from bluesky.plan_stubs import mv, mvr
 from bluesky.plans import rel_scan
-from sst_funcs.plans.flyscan_base import fly_scan
+from nbs_bl.plans.flyscan_base import fly_scan
 
 # This should go into a beamline config file at some point
 # max_channel = i1.name

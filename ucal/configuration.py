@@ -1,13 +1,13 @@
 from ucal.run_engine import RE
-from sst_funcs.printing import boxed_text
-from sst_funcs.help import add_to_func_list
+from nbs_bl.printing import boxed_text
+from nbs_bl.help import add_to_func_list
 from bluesky.utils import PersistentDict
 import uuid
 from datetime import datetime
 from os.path import join, exists
 from os import mkdir, chdir
-from sst_funcs.status import StatusDict
-from sst_funcs.queueserver import add_status
+from nbs_bl.status import StatusDict
+from nbs_bl.queueserver import add_status
 from . import STATION_NAME
 
 if STATION_NAME == "sst_sim":

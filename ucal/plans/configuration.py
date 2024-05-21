@@ -2,7 +2,7 @@
 from ucal.hw import mir1, mir3, mir4, i0upAu
 from ucal.hw import manipz, en
 from bluesky.plan_stubs import mv, rd
-from sst_funcs.help import add_to_plan_list
+from nbs_bl.help import add_to_plan_list
 
 
 @add_to_plan_list

@@ -15,9 +15,9 @@ from qtpy.QtWidgets import (
 from qtpy.QtGui import QDoubleValidator, QIntValidator
 from qtpy.QtCore import Signal, Qt
 from bluesky_queueserver_api import BPlan
-from sst_gui.plans.base import PlanWidget
-from sst_gui.plans.scanPlan import ScanPlanWidget
-from sst_gui.plans.sampleModifier import SampleSelectWidget
+from nbs_gui.plans.base import PlanWidget
+from nbs_gui.plans.scanPlan import ScanPlanWidget
+from nbs_gui.plans.sampleModifier import SampleSelectWidget
 
 class TESCountWidget(PlanWidget):
     def __init__(self, model, parent=None):

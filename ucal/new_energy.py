@@ -17,7 +17,7 @@ import pathlib
 import numpy as np
 import xarray as xr
 import time
-from sst_funcs.printing import boxed_text, colored
+from nbs_bl.printing import boxed_text, colored
 from sst_base.motors import PrettyMotorFMBO
 from sst_base.positioners import DeadbandEpicsMotor, DeadbandMixin, PseudoSingle
 from sst_base.mirrors import FMBHexapodMirrorAxisStandAlonePitch

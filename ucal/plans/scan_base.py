@@ -1,28 +1,28 @@
 # from ucal.hw import tes, eslit as energy_slit, en
 from ucal.hw import tes
-from sst_funcs.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS, GLOBAL_ENERGY
-from sst_funcs.detectors import activate_detector, deactivate_detector
+from nbs_bl.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS, GLOBAL_ENERGY
+from nbs_bl.detectors import activate_detector, deactivate_detector
 
 # from ucal.energy import en
-from sst_funcs.plans.plan_stubs import call_obj, set_exposure
-from sst_funcs.plans.scan_decorators import sst_base_scan_decorator
-from sst_funcs.shutters import (
+from nbs_bl.plans.plan_stubs import call_obj, set_exposure
+from nbs_bl.plans.scan_decorators import sst_base_scan_decorator
+from nbs_bl.shutters import (
     close_shutter,
     open_shutter,
     is_shutter_open,
 )
-from sst_funcs.plans.flyscan_base import fly_scan
+from nbs_bl.plans.flyscan_base import fly_scan
 from ucal.scan_exfiltrator import ScanExfiltrator
 from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
-from sst_funcs.help import add_to_plan_list, add_to_scan_list
+from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv
 from bluesky.preprocessors import run_decorator, subs_decorator
 from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
-from sst_funcs.plans.preprocessors import wrap_metadata
+from nbs_bl.plans.preprocessors import wrap_metadata
 import bluesky.plans as bp
-from sst_funcs.utils import merge_func
+from nbs_bl.utils import merge_func
 
 
 def beamline_setup(func):

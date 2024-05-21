@@ -1,4 +1,4 @@
-from sst_funcs.run_engine import create_run_engine, generic_cmd
+from nbs_bl.run_engine import create_run_engine, generic_cmd
 from ucal.suspenders import suspend_current, suspend_shutter1
 from bluesky.utils import PersistentDict
 from . import STATION_NAME

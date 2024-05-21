@@ -7,9 +7,9 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QDialog,
 )
-from sst_gui.widgets.views import AutoControl, AutoMonitor
-from sst_gui.widgets.motor import MotorMonitor, MotorControl
-from sst_gui.widgets.manipulator_monitor import (
+from nbs_gui.widgets.views import AutoControl, AutoMonitor
+from nbs_gui.widgets.motor import MotorMonitor, MotorControl
+from nbs_gui.widgets.manipulator_monitor import (
     ManipulatorMonitor,
     PseudoManipulatorControl,
 )
