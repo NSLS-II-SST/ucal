@@ -1,7 +1,7 @@
 from bluesky.plan_stubs import mv, mvr
 
 # from bluesky.utils import Msg
-from ucal.hw import manipx, manipz, manipr, manipulator
+from ucal.hw import manipx, manipy, manipz, manipr, manipulator
 from ucal.hw import tesz
 from ucal.plans.find_edges import (
     scan_r_coarse,
@@ -15,11 +15,12 @@ from ucal.plans.find_edges import (
     find_x,
     find_z,
 )
-from ucal.plans.samples import set_side, sample_move
+from ucal.plans.samples import set_side, sample_move, add_sample_to_globals
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list
 from nbs_bl.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
+from nbs_bl.geometry.frames import Frame
 from nbs_bl.printing import boxed_text
 from bluesky.plan_stubs import rd
 from bluesky.utils import RequestAbort
@@ -350,3 +351,33 @@ def find_sides_one_z(z, side_start, side_end, nsides):
         x = np.abs(x)
         xr_list.append((x, r))
     return xr_list
+
+
+def get_manual_sample_frame(x, y, z, r):
+    rmod = r % 90
+    rdiv = r - rmod
+    z0 = manipulator.origin[2]
+    x0 = manipulator.origin[0]
+    pr = rotz(np.pi * rmod / 180.0, vec(-(x - x0), -y, z))
+    points = find_side_points(pr[0], pr[1], pr[0], pr[1], z, z + 1, rdiv, vec(0, 0, z0))
+    frame = Frame(points[0], points[1], points[2])
+    return frame
+
+
+@add_to_plan_list
+def add_current_position_as_sample(name, sample_id, description=None):
+    x = manipx.position
+    y = manipy.position
+    z = manipz.position
+    r = manipr.position
+    add_position_as_sample(x, y, z, r, name, sample_id, description)
+
+
+@add_to_plan_list
+def add_position_as_sample(x, y, z, r, name, sample_id, description=None):
+    frame = get_manual_sample_frame(x, y, z, r)
+    side = r // 90 + 1
+    manipulator.holder._add_frame(frame, sample_id, name, side, description)
+    add_sample_to_globals(
+        sample_id, name, [x, y, z, r], side, 0, description, origin="manual"
+    )

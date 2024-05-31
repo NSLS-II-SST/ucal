@@ -52,18 +52,26 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
         description = sdict.pop("description", name)
         side = int(sdict.pop("side"))
         thickness = float(sdict.pop("t", 0))
-        GLOBAL_SAMPLES[sample_id] = {
-            "name": name,
-            "position": position,
-            "side": side,
-            "thickness": thickness,
-            "description": description,
-            **sdict,
-        }
+        add_sample_to_globals(
+            sample_id, name, position, side, thickness, description, **sdict
+        )
         holder.add_sample(
             sample_id, name, position, side, thickness, description=description, **sdict
         )
     return
+
+
+def add_sample_to_globals(
+    sample_id, name, position, side, thickness, description=None, **kwargs
+):
+    GLOBAL_SAMPLES[sample_id] = {
+        "name": name,
+        "position": position,
+        "side": side,
+        "thickness": thickness,
+        "description": description,
+        **kwargs,
+    }
 
 
 def load_sample_dict(samples):
@@ -140,6 +148,7 @@ def sample_move(x, y, r, sampleid=None, **kwargs):
         yield from set_sample(sampleid, **kwargs)
     yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
 
+
 @add_to_plan_list
 def manual_sample_move(x, y, z, r, name, sample_id=-1):
     GLOBAL_SELECTED.clear()
@@ -147,6 +156,7 @@ def manual_sample_move(x, y, z, r, name, sample_id=-1):
     GLOBAL_SELECTED["name"] = name
     GLOBAL_SELECTED["origin"] = "manual"
     yield from mv(manipx, x, manipy, y, manipz, z, manipr, r)
+
 
 @add_to_func_list
 def list_samples():
