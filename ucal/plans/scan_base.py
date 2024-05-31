@@ -23,6 +23,7 @@ from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
 from nbs_bl.plans.preprocessors import wrap_metadata
 import bluesky.plans as bp
 from nbs_bl.utils import merge_func
+import numpy as np
 
 
 def beamline_setup(func):
@@ -213,6 +214,7 @@ def take_dark_counts():
 
     @subs_decorator(dc)
     def inner():
+        yield from set_exposure(1.0)
         shutter_open = yield from is_shutter_open()
         if shutter_open:
             yield from close_shutter()
@@ -221,7 +223,7 @@ def take_dark_counts():
         for det in GLOBAL_ACTIVE_DETECTORS:
             detname = det.name
             if hasattr(det, "offset"):
-                det.offset.set(0)
+                det.offset.set(0).wait()
 
         yield from bp.count(GLOBAL_ACTIVE_DETECTORS, 10, md={"scantype": "darkcounts"})
         run = BlueskyRun(dc)
@@ -230,7 +232,8 @@ def take_dark_counts():
             detname = det.name
             if hasattr(det, "offset"):
                 dark_value = float(table[detname].mean().values)
-                det.offset.set(dark_value)
+                if np.isfinite(dark_value):
+                    det.offset.set(dark_value).wait()
         if shutter_open:
             yield from open_shutter()
 
@@ -239,36 +242,37 @@ def take_dark_counts():
 
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
+ 
+    beamline_config["last_cal"] = None
+    beamline_config["last_noise"] = None
+    beamline_config["last_projectors"] = None
+    tes._last_noise_uid = ""
+    tes._last_projector_uid = ""
+    shutter_open = yield from is_shutter_open()
+    if shutter_open:
+        yield from close_shutter()
+    yield from call_obj(tes, "take_noise")
+    uid = yield from bp.count([tes], 5, md={"scantype": "noise"})
+    yield from call_obj(tes, "_file_end")
+    yield from call_obj(tes, "_set_pulse_triggers")
 
-    @run_decorator(md={"scantype": "noise"})
-    def inner_noise():
-        beamline_config["last_cal"] = None
-        beamline_config["last_noise"] = None
-        shutter_open = yield from is_shutter_open()
-        if shutter_open:
-            yield from close_shutter()
-        yield from call_obj(tes, "take_noise")
-        if shutter_open:
-            yield from open_shutter()
-
-    uid = yield from inner_noise()
     beamline_config["last_noise"] = uid
+    tes._last_noise_uid = uid
+    if shutter_open:
+        yield from open_shutter()
     return uid
 
 
 def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
 
-    @run_decorator(md={"scantype": "projectors"})
-    def inner_projectors():
-        # tes.rpc.file_start(tes.path, write_ljh=True, write_off=False,
-        #                   setFilenamePattern=tes.setFilenamePattern)
-        # yield from sleep(30)
-        # tes._file_end()
-        yield from open_shutter()
-        yield from call_obj(tes, "take_projectors", time=30)
-
-    return (yield from inner_projectors())
+    yield from open_shutter()
+    yield from call_obj(tes, "take_projectors")
+    uid = yield from bp.count([tes], 30, md={"scantype": "projectors"})
+    yield from call_obj(tes, "_file_end")
+    tes._last_projector_uid = uid
+    beamline_config["last_projectors"] = uid
+    return uid
 
 
 @add_to_plan_list

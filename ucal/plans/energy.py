@@ -21,7 +21,7 @@ def base_grating_to_250():
     # yield from bps.mv(mirror2.user_offset, 0.04) #0.0315)
     # yield from bps.mv(grating.user_offset, -0.0874)#-0.0959)
     # yield from bps.mv(en.m3offset, 7.91)
-    yield from bps.mv(mono_en.cff, 1.5)
+    yield from bps.mv(mono_en.cff, 1.47)
     yield from bps.mv(en, 270)
     yield from psh4.open()
     print("the grating is now at 250 l/mm signifigant higher order")
@@ -40,7 +40,7 @@ def base_grating_to_1200():
     # yield from bps.sleep(60)
     # yield from bps.mv(mirror2.user_offset, 0.2044) #0.1962) #0.2052) # 0.1745)  # 8.1264)
     # yield from bps.mv(grating.user_offset, 0.0769) #0.0687) # 0.0777) # 0.047)  # 7.2964)  # 7.2948)#7.2956
-    yield from bps.mv(mono_en.cff, 2.05)
+    yield from bps.mv(mono_en.cff, 2.02)
     # yield from bps.mv(en.m3offset, 7.91)
     yield from bps.mv(en, 270)
     yield from psh4.open()
@@ -55,7 +55,7 @@ def setup_mono():
         # yield from bps.mv(en.m3offset, 7.91)
         yield from bps.mv(mono_en.cff, 1.5)
     elif "1200" in monotype:
-        yield from bps.mv(mono_en.cff, 2.05)
+        yield from bps.mv(mono_en.cff, 2.02)
         # yield from bps.mv(en.m3offset, 7.91)
 
 
