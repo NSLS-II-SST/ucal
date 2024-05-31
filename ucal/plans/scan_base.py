@@ -1,6 +1,10 @@
 # from ucal.hw import tes, eslit as energy_slit, en
 from ucal.hw import tes
-from nbs_bl.globalVars import GLOBAL_ACTIVE_DETECTORS, GLOBAL_PLOT_DETECTORS, GLOBAL_ENERGY
+from nbs_bl.globalVars import (
+    GLOBAL_ACTIVE_DETECTORS,
+    GLOBAL_PLOT_DETECTORS,
+    GLOBAL_ENERGY,
+)
 from nbs_bl.detectors import activate_detector, deactivate_detector
 
 # from ucal.energy import en
@@ -28,7 +32,7 @@ import numpy as np
 
 def beamline_setup(func):
     @merge_func(func)
-    def inner(*args, sample=None, eslit=None, energy=None, **kwargs):
+    def inner(*args, sample=None, eslit=None, energy=None, r=45, **kwargs):
         """
         Parameters
         ----------
@@ -39,11 +43,11 @@ def beamline_setup(func):
         """
 
         if sample is not None:
-            yield from sample_move(0, 0, 45, sample)
+            yield from sample_move(0, 0, r, sample)
         if eslit is not None:
-            yield from mv(GLOBAL_ENERGY['slit'], eslit)
+            yield from mv(GLOBAL_ENERGY["slit"], eslit)
         if energy is not None:
-            yield from mv(GLOBAL_ENERGY['energy'], energy)
+            yield from mv(GLOBAL_ENERGY["energy"], energy)
         return (yield from func(*args, **kwargs))
 
     return inner
@@ -154,7 +158,7 @@ def _tes_count_plan_wrapper(plan_function, plan_name):
     @merge_func(plan_function)
     def _inner(*args, **kwargs):
         motor = dummymotor()
-        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY['energy'].position)
+        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY["energy"].position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(*args, **kwargs)
 
@@ -177,7 +181,7 @@ def _tes_plan_wrapper(plan_function, plan_name):
     @sst_base_scan_decorator
     @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
-        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY['energy'].position)
+        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY["energy"].position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(detectors, motor, *args, **kwargs)
 
@@ -196,11 +200,13 @@ Other detectors may be added on the fly via extra_dets
 
 tes_count = add_to_scan_list(_tes_count_plan_wrapper(bp.count, "tes_count"))
 
+
 @add_to_scan_list
 @merge_func(tes_count, use_func_name=False)
 def tes_xes(*args, **kwargs):
     _inner = wrap_metadata({"plan_name": "tes_xes"})(wrap_xes(tes_count))
     return (yield from _inner(*args, **kwargs))
+
 
 tes_scan = add_to_scan_list(_tes_plan_wrapper(bp.scan, "tes_scan"))
 tes_rel_scan = add_to_scan_list(_tes_plan_wrapper(bp.rel_scan, "tes_rel_scan"))
@@ -313,6 +319,7 @@ def _make_gscan_points(*args, shift=0):
         points.append(stop + shift)
     return points
 
+
 @add_to_scan_list
 @beamline_setup
 @_ucal_add_processing_md
@@ -320,9 +327,15 @@ def _make_gscan_points(*args, shift=0):
 @merge_func(fly_scan, ["detectors", "motor"])
 def tes_flyscan(detectors, *args, **kwargs):
     yield from fly_scan(detectors, en, *args, **kwargs)
-    
+
+
 @add_to_scan_list
-@merge_func(tes_list_scan, omit_params=["points"], exclude_wrapper_args=False, use_func_name=False)
+@merge_func(
+    tes_list_scan,
+    omit_params=["points"],
+    exclude_wrapper_args=False,
+    use_func_name=False,
+)
 def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
     """A variable step scan of a motor, the TES detector, and the basic beamline detectors.
 
@@ -373,7 +386,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     """
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
-    yield from mv(GLOBAL_ENERGY['energy'], energy)
+    yield from mv(GLOBAL_ENERGY["energy"], energy)
     pre_cal_exposure = tes.acquire_time.get()
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
@@ -398,7 +411,7 @@ def xas_factory(energy_grid, edge, name):
             Arguments to be passed to tes_gscan
 
         """
-        yield from tes_gscan(GLOBAL_ENERGY['energy'], *energy_grid, **kwargs)
+        yield from tes_gscan(GLOBAL_ENERGY["energy"], *energy_grid, **kwargs)
 
     d = f"Perform an in-place xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__
