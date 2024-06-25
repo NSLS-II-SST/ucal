@@ -113,7 +113,9 @@ class AdvancedEnergyControl(QGroupBox):
         self.setLayout(layout)
 
     def tune_grating(self):
-        if self.confirm_dialog("Ensure that beamline is opened to multimesh reference ladder for tune"):
+        if self.confirm_dialog(
+            "Ensure that beamline is opened to multimesh reference ladder for tune"
+        ):
             plan = BPlan("tune_grating")
             self.REClientModel._client.item_execute(plan)
 
@@ -122,9 +124,9 @@ class AdvancedEnergyControl(QGroupBox):
         print(enum)
         if self.confirm_dialog("Are you sure you want to change gratings?"):
             if enum == 9:
-                plan = BPlan("base_grating_to_1200")
+                plan = BPlan("change_grating", 1200)
             else:
-                plan = BPlan("base_grating_to_250")
+                plan = BPlan("change_grating", 250)
             self.REClientModel._client.item_execute(plan)
 
     def confirm_dialog(self, confirm_message):
