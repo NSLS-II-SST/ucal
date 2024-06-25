@@ -19,6 +19,7 @@ from nbs_gui.plans.base import PlanWidget
 from nbs_gui.plans.scanPlan import ScanPlanWidget
 from nbs_gui.plans.sampleModifier import SampleSelectWidget
 
+
 class TESCountWidget(PlanWidget):
     def __init__(self, model, parent=None):
         super().__init__(
@@ -61,6 +62,7 @@ class TESCountWidget(PlanWidget):
             item = BPlan(plan, sample=s, **params)
             self.run_engine_client.queue_item_add(item=item)
 
+
 class TESCalibrateWidget(PlanWidget):
     def __init__(self, model, parent=None):
         super().__init__(
@@ -96,10 +98,11 @@ class TESCalibrateWidget(PlanWidget):
         plan = "tes_calibrate"
         samples = self.sample_widget.get_samples()
         params = self.get_params()
-        time = params.pop('time')
+        time = params.pop("time")
         for s in samples:
             item = BPlan(plan, time, sample=s, **params)
             self.run_engine_client.queue_item_add(item=item)
+
 
 class TESScanWidget(ScanPlanWidget):
     def __init__(self, model, parent=None):
