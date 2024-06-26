@@ -36,8 +36,14 @@ class EnergyMonitor(QGroupBox):
         vbox2 = QVBoxLayout()
         for m in energy.energy.real_axes_models:
             vbox2.addWidget(MotorMonitor(m, parent_model))
+        vbox3 = QVBoxLayout()
+        for p in energy.energy.pseudo_axes_models:
+            vbox3.addWidget(MotorMonitor(p, parent_model))
+        hbox2 = QHBoxLayout()
+        hbox2.addLayout(vbox2)
+        hbox2.addLayout(vbox3)
         hbox.addLayout(vbox1)
-        hbox.addLayout(vbox2)
+        hbox.addLayout(hbox2)
         self.setLayout(hbox)
 
 
@@ -50,14 +56,23 @@ class EnergyControl(QGroupBox):
         self.REClientModel = parent_model.run_engine
         print("Creating Energy Control Vbox")
         vbox = QVBoxLayout()
+        vbox2 = QVBoxLayout()
+        vbox3 = QVBoxLayout()
+        hbox = QHBoxLayout()
         print("Creating Energy Motor")
         for m in energy.energy.pseudo_axes_models:
-            vbox.addWidget(MotorControl(m, parent_model))
+            vbox2.addWidget(MotorControl(m, parent_model))
+        for p in energy.energy.real_axes_models:
+            vbox3.addWidget(MotorControl(p, parent_model))
         # vbox.addWidget(PseudoManipulatorControl(energy.energy, parent_model))
         print("Creating Exit Slit")
+        hbox.addLayout(vbox2)
+        hbox.addLayout(vbox3)
+        vbox.addLayout(hbox)
         vbox.addWidget(
             MotorControl(parent_model.beamline.motors["Exit_Slit"], parent_model)
         )
+
         vbox.addWidget(AutoMonitor(energy.cff, parent_model))
 
         self.advancedControlButton = QPushButton("Advanced Controls")
