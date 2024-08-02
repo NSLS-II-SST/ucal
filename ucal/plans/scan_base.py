@@ -9,7 +9,7 @@ from nbs_bl.detectors import activate_detector, deactivate_detector
 
 # from ucal.energy import en
 from nbs_bl.plans.plan_stubs import call_obj, set_exposure
-from nbs_bl.plans.scan_decorators import sst_base_scan_decorator
+from nbs_bl.plans.scan_decorators import nbs_base_scan_decorator
 from nbs_bl.shutters import (
     close_shutter,
     open_shutter,
@@ -21,7 +21,7 @@ from ucal.plans.samples import sample_move, GLOBAL_SELECTED
 from ucal.multimesh import set_edge
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
-from bluesky.plan_stubs import mv
+from bluesky.plan_stubs import mv, abs_set
 from bluesky.preprocessors import run_decorator, subs_decorator
 from bluesky_live.bluesky_run import BlueskyRun, DocumentCache
 from nbs_bl.plans.preprocessors import wrap_metadata
@@ -136,7 +136,7 @@ def tes_count_old(
     tes.scanexfiltrator = scanex
 
     @_ucal_add_processing_md
-    @sst_base_scan_decorator
+    @nbs_base_scan_decorator
     @wrap_xes
     @merge_func(bp.count)
     def _inner(*args, **kwargs):
@@ -154,7 +154,7 @@ def _tes_count_plan_wrapper(plan_function, plan_name):
 
     @beamline_setup
     @_ucal_add_processing_md
-    @sst_base_scan_decorator
+    @nbs_base_scan_decorator
     @merge_func(plan_function)
     def _inner(*args, **kwargs):
         motor = dummymotor()
@@ -178,7 +178,7 @@ Other detectors may be added on the fly via extra_dets
 def _tes_plan_wrapper(plan_function, plan_name):
     @beamline_setup
     @_ucal_add_processing_md
-    @sst_base_scan_decorator
+    @nbs_base_scan_decorator
     @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
         scanex = ScanExfiltrator(motor, GLOBAL_ENERGY["energy"].position)
@@ -248,12 +248,12 @@ def take_dark_counts():
 
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
- 
+
     beamline_config["last_cal"] = None
     beamline_config["last_noise"] = None
     beamline_config["last_projectors"] = None
-    tes._last_noise_uid = ""
-    tes._last_projector_uid = ""
+    yield from abs_set(tes.noise_uid, "")
+    yield from abs_set(tes.projector_uid, "")
     shutter_open = yield from is_shutter_open()
     if shutter_open:
         yield from close_shutter()
@@ -263,7 +263,7 @@ def tes_take_noise():
     yield from call_obj(tes, "_set_pulse_triggers")
 
     beamline_config["last_noise"] = uid
-    tes._last_noise_uid = uid
+    yield from abs_set(tes.noise_uid, uid)
     if shutter_open:
         yield from open_shutter()
     return uid
@@ -276,7 +276,7 @@ def tes_take_projectors():
     yield from call_obj(tes, "take_projectors")
     uid = yield from bp.count([tes], 30, md={"scantype": "projectors"})
     yield from call_obj(tes, "_file_end")
-    tes._last_projector_uid = uid
+    yield from abs_set(tes.projector_uid, uid)
     beamline_config["last_projectors"] = uid
     return uid
 
@@ -323,7 +323,7 @@ def _make_gscan_points(*args, shift=0):
 @add_to_scan_list
 @beamline_setup
 @_ucal_add_processing_md
-@sst_base_scan_decorator
+@nbs_base_scan_decorator
 @merge_func(fly_scan, ["detectors", "motor"])
 def tes_flyscan(detectors, *args, **kwargs):
     yield from fly_scan(detectors, en, *args, **kwargs)

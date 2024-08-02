@@ -17,5 +17,6 @@ setup(
                                     "ucal-tes-scan=ucal.qt.plans.tesBasic:TESScanWidget",
                                     "ucal-tes-cal=ucal.qt.plans.tesBasic:TESCalibrateWidget",
                                     "manual-sample-move=ucal.qt.plans.sampleMove:ManualSampleWidget"],
+                  "nbs_gui.tabs": ["ucal-tes-tab=ucal.qt.tabs.tesTab:TESTabWidget"],
                   "nbs.startup": "ucal=ucal.startup:main"}
 )
