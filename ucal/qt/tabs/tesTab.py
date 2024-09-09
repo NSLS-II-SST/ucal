@@ -27,7 +27,7 @@ class TESTabWidget(QWidget):
         vbox = QVBoxLayout()
         print("Getting TES Object")
         print(self.beamline)
-        tes = self.beamline.misc.get("tes", None)
+        tes = self.beamline.devices.get("tes", None)
         print("Got TES Object")
         if tes is not None:
             print("Got TES model")
