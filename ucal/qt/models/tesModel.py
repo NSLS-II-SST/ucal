@@ -70,44 +70,57 @@ class TESModel(QObject):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        connected = PVModelRO(obj.connected.name, obj.connected, group, "TES Connected")
-        currentFile = PVModelRO(
+        self.connected = PVModelRO(
+            obj.connected.name, obj.connected, group, "TES Connected"
+        )
+        self.currentFile = PVModelRO(
             obj.filename.name, obj.filename, group, "Current Filename"
         )
-        noiseUID = PVModelRO(
+        self.noiseUID = PVModelRO(
             obj.noise_uid.name, obj.noise_uid, group, "UID For Noise Data"
         )
-        projUID = PVModelRO(
+        self.projUID = PVModelRO(
             obj.projector_uid.name, obj.projector_uid, group, "UID For Projector Data"
         )
-        state = PVModelRO(obj.state.name, obj.state, group, "TES State")
-        counts = PVModelRO(obj.mca.counts.name, obj.mca.counts, group, "TES Counts")
-        rsyncScan = EnumModel(
+        self.calUID = PVModelRO(
+            obj.calibration_uid.name,
+            obj.calibration_uid,
+            group,
+            "UID For Calibration Data",
+        )
+        self.state = PVModelRO(obj.state.name, obj.state, group, "TES State")
+        self.status = EnumModel(obj.status.name, obj.status, group, "TES Status")
+        self.counts = PVModelRO(
+            obj.mca.counts.name, obj.mca.counts, group, "TES Counts"
+        )
+        self.rsyncScan = EnumModel(
             obj.rsync_on_scan_end.name,
             obj.rsync_on_scan_end,
             group,
             "Copy TES Files on Scan End",
         )
-        writeOff = EnumModel(
+        self.writeOff = EnumModel(
             obj.write_off.name,
             obj.write_off,
             group,
             "Write Off",
         )
-        writeLjh = EnumModel(
+        self.writeLjh = EnumModel(
             obj.write_ljh.name,
             obj.write_ljh,
             group,
             "Write LJH",
         )
         self.signals = [
-            connected,
-            state,
-            currentFile,
-            noiseUID,
-            projUID,
-            rsyncScan,
-            counts,
-            writeOff,
-            writeLjh,
+            self.connected,
+            self.state,
+            self.status,
+            self.currentFile,
+            self.noiseUID,
+            self.projUID,
+            self.calUID,
+            self.rsyncScan,
+            self.counts,
+            self.writeOff,
+            self.writeLjh,
         ]

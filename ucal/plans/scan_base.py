@@ -1,9 +1,8 @@
 # from ucal.hw import tes, eslit as energy_slit, en
 from ucal.hw import tes
 from nbs_bl.globalVars import (
-    GLOBAL_ACTIVE_DETECTORS,
-    GLOBAL_PLOT_DETECTORS,
-    GLOBAL_ENERGY,
+    # GLOBAL_ACTIVE_DETECTORS,
+    GLOBAL_BEAMLINE,
 )
 from nbs_bl.detectors import activate_detector, deactivate_detector
 
@@ -45,9 +44,9 @@ def beamline_setup(func):
         if sample is not None:
             yield from sample_move(0, 0, r, sample)
         if eslit is not None:
-            yield from mv(GLOBAL_ENERGY["slit"], eslit)
+            yield from mv(GLOBAL_BEAMLINE.slits, eslit)
         if energy is not None:
-            yield from mv(GLOBAL_ENERGY["energy"], energy)
+            yield from mv(GLOBAL_BEAMLINE.energy, energy)
         return (yield from func(*args, **kwargs))
 
     return inner
@@ -79,23 +78,6 @@ def wrap_xas(element):
 
 def wrap_xes(func):
     return wrap_metadata({"scantype": "xes"})(func)
-
-
-def get_detector_plot_hints():
-    plot_y_md = []
-    plot_array_md = []
-    plot_image_md = []
-    style_hints = {}
-    for detector in GLOBAL_PLOT_DETECTORS:
-        if hasattr(detector, "plot_hints"):
-            h = detector.plot_hints()
-            plot_y_md += h.get("y", [])
-            plot_array_md += h.get("array", [])
-            plot_image_md += h.get("image", [])
-            style_hints.update(h.get("style_hints", {}))
-        else:
-            plot_y_md += detector.hints.get("fields", [])
-    return plot_y_md, plot_array_md, plot_image_md, style_hints
 
 
 def _ucal_add_processing_md(func):
@@ -158,7 +140,7 @@ def _tes_count_plan_wrapper(plan_function, plan_name):
     @merge_func(plan_function)
     def _inner(*args, **kwargs):
         motor = dummymotor()
-        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY["energy"].position)
+        scanex = ScanExfiltrator(motor, GLOBAL_BEAMLINE.energy.position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(*args, **kwargs)
 
@@ -181,7 +163,7 @@ def _tes_plan_wrapper(plan_function, plan_name):
     @nbs_base_scan_decorator
     @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
-        scanex = ScanExfiltrator(motor, GLOBAL_ENERGY["energy"].position)
+        scanex = ScanExfiltrator(motor, GLOBAL_BEAMLINE.energy.position)
         tes.scanexfiltrator = scanex
         ret = yield from plan_function(detectors, motor, *args, **kwargs)
 
@@ -226,15 +208,17 @@ def take_dark_counts():
             yield from close_shutter()
 
         # Clear offsets first
-        for det in GLOBAL_ACTIVE_DETECTORS:
+        for det in GLOBAL_BEAMLINE.detectors.active:
             detname = det.name
             if hasattr(det, "offset"):
                 det.offset.set(0).wait()
 
-        yield from bp.count(GLOBAL_ACTIVE_DETECTORS, 10, md={"scantype": "darkcounts"})
+        yield from bp.count(
+            GLOBAL_BEAMLINE.detectors.active, 10, md={"scantype": "darkcounts"}
+        )
         run = BlueskyRun(dc)
         table = run.primary.read()
-        for det in GLOBAL_ACTIVE_DETECTORS:
+        for det in GLOBAL_BEAMLINE.detectors.active:
             detname = det.name
             if hasattr(det, "offset"):
                 dark_value = float(table[detname].mean().values)
@@ -281,6 +265,11 @@ def tes_take_projectors():
     return uid
 
 
+def tes_make_and_load_projectors():
+    yield from call_obj(tes, "make_projectors")
+    return (yield from call_obj(tes, "set_projectors"))
+
+
 @add_to_plan_list
 @beamline_setup
 def tes_setup(should_take_dark_counts=True):
@@ -296,8 +285,7 @@ def tes_setup(should_take_dark_counts=True):
     activate_detector("tes")
     yield from tes_take_noise()
     yield from tes_take_projectors()
-    yield from call_obj(tes, "make_projectors")
-    return (yield from call_obj(tes, "set_projectors"))
+    return (yield from tes_make_and_load_projectors())
 
 
 def _make_gscan_points(*args, shift=0):
@@ -326,7 +314,7 @@ def _make_gscan_points(*args, shift=0):
 @nbs_base_scan_decorator
 @merge_func(fly_scan, ["detectors", "motor"])
 def tes_flyscan(detectors, *args, **kwargs):
-    yield from fly_scan(detectors, en, *args, **kwargs)
+    yield from fly_scan(detectors, GLOBAL_BEAMLINE.energy, *args, **kwargs)
 
 
 @add_to_scan_list
@@ -386,7 +374,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     """
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
-    yield from mv(GLOBAL_ENERGY["energy"], energy)
+    yield from mv(GLOBAL_BEAMLINE.energy, energy)
     pre_cal_exposure = tes.acquire_time.get()
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
@@ -394,6 +382,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     cal_uid = yield from tes_count(int(time // dwell), dwell=dwell, md=_md, **kwargs)
     yield from mv(tes.cal_flag, False)
     beamline_config["last_cal"] = cal_uid
+    yield from abs_set(tes.calibration_uid, cal_uid)
     yield from set_exposure(pre_cal_exposure)
     return cal_uid
 
@@ -411,7 +400,7 @@ def xas_factory(energy_grid, edge, name):
             Arguments to be passed to tes_gscan
 
         """
-        yield from tes_gscan(GLOBAL_ENERGY["energy"], *energy_grid, **kwargs)
+        yield from tes_gscan(GLOBAL_BEAMLINE.energy, *energy_grid, **kwargs)
 
     d = f"Perform an in-place xas scan for {edge} with energy pattern {energy_grid} \n"
     inner.__doc__ = d + inner.__doc__

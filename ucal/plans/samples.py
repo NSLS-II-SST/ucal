@@ -83,6 +83,7 @@ def load_samples_into_holder(filename, holder, **kwargs):
     load_sample_dict_into_holder(samples, holder, **kwargs)
 
 
+@add_to_func_list
 def load_standard_two_sided_bar(filename):
     bar = make_two_sided_bar(13, 300, 2)
     sampleholder.add_geometry(bar)
@@ -91,6 +92,7 @@ def load_standard_two_sided_bar(filename):
     load_samples_into_holder(filename, sampleholder, clear=False)
 
 
+@add_to_func_list
 def load_standard_four_sided_bar(filename):
     bar = make_regular_polygon(24.5, 215, 4)
     sampleholder.add_geometry(bar)
@@ -99,6 +101,7 @@ def load_standard_four_sided_bar(filename):
     load_samples_into_holder(filename, sampleholder, clear=False)
 
 
+@add_to_func_list
 def load_samples(filename):
     beamline_config["loadfile"] = abspath(filename)
     load_samples_into_holder(filename, sampleholder)

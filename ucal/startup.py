@@ -20,16 +20,12 @@ from bluesky.plan_stubs import mv as move
 import nbs_bl
 from ucal.hw import *
 from nbs_bl.detectors import (
-    add_detector,
     list_detectors,
     activate_detector,
     deactivate_detector,
-    remove_detector,
-    plot_detector,
-    unplot_detector,
     activate_detector_set,
 )
-from nbs_bl.motors import add_motor, list_motors, remove_motor
+from nbs_bl.motors import list_motors
 import ucal.plans
 
 from ucal.plans.find_edges import find_z_offset, find_x_offset, find_x, find_z
@@ -55,6 +51,7 @@ from ucal.plans.scan_base import (
     tes_gscan,
     tes_rel_scan,
     tes_take_projectors,
+    tes_make_and_load_projectors,
 )
 import ucal.plans.scans
 from ucal.plans.plan_stubs import *
@@ -81,5 +78,6 @@ def main():
     tes.path = "/data/raw"
     load_saved_configuration()
     activate_detector_set("default")
+
 
 # ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]

@@ -18,17 +18,24 @@ class TESTabWidget(QWidget):
     name = "TES Control Tab"
 
     def __init__(self, model, *args, **kwargs):
+        print("Very beginning of TES Tab widget")
         super().__init__(*args, **kwargs)
         self.run_engine = model.run_engine
         self.user_status = model.user_status
         self.beamline = model.beamline
-
+        print("Prior to QVBoxLayout")
         vbox = QVBoxLayout()
-        tes = self.beamline.misc["tes"]
-        print("Got TES model")
+        print("Getting TES Object")
+        print(self.beamline)
+        tes = self.beamline.misc.get("tes", None)
+        print("Got TES Object")
+        if tes is not None:
+            print("Got TES model")
+        else:
+            raise ValueError("TES Object is None")
         print("Adding TES Autocontrol")
         vbox.addWidget(AutoControl(tes, model))
         print("Adding TES Setup")
-        vbox.addWidget(TESSetup(model.run_engine))
+        vbox.addWidget(TESSetup(tes, model))
         vbox.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.setLayout(vbox)
