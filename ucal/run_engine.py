@@ -1,13 +1,16 @@
 from nbs_bl.run_engine import create_run_engine, generic_cmd
 from ucal.suspenders import suspend_current, suspend_shutter1
-from bluesky.utils import PersistentDict
+import redis
+from redis_json_dict import RedisJSONDict
+#from bluesky.utils import PersistentDict
 from . import STATION_NAME
 
+"""
 if STATION_NAME == "sst_sim":
     beamline_metadata_dir = "/tmp/ucal_beamline_metadata"
 elif STATION_NAME == "ucal":
     beamline_metadata_dir = "/nsls2/data/sst/shared/config/ucal/beamline_metadata"
-
+"""
 
 def load_RE_commands(engine):
     engine.register_command("calibrate", generic_cmd)
@@ -35,4 +38,6 @@ def setup_run_engine(engine):
 
 RE = create_run_engine(setup=True)
 RE = setup_run_engine(RE)
-RE.md = PersistentDict(beamline_metadata_dir)
+
+uri = "info.sst.nsls2.bnl.gov"
+RE.md = RedisJSONDict(redis.Redis(uri), prefix="nexafs-")
