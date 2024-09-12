@@ -61,6 +61,10 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
     return
 
 
+def add_sample(sample_id, name, position, side, thickness, description=None, **kwargs):
+    pass
+
+
 def add_sample_to_globals(
     sample_id, name, position, side, thickness, description=None, **kwargs
 ):

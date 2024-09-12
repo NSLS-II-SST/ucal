@@ -6,11 +6,18 @@ from qtpy.QtWidgets import (
     QFileDialog,
     QLabel,
     QHBoxLayout,
+    QDialog,
+    QLineEdit,
+    QFormLayout,
+    QDialogButtonBox,
+    QSpinBox,
+    QDoubleSpinBox,
 )
 from qtpy.QtCore import QAbstractTableModel, Qt, Signal, Slot
 from nbs_gui.plans.base import PlanWidget
 from nbs_gui.tabs.sampleTab import QtSampleView
 from bluesky_queueserver_api import BFunc
+import ast
 
 
 class SampleTab(QWidget):
@@ -76,8 +83,27 @@ class SampleWidget(QWidget):
             print(e)
 
     def add_sample(self):
-        # Stub method for adding a sample
-        print("Add sample method called")
+        dialog = AddSampleDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            sample_info = dialog.get_sample_info()
+            print(f"Adding sample: {sample_info}")
+
+            # Create a BFunc to call the add_sample function in queueserver
+            plan = BFunc(
+                "add_sample",
+                sample_info["id"],
+                sample_info["name"],
+                sample_info["coordinates"],
+                sample_info["side"],
+                sample_info["thickness"],
+                sample_info["description"],
+            )
+
+            try:
+                self.run_engine._client.function_execute(plan)
+                print("Sample added successfully")
+            except Exception as e:
+                print(f"Error adding sample: {e}")
 
     def clear_all_samples(self):
         # Stub method for clearing all samples
@@ -90,3 +116,70 @@ class SampleWidget(QWidget):
     def remove_sample(self):
         # Stub method for removing a sample
         print("Remove sample method called")
+
+
+class AddSampleDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Add Sample")
+        self.layout = QFormLayout(self)
+
+        # Create input fields
+        self.name_input = QLineEdit(self)
+        self.id_input = QLineEdit(self)
+        self.description_input = QLineEdit(self)
+        self.coordinates_input = QLineEdit(self)
+        self.side_input = QSpinBox(self)
+        self.thickness_input = QDoubleSpinBox(self)
+        self.proposal_input = QLineEdit(self)
+
+        # Configure numeric inputs
+        self.side_input.setMinimum(1)
+        self.side_input.setMaximum(4)
+        self.thickness_input.setDecimals(3)
+        self.thickness_input.setMinimum(0)
+        self.thickness_input.setMaximum(1000)
+        self.thickness_input.setSingleStep(0.1)
+
+        # Add input fields to the layout
+        self.layout.addRow("Sample Name:", self.name_input)
+        self.layout.addRow("Sample ID:", self.id_input)
+        self.layout.addRow("Description:", self.description_input)
+        self.layout.addRow("Coordinates:", self.coordinates_input)
+        self.layout.addRow("Side:", self.side_input)
+        self.layout.addRow("Thickness:", self.thickness_input)
+        self.layout.addRow("Proposal (optional):", self.proposal_input)
+
+        # Add OK and Cancel buttons
+        self.button_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+        self.layout.addRow(self.button_box)
+
+    def get_sample_info(self):
+        try:
+            coordinates = ast.literal_eval(self.coordinates_input.text())
+            if not isinstance(coordinates, (int, float, list)):
+                raise ValueError("Coordinates must be a number or a list of numbers")
+            if isinstance(coordinates, list) and not all(
+                isinstance(x, (int, float)) for x in coordinates
+            ):
+                raise ValueError("All coordinates must be numbers")
+        except (ValueError, SyntaxError) as e:
+            print(f"Error parsing coordinates: {e}")
+            coordinates = None
+
+        info = {
+            "name": self.name_input.text(),
+            "id": self.id_input.text(),
+            "description": self.description_input.text(),
+            "coordinates": coordinates,
+            "side": self.side_input.value(),
+            "thickness": self.thickness_input.value(),
+        }
+        prop_id = self.proposal_input.text()
+        if prop_id != "":
+            info["proposal"] = prop_id
+        return info

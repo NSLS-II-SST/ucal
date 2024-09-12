@@ -24,6 +24,7 @@ setup(
             "ucal-tes-tab=ucal.qt.tabs.tesTab:TESTabWidget",
             "ucal-gui-samples=ucal.qt.tabs.sampleTab:SampleTab",
         ],
+        "nbs_gui.widgets": ["ucal-header-widget=ucal.qt.widgets.header:UCALHeader"],
         "nbs.startup": "ucal=ucal.startup:main",
     },
 )
