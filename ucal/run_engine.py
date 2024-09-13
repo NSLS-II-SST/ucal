@@ -43,7 +43,7 @@ def setup_run_engine(engine):
 RE = create_run_engine(setup=True)
 RE = setup_run_engine(RE)
 
-if redis in settings:
+if "redis" in settings:
     uri = settings.get("redis").get("host", "localhost")  # "info.sst.nsls2.bnl.gov"
     prefix = settings.get("redis").get("prefix", "")
     RE.md = RedisJSONDict(redis.Redis(uri), prefix=prefix)
