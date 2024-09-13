@@ -1,5 +1,4 @@
-from ucal.sampleholder import sampleholder
-from ucal.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
+from nbs_bl.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_func_list, add_to_plan_list
 from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
@@ -7,7 +6,7 @@ from bluesky.plan_stubs import mv, abs_set
 from os.path import abspath
 import csv
 import copy
-from nbs_bl.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED
+from nbs_bl.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED, GLOBAL_BEAMLINE
 
 # filename = "../../examples/sample_load.csv"
 
@@ -79,7 +78,7 @@ def add_sample_to_globals(
 
 
 def load_sample_dict(samples):
-    load_sample_dict_into_holder(samples, sampleholder)
+    load_sample_dict_into_holder(samples, GLOBAL_BEAMLINE.sampleholder)
 
 
 def load_samples_into_holder(filename, holder, **kwargs):
@@ -90,25 +89,25 @@ def load_samples_into_holder(filename, holder, **kwargs):
 @add_to_func_list
 def load_standard_two_sided_bar(filename):
     bar = make_two_sided_bar(13, 300, 2)
-    sampleholder.add_geometry(bar)
+    GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
     beamline_config["loadfile"] = abspath(filename)
     beamline_config["bar"] = "Standard 2-sided bar"
-    load_samples_into_holder(filename, sampleholder, clear=False)
+    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
 
 
 @add_to_func_list
 def load_standard_four_sided_bar(filename):
     bar = make_regular_polygon(24.5, 215, 4)
-    sampleholder.add_geometry(bar)
+    GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
     beamline_config["loadfile"] = abspath(filename)
     beamline_config["bar"] = "Standard 4-sided bar"
-    load_samples_into_holder(filename, sampleholder, clear=False)
+    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
 
 
 @add_to_func_list
 def load_samples(filename):
     beamline_config["loadfile"] = abspath(filename)
-    load_samples_into_holder(filename, sampleholder)
+    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder)
 
 
 @add_to_plan_list
@@ -127,7 +126,7 @@ def set_sample(sampleid, origin="center"):
     GLOBAL_SELECTED["sample_id"] = sampleid
     GLOBAL_SELECTED["origin"] = origin
     GLOBAL_SELECTED.update(sample_info)
-    yield from abs_set(sampleholder, sampleid, origin=origin)
+    yield from abs_set(GLOBAL_BEAMLINE.sampleholder, sampleid, origin=origin)
 
 
 def set_sample_center(sampleid):
@@ -166,12 +165,14 @@ def manual_sample_move(x, y, z, r, name, sample_id=-1):
 
 
 @add_to_func_list
-def list_samples():
-    """List the currently loaded samples"""
+def clear_samples():
+    GLOBAL_BEAMLINE.sampleholder.clear_samples()
+    GLOBAL_SAMPLES.clear()
+    GLOBAL_SELECTED.clear()
 
-    print("Samples loaded in sampleholder")
-    for v in sampleholder.sample_md.values():
-        if v["sample_id"] == "null":
-            pass
-        else:
-            print(f"id: {v['sample_id']}, name: {v['name']}")
+
+@add_to_func_list
+def remove_sample(sample_id):
+    GLOBAL_SAMPLES.pop(sample_id)
+    if GLOBAL_SELECTED.get("sample_id", None) == sample_id:
+        GLOBAL_SELECTED.clear()

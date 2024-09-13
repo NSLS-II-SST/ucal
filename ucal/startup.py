@@ -43,7 +43,6 @@ from ucal.plans.samples import (
     load_standard_two_sided_bar,
     load_standard_four_sided_bar,
     load_sample_dict,
-    list_samples,
 )
 from ucal.plans.scan_base import (
     tes_calibrate,
@@ -61,10 +60,10 @@ from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
 from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
-from ucal.sampleholder import sampleholder
 from nbs_bl.help import GLOBAL_IMPORT_DICTIONARY
 from nbs_bl.plans.groups import group
 from nbs_bl.queueserver import request_update, get_status
+from nbs_bl.samples import list_samples
 
 for key in GLOBAL_IMPORT_DICTIONARY:
     if key not in globals():

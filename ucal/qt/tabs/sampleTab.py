@@ -12,12 +12,14 @@ from qtpy.QtWidgets import (
     QDialogButtonBox,
     QSpinBox,
     QDoubleSpinBox,
+    QMessageBox,
 )
 from qtpy.QtCore import QAbstractTableModel, Qt, Signal, Slot
 from nbs_gui.plans.base import PlanWidget
 from nbs_gui.tabs.sampleTab import QtSampleView
 from bluesky_queueserver_api import BFunc
 import ast
+import csv
 
 
 class SampleTab(QWidget):
@@ -106,16 +108,85 @@ class SampleWidget(QWidget):
                 print(f"Error adding sample: {e}")
 
     def clear_all_samples(self):
-        # Stub method for clearing all samples
-        print("Clear all samples method called")
+        func = BFunc("clear_samples")
+        try:
+            self.run_engine._client.function_execute(func)
+            print("Sample added successfully")
+        except Exception as e:
+            print(f"Error adding sample: {e}")  # Stub method for clearing all samples
 
     def save_to_file(self):
-        # Stub method for saving to file
-        print("Save to file method called")
+        # Get the file path from the user
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Sample File", "", "CSV Files (*.csv);;All Files (*)"
+        )
+
+        if not file_path:
+            print("Save cancelled")
+            return
+
+        # Ensure the file has a .csv extension
+        if not file_path.lower().endswith(".csv"):
+            file_path += ".csv"
+
+        try:
+            # Get the data from the sample_view
+            sample_data = self.parent().sample_view.tableModel._data
+
+            # Write the data to the CSV file
+            with open(file_path, "w", newline="") as csvfile:
+                writer = csv.writer(csvfile)
+
+                # Write the header
+                if sample_data:
+                    header = list(sample_data.keys())
+                    writer.writerow(header)
+
+                # Write the sample data
+                for sample_id, sample_info in sample_data.items():
+                    writer.writerow([sample_info.get(key, "") for key in header])
+
+            print(f"Sample data saved to {file_path}")
+        except Exception as e:
+            print(f"Error saving sample data: {e}")
 
     def remove_sample(self):
-        # Stub method for removing a sample
-        print("Remove sample method called")
+        # Get the QtSampleView
+        sample_view = self.parent().sample_view
+
+        # Get the selected row
+        selected_indexes = sample_view.selectedIndexes()
+        if not selected_indexes:
+            QMessageBox.warning(
+                self, "No Selection", "Please select a sample to remove."
+            )
+            return
+
+        # Get the row of the first selected cell
+        selected_row = selected_indexes[0].row()
+
+        # Get the sample ID from the model
+        sample_ids = list(sample_view.tableModel._data.keys())
+        if selected_row < len(sample_ids):
+            sample_id = sample_ids[selected_row]
+
+            # Create a BFunc to call remove_sample
+            func = BFunc("remove_sample", sample_id)
+
+            try:
+                # Execute the function
+                self.run_engine._client.function_execute(func)
+                print(f"Sample {sample_id} removed successfully")
+            except Exception as e:
+                QMessageBox.critical(
+                    self, "Error", f"Failed to remove sample: {str(e)}"
+                )
+        else:
+            QMessageBox.warning(
+                self,
+                "Invalid Selection",
+                "The selected row does not correspond to a valid sample.",
+            )
 
 
 class AddSampleDialog(QDialog):

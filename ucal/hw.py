@@ -7,5 +7,3 @@ from nbs_bl.hw import *
 # add_motor(manipy, "Manipulator Y", "manipy")
 # add_motor(manipz, "Manipulator Z", "manipz")
 # add_motor(manipr, "Manipulator R", "manipr")
-
-en.rotation_motor = manipulator.r
