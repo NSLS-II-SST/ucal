@@ -72,8 +72,10 @@ class EnergyControl(QGroupBox):
         vbox.addWidget(
             MotorControl(parent_model.beamline.motors["Exit_Slit"], parent_model)
         )
-
-        vbox.addWidget(AutoMonitor(energy.cff, parent_model))
+        hbox2 = QHBoxLayout()
+        vbox.addLayout(hbox2)
+        hbox2.addWidget(AutoMonitor(energy.cff, parent_model))
+        hbox2.addWidget(AutoMonitor(energy.grating_motor, parent_model))
 
         self.advancedControlButton = QPushButton("Advanced Controls")
         self.advancedControlButton.clicked.connect(self.showAdvancedControls)
