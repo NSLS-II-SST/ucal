@@ -1,8 +1,7 @@
 from nbs_bl.run_engine import create_run_engine, generic_cmd
 from nbs_bl.globalVars import GLOBAL_SETTINGS as settings
 from ucal.suspenders import suspend_current, suspend_shutter1
-import redis
-from redis_json_dict import RedisJSONDict
+
 
 # from bluesky.utils import PersistentDict
 from . import STATION_NAME
@@ -44,6 +43,18 @@ RE = create_run_engine(setup=True)
 RE = setup_run_engine(RE)
 
 if "redis" in settings:
+    from redis_json_dict import RedisJSONDict
+    import redis
+    from nbs_bl.status import StatusContainerBase
+    from nbs_bl.queueserver import add_status
+    
+    class RedisStatusDict(StatusContainerBase, RedisJSONDict):
+        NORMAL_METHODS=["__delitem__", "__setitem__", "clear", "pop", "update"]
+        REINIT_METHODS=[]
+    
     uri = settings.get("redis").get("host", "localhost")  # "info.sst.nsls2.bnl.gov"
     prefix = settings.get("redis").get("prefix", "")
-    RE.md = RedisJSONDict(redis.Redis(uri), prefix=prefix)
+    md = RedisStatusDict(redis.Redis(uri), prefix=prefix)
+    add_status("USER_MD", md)
+    RE.md = md
+    

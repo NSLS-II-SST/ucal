@@ -89,6 +89,7 @@ class TESModel(QObject):
             "UID For Calibration Data",
         )
         self.state = PVModelRO(obj.state.name, obj.state, group, "TES State")
+        self.proj_status = EnumModel(obj.projectors_loaded.name, obj.projectors_loaded, group, "TES Has Projectors")
         self.status = EnumModel(obj.status.name, obj.status, group, "TES Status")
         self.counts = PVModelRO(
             obj.mca.counts.name, obj.mca.counts, group, "TES Counts"
@@ -115,6 +116,7 @@ class TESModel(QObject):
             self.connected,
             self.state,
             self.status,
+            self.proj_status,
             self.currentFile,
             self.noiseUID,
             self.projUID,

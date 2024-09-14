@@ -22,7 +22,7 @@ elif STATION_NAME == "ucal":
 beamline_config = PersistentDict(beamline_config_dir)
 
 GLOBAL_USER_MD = StatusDict()
-add_status("USER_MD", GLOBAL_USER_MD)
+#add_status("USER_MD", GLOBAL_USER_MD)
 
 
 def load_saved_configuration():

@@ -33,6 +33,7 @@ from ucal.plans.alignment import (
     calibrate_beam_offset,
     calibrate_sides,
     new_calibrate_sides,
+    load_saved_manipulator_calibration
 )
 from ucal.plans.samples import (
     set_side,

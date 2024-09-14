@@ -27,6 +27,7 @@ class TESControl(QWidget):
         status_layout = QVBoxLayout()
         status_layout.addWidget(AutoMonitor(model.status, parent_model))
         status_layout.addWidget(AutoMonitor(model.state, parent_model))
+        status_layout.addWidget(AutoMonitor(model.proj_status, parent_model))
         status_layout.addWidget(AutoMonitor(model.counts, parent_model))
         status_group.setLayout(status_layout)
 
@@ -136,14 +137,14 @@ class TESSetup(QGroupBox):
         self.setLayout(layout)
 
     def setup_all(self):
-        item1 = BPlan("tes_take_noise")
+        item1 = BPlan("tes_setup")
         msg = "TES Noise and Projectors will run. This will take some time, and open/close a beam shutter. Ensure that beam is currently hitting a sample, with a count rate of at least 1000 cps. Then hit yes"
         self.confirm_item_execution(msg, item1)
-        item2 = BPlan("tes_take_projectors")
-        item3 = BPlan("tes_make_and_load_projectors")
+        #item2 = BPlan("tes_take_projectors")
+        #item3 = BPlan("tes_make_and_load_projectors")
 
-        self.run_engine._client.item_execute(item2)
-        self.run_engine._client.item_execute(item3)
+        #self.run_engine._client.item_execute(item2)
+        #self.run_engine._client.item_execute(item3)
 
     def take_noise(self):
         item = BPlan("tes_take_noise")
