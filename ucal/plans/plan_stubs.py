@@ -32,7 +32,7 @@ def update_manipulator_side(side, *args):
 
 
 def set_edge(edge):
-    sampleholder_move_sample(GLOBAL_BEAMLINE.reference_sampleholder, edge)
+    yield from sampleholder_move_sample(GLOBAL_BEAMLINE.reference_sampleholder, edge)
 
 
 '''

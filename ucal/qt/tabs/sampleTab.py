@@ -29,8 +29,9 @@ class SampleTab(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout(self)
         self.model = model
-
-        self.sample_view = QtSampleView(model.user_status, parent=self)
+        print("Making QtSampleView")
+        self.sample_view = QtSampleView(model, parent=self)
+        print("Making SampleWidget")
         self.new_sample = SampleWidget(model, parent)
         self.layout.addWidget(self.new_sample)
         self.layout.addWidget(self.sample_view)
@@ -78,7 +79,7 @@ class SampleWidget(QWidget):
         else:
             print("No file selected")
             return
-        plan = BFunc("load_standard_four_sided_bar", self.sample_file_path)
+        plan = BFunc("load_samples", self.sample_file_path)
         try:
             self.run_engine._client.function_execute(plan)
         except Exception as e:
