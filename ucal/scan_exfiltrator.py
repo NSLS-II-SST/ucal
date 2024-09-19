@@ -1,4 +1,4 @@
-from nbs_bl.hw import sampleholder
+from nbs_bl.hw import manipulator
 
 
 class ScanExfiltrator:
@@ -10,7 +10,7 @@ class ScanExfiltrator:
     def get_scan_start_info(self):
         motor_name = getattr(self.motor, "name", "unnamed_motor")
         motor_unit = getattr(self.motor, "egu", "index")
-        sample = sampleholder.sample
+        sample = manipulator.sample
         sample_id = sample.sample_id.get()
         sample_name = sample.sample_name.get()
         info = {

@@ -1,6 +1,7 @@
 from bluesky.plan_stubs import mv, mvr
 
 # from bluesky.utils import Msg
+from nbs_bl.globalVars import GLOBAL_BEAMLINE
 from ucal.hw import manipx, manipy, manipz, manipr, manipulator
 from ucal.hw import tesz
 from ucal.plans.find_edges import (
@@ -15,6 +16,7 @@ from ucal.plans.find_edges import (
     find_x,
     find_z,
 )
+
 from ucal.plans.samples import set_side, sample_move, add_sample_to_globals
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
@@ -62,9 +64,9 @@ def find_beam_x_offset(side=1, rdiff=180):
         raise RequestAbort
     yield from set_side(side)
     # We want to move off the sample
-    yield from sample_move(-1, 5, 5)
+    yield from sample_move(x=-1, y=5, r=5)
     x1 = yield from find_x()
-    yield from sample_move(-1, 5, 5 + rdiff)
+    yield from sample_move(x=-1, y=5, r=5 + rdiff)
     x2 = yield from find_x(invert=True)
     yield from mv(manipr, 0, manipx, 0)
     return (x1 + x2) * 0.5

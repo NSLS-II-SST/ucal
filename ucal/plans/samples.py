@@ -1,12 +1,12 @@
 from nbs_bl.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_func_list, add_to_plan_list
-from sst_base.sampleholder import make_two_sided_bar, make_regular_polygon
 from bluesky.plan_stubs import mv, abs_set
+from nbs_bl.plans.plan_stubs import sampleholder_move_sample, sampleholder_set_sample
 from os.path import abspath
 import csv
 import copy
-from nbs_bl.globalVars import GLOBAL_SAMPLES, GLOBAL_SELECTED, GLOBAL_BEAMLINE
+from nbs_bl.globalVars import GLOBAL_BEAMLINE
 
 # filename = "../../examples/sample_load.csv"
 
@@ -38,10 +38,9 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
     """
     if clear:
         holder.clear_samples()
-        GLOBAL_SAMPLES.clear()
     for sample_id, s in samples.items():
         sdict = copy.deepcopy(s)
-        position = (
+        coordinates = (
             float(sdict.pop("x1")),
             float(sdict.pop("y1")),
             float(sdict.pop("x2")),
@@ -51,17 +50,18 @@ def load_sample_dict_into_holder(samples, holder, clear=True):
         description = sdict.pop("description", name)
         side = int(sdict.pop("side"))
         thickness = float(sdict.pop("t", 0))
-        add_sample_to_globals(
-            sample_id, name, position, side, thickness, description, **sdict
-        )
+        position = {"coordinates": coordinates, "side": side, "thickness": thickness}
+        # add_sample_to_globals(
+        #     sample_id, name, position, side, thickness, description, **sdict
+        # )
         holder.add_sample(
-            sample_id, name, position, side, thickness, description=description, **sdict
+            sample_id,
+            name,
+            position,
+            description=description,
+            **sdict,
         )
     return
-
-
-def add_sample(sample_id, name, position, side, thickness, description=None, **kwargs):
-    pass
 
 
 def add_sample_to_globals(
@@ -86,22 +86,22 @@ def load_samples_into_holder(filename, holder, **kwargs):
     load_sample_dict_into_holder(samples, holder, **kwargs)
 
 
-@add_to_func_list
-def load_standard_two_sided_bar(filename):
-    bar = make_two_sided_bar(13, 300, 2)
-    GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
-    beamline_config["loadfile"] = abspath(filename)
-    beamline_config["bar"] = "Standard 2-sided bar"
-    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
+# @add_to_func_list
+# def load_standard_two_sided_bar(filename):
+#     bar = make_two_sided_bar(13, 300, 2)
+#     GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
+#     beamline_config["loadfile"] = abspath(filename)
+#     beamline_config["bar"] = "Standard 2-sided bar"
+#     load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
 
 
-@add_to_func_list
-def load_standard_four_sided_bar(filename):
-    bar = make_regular_polygon(24.5, 215, 4)
-    GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
-    beamline_config["loadfile"] = abspath(filename)
-    beamline_config["bar"] = "Standard 4-sided bar"
-    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
+# @add_to_func_list
+# def load_standard_four_sided_bar(filename):
+#     bar = make_regular_polygon(24.5, 215, 4)
+#     GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
+#     beamline_config["loadfile"] = abspath(filename)
+#     beamline_config["bar"] = "Standard 4-sided bar"
+#     load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
 
 
 @add_to_func_list
@@ -116,25 +116,25 @@ def set_side(side_num):
     side_num : int
     """
     sampleid = f"side{side_num}"
-    yield from set_sample_edge(sampleid)
+    yield from set_sample(sampleid)
 
 
-def set_sample(sampleid, origin="center"):
-    print(f"Setting sample to {sampleid}")
-    sample_info = GLOBAL_SAMPLES.get(str(sampleid), {})
-    GLOBAL_SELECTED.clear()
-    GLOBAL_SELECTED["sample_id"] = sampleid
-    GLOBAL_SELECTED["origin"] = origin
-    GLOBAL_SELECTED.update(sample_info)
-    yield from abs_set(GLOBAL_BEAMLINE.sampleholder, sampleid, origin=origin)
+def set_sample(sampleid):
+    yield from sampleholder_set_sample(GLOBAL_BEAMLINE.primary_sampleholder, sampleid)
 
 
-def set_sample_center(sampleid):
-    yield from set_sample(sampleid, origin="center")
+def sample_move(sampleid, **position):
+    yield from sampleholder_move_sample(
+        GLOBAL_BEAMLINE.primary_sampleholder, sampleid, **position
+    )
 
 
-def set_sample_edge(sampleid):
-    yield from set_sample(sampleid, origin="edge")
+# def set_sample_center(sampleid):
+#     yield from set_sample(sampleid, origin="center")
+
+
+# def set_sample_edge(sampleid):
+#     yield from set_sample(sampleid, origin="edge")
 
 
 @add_to_plan_list
@@ -147,12 +147,12 @@ def print_selected_sample():
         print(f"No sample currently selected")
 
 
-@add_to_plan_list
-def sample_move(x, y, r, sampleid=None, **kwargs):
-    """Move to a specified point on a sample"""
-    if sampleid is not None:
-        yield from set_sample(sampleid, **kwargs)
-    yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
+# @add_to_plan_list
+# def sample_move(x, y, r, sampleid=None, **kwargs):
+#     """Move to a specified point on a sample"""
+#     if sampleid is not None:
+#         yield from set_sample(sampleid, **kwargs)
+#     yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
 
 
 @add_to_plan_list

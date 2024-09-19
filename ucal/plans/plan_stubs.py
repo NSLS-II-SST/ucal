@@ -1,8 +1,10 @@
-from nbs_bl.plans.plan_stubs import call_obj
+from nbs_bl.globalVars import GLOBAL_BEAMLINE
+from nbs_bl.plans.plan_stubs import call_obj, sampleholder_move_sample
 from nbs_bl.help import add_to_plan_list
 from bluesky.plan_stubs import rd, mv
 from ucal.hw import manipulator
 from ucal.hw import tes
+
 # from ucal.shutters import psh7
 
 
@@ -27,6 +29,10 @@ def update_manipulator_side(side, *args):
     Sides are numbered starting at 1
     """
     yield from call_obj(manipulator.holder, "update_side", side - 1, *args)
+
+
+def set_edge(edge):
+    sampleholder_move_sample(GLOBAL_BEAMLINE.reference_sampleholder, edge)
 
 
 '''

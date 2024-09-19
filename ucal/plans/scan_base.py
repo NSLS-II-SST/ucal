@@ -16,8 +16,8 @@ from nbs_bl.shutters import (
 )
 from nbs_bl.plans.flyscan_base import fly_scan
 from ucal.scan_exfiltrator import ScanExfiltrator
-from ucal.plans.samples import sample_move, GLOBAL_SELECTED
-from ucal.multimesh import set_edge
+from ucal.plans.samples import sample_move
+from ucal.plans.plan_stubs import set_edge
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, abs_set

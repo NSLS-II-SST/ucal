@@ -1,6 +1,6 @@
 import bluesky.plan_stubs as bps
 from ucal.hw import en, ref, psh4
-from ucal.multimesh import set_ref
+from .plan_stubs import set_edge
 from nbs_bl.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from nbs_bl.plans.maximizers import find_max
 from bluesky.plans import rel_scan
@@ -59,7 +59,14 @@ def setup_mono():
         # yield from bps.mv(en.m3offset, 7.91)
 
 
-def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k=250, auto_accept=True):
+def tune_pgm(
+    cs=[1.45, 1.5, 1.55, 1.6],
+    ms=[1, 1, 1, 1],
+    energy=291.65,
+    pol=0,
+    k=250,
+    auto_accept=True,
+):
     # RE(load_sample(sample_by_name(bar, 'HOPG')))
     # RE(tune_pgm(cs=[1.35,1.37,1.385,1.4,1.425,1.45],ms=[1,1,1,1,1],energy=291.65,pol=90,k=250))
     # RE(tune_pgm(cs=[1.55,1.6,1.65,1.7,1.75,1.8],ms=[1,1,1,1,1],energy=291.65,pol=90,k=1200))
@@ -112,17 +119,27 @@ def tune_pgm(cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0, k
 
 
 def tune_250(auto_accept=True):
-    yield from set_ref(1)
+    yield from set_edge(1)
     yield from tune_pgm(
-        cs=[1.45, 1.5, 1.55, 1.6], ms=[1, 1, 1, 1], energy=291.65, pol=0,
-        k=250, auto_accept=auto_accept)
+        cs=[1.45, 1.5, 1.55, 1.6],
+        ms=[1, 1, 1, 1],
+        energy=291.65,
+        pol=0,
+        k=250,
+        auto_accept=auto_accept,
+    )
 
 
 def tune_1200(auto_accept=True):
-    yield from set_ref(1)
+    yield from set_edge(1)
     yield from tune_pgm(
-        cs=[2.0, 2.05, 2.1, 2.15], ms=[1, 1, 1, 1], energy=291.65, pol=0,
-        k=1200, auto_accept=auto_accept)
+        cs=[2.0, 2.05, 2.1, 2.15],
+        ms=[1, 1, 1, 1],
+        energy=291.65,
+        pol=0,
+        k=1200,
+        auto_accept=auto_accept,
+    )
 
 
 @add_to_plan_list
