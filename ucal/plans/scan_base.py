@@ -1,6 +1,6 @@
 # from ucal.hw import tes, eslit as energy_slit, en
 from ucal.hw import tes
-from nbs_bl.globalVars import (
+from nbs_bl.beamline import (
     # GLOBAL_ACTIVE_DETECTORS,
     GLOBAL_BEAMLINE,
 )
@@ -16,7 +16,7 @@ from nbs_bl.shutters import (
 )
 from nbs_bl.plans.flyscan_base import fly_scan
 from ucal.scan_exfiltrator import ScanExfiltrator
-from ucal.plans.samples import sample_move
+from nbs_bl.samples import move_sample
 from ucal.plans.plan_stubs import set_edge
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
@@ -42,7 +42,7 @@ def beamline_setup(func):
         """
 
         if sample is not None:
-            yield from sample_move(0, 0, r, sample)
+            yield from move_sample(0, 0, r, sample)
         if eslit is not None:
             yield from mv(GLOBAL_BEAMLINE.slits, eslit)
         if energy is not None:
@@ -342,7 +342,7 @@ def tes_gscan(motor, *args, extra_dets=[], shift=0, **kwargs):
 @add_to_scan_list
 def tes_calibrate_old(time, sampleid, exposure_time_s=10, energy=980, md=None):
     """Take energy calibration for TES. Moves to specified sample"""
-    yield from sample_move(0, 0, 45, sampleid)
+    yield from move_sample(0, 0, 45, sampleid)
     return (
         yield from tes_calibrate_inplace(time, exposure_time_s, energy=energy, md=md)
     )

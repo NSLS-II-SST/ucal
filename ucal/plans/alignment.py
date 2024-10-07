@@ -1,7 +1,6 @@
 from bluesky.plan_stubs import mv, mvr
 
 # from bluesky.utils import Msg
-from nbs_bl.globalVars import GLOBAL_BEAMLINE
 from ucal.hw import manipx, manipy, manipz, manipr, manipulator
 from ucal.hw import tesz
 from ucal.plans.find_edges import (
@@ -17,7 +16,8 @@ from ucal.plans.find_edges import (
     find_z,
 )
 
-from ucal.plans.samples import set_side, sample_move, add_sample_to_globals
+from ucal.plans.samples import set_side
+from nbs_bl.samples import move_sample, add_sample_to_globals
 from ucal.plans.plan_stubs import update_manipulator_side
 from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list
@@ -64,9 +64,9 @@ def find_beam_x_offset(side=1, rdiff=180):
         raise RequestAbort
     yield from set_side(side)
     # We want to move off the sample
-    yield from sample_move(x=-1, y=5, r=5)
+    yield from move_sample(None, x=-1, y=5, r=5)
     x1 = yield from find_x()
-    yield from sample_move(x=-1, y=5, r=5 + rdiff)
+    yield from move_sample(None, x=-1, y=5, r=5 + rdiff)
     x2 = yield from find_x(invert=True)
     yield from mv(manipr, 0, manipx, 0)
     return (x1 + x2) * 0.5
@@ -236,7 +236,7 @@ def calibrate_sides(side_start, side_end, nsides=4):
     previous_side = {}
     for side in range(side_start, side_end + 1):
         yield from set_side(side)
-        yield from sample_move(0, 0, 0)
+        yield from move_sample(None, 0, 0, 0)
         points, previous_side = yield from find_side_basis(nsides, **previous_side, z=z)
         yield from update_manipulator_side(side, *points)
 
@@ -323,7 +323,7 @@ def find_sides_one_z(z, side_start, side_end, nsides):
         yield from set_side(side)
         yield from mv(manipz, z)
         y = manipulator.sy.position
-        yield from sample_move(0, y, 0)
+        yield from move_sample(None, 0, y, 0)
         x = yield from find_x()
         r = manipr.position
         x -= x0
@@ -336,7 +336,7 @@ def find_sides_one_z(z, side_start, side_end, nsides):
             yield from mvr(manipr, 90)
             yield from set_side(1)
             y = manipulator.sy.position
-            yield from sample_move(0, y, 0)
+            yield from move_sample(None, 0, y, 0)
             x = yield from find_x()
             r = manipr.position
             x -= x0
@@ -346,7 +346,7 @@ def find_sides_one_z(z, side_start, side_end, nsides):
         yield from set_side(side + 1)
         yield from mv(manipz, z)
         y = manipulator.sy.position
-        yield from sample_move(0, y, 0)
+        yield from move_sample(None, 0, y, 0)
         x = yield from find_x()
         r = manipr.position
         x -= x0

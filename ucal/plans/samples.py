@@ -1,113 +1,8 @@
 from nbs_bl.hw import samplex, sampley, samplez, sampler, manipx, manipy, manipz, manipr
-from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_func_list, add_to_plan_list
-from bluesky.plan_stubs import mv, abs_set
-from nbs_bl.plans.plan_stubs import sampleholder_move_sample, sampleholder_set_sample
-from os.path import abspath
-import csv
-import copy
-from nbs_bl.globalVars import GLOBAL_BEAMLINE
-
-# filename = "../../examples/sample_load.csv"
-
-
-def read_sample_csv(filename):
-    with open(filename, "r") as f:
-        sampleReader = csv.reader(f, skipinitialspace=True)
-        samplelist = [row for row in sampleReader]
-        rownames = [n for n in samplelist[0] if n != ""]
-        # rownames = ["sample_id", "sample_name", "side", "x1", "y1", "x2", "y2",
-        #            "t", "tags"]
-        samples = {}
-        for sample in samplelist[1:]:
-            sample_id = sample[0]
-            sample_dict = {
-                key: sample[rownames.index(key)]
-                for key in rownames[1:]
-                if sample[rownames.index(key)] != ""
-            }
-            # sample_tags = sample[rownames.index("tags"):]
-            # sample_dict['tags'] = [t for t in sample_tags if t != ""]
-            samples[sample_id] = sample_dict
-    return samples
-
-
-def load_sample_dict_into_holder(samples, holder, clear=True):
-    """
-    Sample dictionary
-    """
-    if clear:
-        holder.clear_samples()
-    for sample_id, s in samples.items():
-        sdict = copy.deepcopy(s)
-        coordinates = (
-            float(sdict.pop("x1")),
-            float(sdict.pop("y1")),
-            float(sdict.pop("x2")),
-            float(sdict.pop("y2")),
-        )
-        name = sdict.pop("sample_name")
-        description = sdict.pop("description", name)
-        side = int(sdict.pop("side"))
-        thickness = float(sdict.pop("t", 0))
-        position = {"coordinates": coordinates, "side": side, "thickness": thickness}
-        # add_sample_to_globals(
-        #     sample_id, name, position, side, thickness, description, **sdict
-        # )
-        holder.add_sample(
-            sample_id,
-            name,
-            position,
-            description=description,
-            **sdict,
-        )
-    return
-
-
-def add_sample_to_globals(
-    sample_id, name, position, side, thickness, description=None, **kwargs
-):
-    GLOBAL_SAMPLES[sample_id] = {
-        "name": name,
-        "position": position,
-        "side": side,
-        "thickness": thickness,
-        "description": description,
-        **kwargs,
-    }
-
-
-def load_sample_dict(samples):
-    load_sample_dict_into_holder(samples, GLOBAL_BEAMLINE.sampleholder)
-
-
-def load_samples_into_holder(filename, holder, **kwargs):
-    samples = read_sample_csv(filename)
-    load_sample_dict_into_holder(samples, holder, **kwargs)
-
-
-# @add_to_func_list
-# def load_standard_two_sided_bar(filename):
-#     bar = make_two_sided_bar(13, 300, 2)
-#     GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
-#     beamline_config["loadfile"] = abspath(filename)
-#     beamline_config["bar"] = "Standard 2-sided bar"
-#     load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
-
-
-# @add_to_func_list
-# def load_standard_four_sided_bar(filename):
-#     bar = make_regular_polygon(24.5, 215, 4)
-#     GLOBAL_BEAMLINE.sampleholder.add_geometry(bar)
-#     beamline_config["loadfile"] = abspath(filename)
-#     beamline_config["bar"] = "Standard 4-sided bar"
-#     load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder, clear=False)
-
-
-@add_to_func_list
-def load_samples(filename):
-    beamline_config["loadfile"] = abspath(filename)
-    load_samples_into_holder(filename, GLOBAL_BEAMLINE.sampleholder)
+from bluesky.plan_stubs import mv
+from nbs_bl.samples import set_sample
+from nbs_bl.beamline import GLOBAL_BEAMLINE
 
 
 @add_to_plan_list
@@ -119,60 +14,10 @@ def set_side(side_num):
     yield from set_sample(sampleid)
 
 
-def set_sample(sampleid):
-    yield from sampleholder_set_sample(GLOBAL_BEAMLINE.primary_sampleholder, sampleid)
-
-
-def sample_move(sampleid, **position):
-    yield from sampleholder_move_sample(
-        GLOBAL_BEAMLINE.primary_sampleholder, sampleid, **position
-    )
-
-
-# def set_sample_center(sampleid):
-#     yield from set_sample(sampleid, origin="center")
-
-
-# def set_sample_edge(sampleid):
-#     yield from set_sample(sampleid, origin="edge")
-
-
-@add_to_plan_list
-def print_selected_sample():
-    """Print info about the currently selected sample"""
-    if GLOBAL_SELECTED.get("sample_id", None) is not None:
-        print(f"Current sample id: {GLOBAL_SELECTED['sample_id']}")
-        print(f"Current sample name: {GLOBAL_SELECTED.get('name', '')}")
-    else:
-        print(f"No sample currently selected")
-
-
-# @add_to_plan_list
-# def sample_move(x, y, r, sampleid=None, **kwargs):
-#     """Move to a specified point on a sample"""
-#     if sampleid is not None:
-#         yield from set_sample(sampleid, **kwargs)
-#     yield from mv(samplex, x, sampley, y, samplez, 0, sampler, r)
-
-
 @add_to_plan_list
 def manual_sample_move(x, y, z, r, name, sample_id=-1):
-    GLOBAL_SELECTED.clear()
-    GLOBAL_SELECTED["sample_id"] = sample_id
-    GLOBAL_SELECTED["name"] = name
-    GLOBAL_SELECTED["origin"] = "manual"
+    GLOBAL_BEAMLINE.current_sample.clear()
+    GLOBAL_BEAMLINE.current_sample["sample_id"] = sample_id
+    GLOBAL_BEAMLINE.current_sample["name"] = name
+    GLOBAL_BEAMLINE.current_sample["origin"] = "manual"
     yield from mv(manipx, x, manipy, y, manipz, z, manipr, r)
-
-
-@add_to_func_list
-def clear_samples():
-    GLOBAL_BEAMLINE.sampleholder.clear_samples()
-    GLOBAL_SAMPLES.clear()
-    GLOBAL_SELECTED.clear()
-
-
-@add_to_func_list
-def remove_sample(sample_id):
-    GLOBAL_SAMPLES.pop(sample_id)
-    if GLOBAL_SELECTED.get("sample_id", None) == sample_id:
-        GLOBAL_SELECTED.clear()

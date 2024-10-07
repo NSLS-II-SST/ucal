@@ -1,6 +1,6 @@
 import numpy as np
 from ucal.hw import manipx, manipy, manipz, manipr
-from nbs_bl.globalVars import GLOBAL_BEAMLINE  # , GLOBAL_ACTIVE_DETECTORS
+from nbs_bl.beamline import GLOBAL_BEAMLINE  # , GLOBAL_ACTIVE_DETECTORS
 
 # GLOBAL_DETECTOR_THRESHOLDS, GLOBAL_ALIGNMENT_DETECTOR
 from nbs_bl.plans.maximizers import (

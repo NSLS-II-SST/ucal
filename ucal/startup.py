@@ -35,16 +35,7 @@ from ucal.plans.alignment import (
     new_calibrate_sides,
     load_saved_manipulator_calibration,
 )
-from ucal.plans.samples import (
-    set_side,
-    set_sample,
-    # set_sample_center,
-    # set_sample_edge,
-    sample_move,
-    # load_standard_two_sided_bar,
-    # load_standard_four_sided_bar,
-    load_sample_dict,
-)
+from ucal.plans.samples import *
 from ucal.plans.scan_base import (
     tes_calibrate,
     tes_take_noise,
@@ -53,7 +44,8 @@ from ucal.plans.scan_base import (
     tes_take_projectors,
     tes_make_and_load_projectors,
 )
-import ucal.plans.scans
+
+# import ucal.plans.scans
 from ucal.plans.plan_stubs import *
 import nbs_bl.plans.scans
 from ucal.plans.tes_setup import *
