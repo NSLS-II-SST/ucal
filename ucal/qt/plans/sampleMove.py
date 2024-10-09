@@ -3,19 +3,14 @@ from qtpy.QtCore import Signal, Qt
 from bluesky_queueserver_api import BPlan
 from nbs_gui.plans.base import PlanWidget
 
+
 class ManualSampleWidget(PlanWidget):
     def __init__(self, model, parent=None):
-        super().__init__(
-            model,
-            parent,
-            x=float,
-            y=float,
-            z=float,
-            r=float,
-            name=str,
-            sample_id=str)
         self.display_name = "Manual Sample Move"
-        
+        super().__init__(
+            model, parent, x=float, y=float, z=float, r=float, name=str, sample_id=str
+        )
+
     def submit_plan(self):
         plan = "manual_sample_move"
         params = self.get_params()
