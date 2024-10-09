@@ -21,8 +21,9 @@ from nbs_gui.plans.sampleModifier import SampleSelectWidget
 
 
 class TESCountWidget(PlanWidget):
+    display_name = "TES Count"
+
     def __init__(self, model, parent=None):
-        self.display_name = "TES Count"
         print("Initializing TES Count")
         super().__init__(
             model,
@@ -66,9 +67,10 @@ class TESCountWidget(PlanWidget):
 
 
 class TESCalibrateWidget(PlanWidget):
+    display_name = "TES Calibrate"
+
     def __init__(self, model, parent=None):
         print("Initializing TES Calibrate")
-        self.display_name = "TES Calibrate"
         super().__init__(
             model,
             parent,
@@ -111,8 +113,9 @@ class TESCalibrateWidget(PlanWidget):
 
 
 class TESScanWidget(ScanPlanWidget):
+    display_name = "TES Scans"
+
     def __init__(self, model, parent=None):
-        self.display_name = "TES Scans"
         print("Initializing TES Scan Widget")
 
         super().__init__(
@@ -121,24 +124,5 @@ class TESScanWidget(ScanPlanWidget):
             {
                 "Scan": "tes_scan",
                 "Relative Scan": "tes_rel_scan",
-                "List Scan": "tes_list_scan",
             },
         )
-
-    def submit_plan(self):
-        motor_text = self.noun_selection.currentText()
-        motor = self.motors[motor_text]
-        params = self.get_params()
-        # start = float(self.modifier_input_from.text())
-        # end = float(self.modifier_input_to.text())
-        # steps = int(self.modifier_input_steps.text())
-        item = BPlan(
-            self.current_plan,
-            motor,
-            params["start"],
-            params["end"],
-            params["steps"],
-            dwell=params.get("dwell", None),
-            comment=params.get("comment", None),
-        )
-        self.run_engine_client.queue_item_add(item=item)
