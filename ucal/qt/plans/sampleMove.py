@@ -1,10 +1,10 @@
 from qtpy.QtGui import QDoubleValidator, QIntValidator
 from qtpy.QtCore import Signal, Qt
 from bluesky_queueserver_api import BPlan
-from nbs_gui.plans.base import PlanWidget
+from nbs_gui.plans.base import BasicPlanWidget
 
 
-class ManualSampleWidget(PlanWidget):
+class ManualSampleWidget(BasicPlanWidget):
     def __init__(self, model, parent=None):
         self.display_name = "Manual Sample Move"
         super().__init__(

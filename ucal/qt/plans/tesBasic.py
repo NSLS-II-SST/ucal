@@ -15,12 +15,13 @@ from qtpy.QtWidgets import (
 from qtpy.QtGui import QDoubleValidator, QIntValidator
 from qtpy.QtCore import Signal, Qt
 from bluesky_queueserver_api import BPlan
-from nbs_gui.plans.base import PlanWidget
+from nbs_gui.plans.base import BasicPlanWidget
+from nbs_gui.plans.nbsPlan import NBSPlanWidget
 from nbs_gui.plans.scanPlan import ScanPlanWidget
 from nbs_gui.plans.sampleModifier import SampleSelectWidget
 
 
-class TESCountWidget(PlanWidget):
+class TESCountWidget(BasicPlanWidget):
     display_name = "TES Count"
 
     def __init__(self, model, parent=None):
@@ -66,7 +67,7 @@ class TESCountWidget(PlanWidget):
             self.run_engine_client.queue_item_add(item=item)
 
 
-class TESCalibrateWidget(PlanWidget):
+class TESCalibrateWidget(NBSPlanWidget):
     display_name = "TES Calibrate"
 
     def __init__(self, model, parent=None):
@@ -77,35 +78,28 @@ class TESCalibrateWidget(PlanWidget):
             "tes_calibrate",
             time=float,
             energy=float,
-            repeat=int,
             eslit=("Exit Slit", float),
-            dwell=float,
-            r=("Sample Angle", float),
-            group_name=("Group Name", str),
-            comment=str,
+            dwell={
+                "type": "spinbox",
+                "args": {"minimum": 0.1, "value_type": float, "default": 10},
+                "label": "Dwell Time per Step (s)",
+            },
+            beamline_setup=False,
         )
-
-    def setup_widget(self):
-        super().setup_widget()
-        self.sample_widget = SampleSelectWidget(self.model, self)
-        self.sample_widget.editingFinished.connect(self.check_plan_ready)
-        self.basePlanLayout.addWidget(self.sample_widget)
 
     def check_plan_ready(self):
         """
         Check if all selections have been made and emit the plan_ready signal if they have.
         """
-        print("Checking XAS Plan")
-        if self.sample_widget.check_ready():
-            print("XAS Ready to Submit")
+        params = self.get_params()
+        if self.sample_select.check_ready() and "time" in params and "energy" in params:
             self.plan_ready.emit(True)
         else:
-            print("XAS not ready")
             self.plan_ready.emit(False)
 
     def submit_plan(self):
-        samples = self.sample_widget.get_params()
         params = self.get_params()
+        samples = params.pop("samples", [{}])
         time = params.pop("time")
         for s in samples:
             item = BPlan(self.current_plan, time, **s, **params)

@@ -1,10 +1,8 @@
 from qtpy.QtWidgets import (
-    QTableView,
     QWidget,
     QVBoxLayout,
     QPushButton,
     QFileDialog,
-    QLabel,
     QHBoxLayout,
     QDialog,
     QLineEdit,
@@ -14,8 +12,6 @@ from qtpy.QtWidgets import (
     QDoubleSpinBox,
     QMessageBox,
 )
-from qtpy.QtCore import QAbstractTableModel, Qt, Signal, Slot
-from nbs_gui.plans.base import PlanWidget
 from nbs_gui.tabs.sampleTab import QtSampleView
 from bluesky_queueserver_api import BFunc
 import ast

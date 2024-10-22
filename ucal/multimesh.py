@@ -83,7 +83,7 @@ def manipulatorFactory1Ax(xPV):
             if sample_id in self.samples:
                 return super().set_sample(sample_id)
             else:
-                sample_id = self.alias_dict.get(str(sample_id).lower(), "6")
+                sample_id = str(self.alias_dict.get(str(sample_id).lower(), "6"))
                 return super().set_sample(sample_id)
 
     return MultiMesh
