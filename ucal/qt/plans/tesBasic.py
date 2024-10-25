@@ -58,13 +58,15 @@ class TESCountWidget(BasicPlanWidget):
             print("XAS not ready")
             self.plan_ready.emit(False)
 
-    def submit_plan(self):
+    def create_plan_items(self):
         plan = self.current_plan
         samples = self.sample_widget.get_value()
         params = self.get_params()
+        items = []
         for s in samples:
             item = BPlan(plan, **s, **params)
-            self.run_engine_client.queue_item_add(item=item)
+            items.append(item)
+        return items
 
 
 class TESCalibrateWidget(NBSPlanWidget):
@@ -97,13 +99,15 @@ class TESCalibrateWidget(NBSPlanWidget):
         else:
             self.plan_ready.emit(False)
 
-    def submit_plan(self):
+    def create_plan_items(self):
         params = self.get_params()
         samples = params.pop("samples", [{}])
         time = params.pop("time")
+        items = []
         for s in samples:
             item = BPlan(self.current_plan, time, **s, **params)
-            self.run_engine_client.queue_item_add(item=item)
+            items.append(item)
+        return items
 
 
 class TESScanWidget(ScanPlanWidget):

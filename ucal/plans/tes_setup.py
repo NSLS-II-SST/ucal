@@ -5,6 +5,13 @@ from nbs_bl.shutters import close_shutter
 from nbs_bl.help import add_to_plan_list
 from bluesky.plan_stubs import sleep
 
+
+@add_to_plan_list
+def tes_start_file():
+    yield from call_obj(tes, "_file_start")
+
+
+@add_to_plan_list
 def tes_end_file():
     yield from call_obj(tes, "_file_end")
 
@@ -24,6 +31,7 @@ def tes_cycle_cryostat(wait=False):
     yield from sleep(60)
     if wait:
         yield from tes_wait_for_cycle()
+
 
 @add_to_plan_list
 def tes_wait_for_cycle(timeout=None, sleep_time=10):

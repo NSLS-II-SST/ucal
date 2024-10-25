@@ -79,7 +79,12 @@ class SampleWidget(QWidget):
         try:
             self.run_engine._client.function_execute(plan)
         except Exception as e:
-            print(e)
+            QMessageBox.critical(
+                self,
+                "Sample Load Error",
+                f"Failed to load samples: {str(e)}",
+                QMessageBox.Ok,
+            )
 
     def add_sample(self):
         dialog = AddSampleDialog(self)
@@ -102,15 +107,24 @@ class SampleWidget(QWidget):
                 self.run_engine._client.function_execute(plan)
                 print("Sample added successfully")
             except Exception as e:
-                print(f"Error adding sample: {e}")
+                QMessageBox.critical(
+                    self,
+                    "Sample Add Error",
+                    f"Failed to add sample: {str(e)}",
+                    QMessageBox.Ok,
+                )
 
     def clear_all_samples(self):
         func = BFunc("clear_samples")
         try:
             self.run_engine._client.function_execute(func)
-            print("Sample added successfully")
         except Exception as e:
-            print(f"Error adding sample: {e}")  # Stub method for clearing all samples
+            QMessageBox.critical(
+                self,
+                "Sample Clear Error",
+                f"Failed to clear samples: {str(e)}",
+                QMessageBox.Ok,
+            )
 
     def save_to_file(self):
         # Get the file path from the user
@@ -145,7 +159,12 @@ class SampleWidget(QWidget):
 
             print(f"Sample data saved to {file_path}")
         except Exception as e:
-            print(f"Error saving sample data: {e}")
+            QMessageBox.critical(
+                self,
+                "Sample Save Error",
+                f"Failed to save samples: {str(e)}",
+                QMessageBox.Ok,
+            )
 
     def remove_sample(self):
         # Get the QtSampleView

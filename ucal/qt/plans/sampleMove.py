@@ -11,8 +11,8 @@ class ManualSampleWidget(BasicPlanWidget):
             model, parent, x=float, y=float, z=float, r=float, name=str, sample_id=str
         )
 
-    def submit_plan(self):
+    def create_plan_items(self):
         plan = "manual_sample_move"
         params = self.get_params()
         item = BPlan(plan, **params)
-        self.run_engine_client.queue_item_add(item=item)
+        return [item]

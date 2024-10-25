@@ -8,7 +8,7 @@ from qtpy.QtWidgets import (
 
 from qtpy.QtWidgets import QLabel, QWidget
 from qtpy.QtCore import Signal, Slot
-from bluesky_queueserver_api import BPlan
+from bluesky_queueserver_api import BPlan, BFunc
 from nbs_gui.widgets.views import AutoMonitor, AutoControl
 
 
@@ -16,6 +16,7 @@ class TESControl(QWidget):
     def __init__(self, model, parent_model, orientation="h"):
         super().__init__()
         self.model = model
+        self.run_engine = parent_model.run_engine
 
         if orientation == "v":
             main_layout = QVBoxLayout()
@@ -56,10 +57,17 @@ class TESControl(QWidget):
         button_layout = QHBoxLayout()
         self.stopButton = QPushButton("Stop File")
         self.startButton = QPushButton("Start File")
+        self.activateButton = QPushButton("Activate")
+        self.deactivateButton = QPushButton("Deactivate")
+        self.startButton.setEnabled(False)  # Need to be connected & RunEngine idle
         self.stopButton.clicked.connect(self.close_file)
         self.startButton.clicked.connect(self.open_file)
+        self.activateButton.clicked.connect(self.activate)
+        self.deactivateButton.clicked.connect(self.deactivate)
         button_layout.addWidget(self.stopButton)
         button_layout.addWidget(self.startButton)
+        button_layout.addWidget(self.activateButton)
+        button_layout.addWidget(self.deactivateButton)
 
         # Combine layouts
         vbox = QVBoxLayout()
@@ -67,17 +75,71 @@ class TESControl(QWidget):
         vbox.addLayout(button_layout)
         self.setLayout(vbox)
 
-    def open_file(self):
+    def deactivate(self):
+        item = BFunc("deactivate_detector", "tes")
         try:
-            self.model.obj._file_start()
-        except:
-            pass
+            self.run_engine._client.function_execute(item)
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "QueueServer Error",
+                f"Failed to deactivate TES: {str(e)}",
+                QMessageBox.Ok,
+            )
+            return False
+
+    def activate(self):
+        item = BFunc("activate_detector", "tes")
+        try:
+            self.run_engine._client.function_execute(item)
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "QueueServer Error",
+                f"Failed to activate TES: {str(e)}",
+                QMessageBox.Ok,
+            )
+            return False
+
+    def open_file(self):
+        item = BPlan("tes_start_file")
+        try:
+            self.run_engine._client.item_execute(item)
+            return True
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "TES Start Error",
+                f"Failed to start TES: {str(e)}",
+                QMessageBox.Ok,
+            )
+            return False
 
     def close_file(self):
         try:
             self.model.obj._file_end()
-        except:
-            pass
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "TES Stop Error",
+                f"Failed to stop TES: {str(e)}",
+                QMessageBox.Ok,
+            )
+
+    @Slot(bool, object)
+    def slot_update_widgets(self, is_connected, status):
+        # 'is_connected' takes values True, False
+        worker_exists = status.get("worker_environment_exists", False)
+        running_item_uid = status.get("running_item_uid", None)
+        self.globalEnable = (
+            worker_exists and not bool(running_item_uid) and is_connected
+        )
+        self.enable_buttons()
+
+    def enable_buttons(self, value=""):
+        self.startButton.setEnabled(self.globalEnable)
+        self.activateButton.setEnabled(self.globalEnable)
+        self.deactivateButton.setEnabled(self.globalEnable)
 
 
 class TESSetup(QGroupBox):
@@ -140,11 +202,11 @@ class TESSetup(QGroupBox):
         item1 = BPlan("tes_setup")
         msg = "TES Noise and Projectors will run. This will take some time, and open/close a beam shutter. Ensure that beam is currently hitting a sample, with a count rate of at least 1000 cps. Then hit yes"
         self.confirm_item_execution(msg, item1)
-        #item2 = BPlan("tes_take_projectors")
-        #item3 = BPlan("tes_make_and_load_projectors")
+        # item2 = BPlan("tes_take_projectors")
+        # item3 = BPlan("tes_make_and_load_projectors")
 
-        #self.run_engine._client.item_execute(item2)
-        #self.run_engine._client.item_execute(item3)
+        # self.run_engine._client.item_execute(item2)
+        # self.run_engine._client.item_execute(item3)
 
     def take_noise(self):
         item = BPlan("tes_take_noise")
@@ -189,9 +251,15 @@ class TESSetup(QGroupBox):
         else:
             try:
                 self.run_engine._client.item_execute(item)
+                return True
             except Exception as e:
-                print(f"An error occurred: {str(e)}")
-            return True
+                QMessageBox.critical(
+                    self,
+                    "TES Error",
+                    f"Failed TES Operation: {str(e)}",
+                    QMessageBox.Ok,
+                )
+                return False
 
     def on_update_widgets(self, event):
         is_connected = bool(event.is_connected)
