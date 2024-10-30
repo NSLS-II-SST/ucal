@@ -12,7 +12,7 @@ from qtpy.QtWidgets import (
     QDoubleSpinBox,
     QMessageBox,
 )
-from nbs_gui.tabs.sampleTab import QtSampleView
+from nbs_gui.tabs.sampleTab import QtSampleView, QtRedisSampleView
 from bluesky_queueserver_api import BFunc
 import ast
 import csv
@@ -26,7 +26,9 @@ class SampleTab(QWidget):
         self.layout = QVBoxLayout(self)
         self.model = model
         print("Making QtSampleView")
-        self.sample_view = QtSampleView(model, parent=self)
+        self.sample_view = QtRedisSampleView(model.user_status, parent=self)
+
+        # self.sample_view = QtSampleView(model, parent=self)
         print("Making SampleWidget")
         self.new_sample = SampleWidget(model, parent)
         self.layout.addWidget(self.new_sample)
@@ -94,12 +96,10 @@ class SampleWidget(QWidget):
 
             # Create a BFunc to call the add_sample function in queueserver
             plan = BFunc(
-                "add_sample",
-                sample_info["id"],
+                "add_sample_absolute",
                 sample_info["name"],
+                sample_info["id"],
                 sample_info["coordinates"],
-                sample_info["side"],
-                sample_info["thickness"],
                 sample_info["description"],
             )
 
@@ -216,25 +216,23 @@ class AddSampleDialog(QDialog):
         self.id_input = QLineEdit(self)
         self.description_input = QLineEdit(self)
         self.coordinates_input = QLineEdit(self)
-        self.side_input = QSpinBox(self)
-        self.thickness_input = QDoubleSpinBox(self)
         self.proposal_input = QLineEdit(self)
 
         # Configure numeric inputs
-        self.side_input.setMinimum(1)
-        self.side_input.setMaximum(4)
-        self.thickness_input.setDecimals(3)
-        self.thickness_input.setMinimum(0)
-        self.thickness_input.setMaximum(1000)
-        self.thickness_input.setSingleStep(0.1)
+        # self.side_input.setMinimum(1)
+        # self.side_input.setMaximum(4)
+        # self.thickness_input.setDecimals(3)
+        # self.thickness_input.setMinimum(0)
+        # self.thickness_input.setMaximum(1000)
+        # self.thickness_input.setSingleStep(0.1)
 
         # Add input fields to the layout
         self.layout.addRow("Sample Name:", self.name_input)
         self.layout.addRow("Sample ID:", self.id_input)
         self.layout.addRow("Description:", self.description_input)
-        self.layout.addRow("Coordinates:", self.coordinates_input)
-        self.layout.addRow("Side:", self.side_input)
-        self.layout.addRow("Thickness:", self.thickness_input)
+        self.layout.addRow("Manipulator X,Y,Z,R:", self.coordinates_input)
+        # self.layout.addRow("Side:", self.side_input)
+        # self.layout.addRow("Thickness:", self.thickness_input)
         self.layout.addRow("Proposal (optional):", self.proposal_input)
 
         # Add OK and Cancel buttons

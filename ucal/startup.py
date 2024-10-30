@@ -52,7 +52,8 @@ from ucal.plans.tes_setup import *
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
-from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
+
+# from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
 from nbs_bl.help import GLOBAL_IMPORT_DICTIONARY
 from nbs_bl.plans.groups import group
 from nbs_bl.queueserver import request_update, get_status
@@ -68,7 +69,7 @@ def main():
     RE(set_exposure(1.0))
     tes.setFilenamePattern = False
     tes.path = "/data/raw"
-    load_saved_configuration()
+    # load_saved_configuration()
     activate_detector_set("default")
 
 
