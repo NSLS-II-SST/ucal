@@ -18,7 +18,8 @@ from nbs_bl.plans.flyscan_base import fly_scan
 from ucal.scan_exfiltrator import ScanExfiltrator
 from nbs_bl.samples import move_sample
 from ucal.plans.plan_stubs import set_edge
-from ucal.configuration import beamline_config
+
+# from ucal.configuration import beamline_config
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from bluesky.plan_stubs import mv, abs_set
 from bluesky.preprocessors import run_decorator, subs_decorator
@@ -27,29 +28,6 @@ from nbs_bl.plans.preprocessors import wrap_metadata
 import bluesky.plans as bp
 from nbs_bl.utils import merge_func
 import numpy as np
-
-
-def beamline_setup(func):
-    @merge_func(func)
-    def inner(*args, sample=None, eslit=None, energy=None, r=45, **kwargs):
-        """
-        Parameters
-        ----------
-        sample : int or str, optional
-            The sample id. If not None, the sample is moved into the beam at a 45 degree angle.
-        eslit : float, optional
-            If not None, will change the beamline exit slit. Note that currently, eslit values are given as -2* the desired exit slit size in mm.
-        """
-
-        if sample is not None:
-            yield from move_sample(0, 0, r, sample)
-        if eslit is not None:
-            yield from mv(GLOBAL_BEAMLINE.slits, eslit)
-        if energy is not None:
-            yield from mv(GLOBAL_BEAMLINE.energy, energy)
-        return (yield from func(*args, **kwargs))
-
-    return inner
 
 
 def wrap_xas_setup(element):
@@ -80,6 +58,7 @@ def wrap_xes(func):
     return wrap_metadata({"scantype": "xes"})(func)
 
 
+"""
 def _ucal_add_processing_md(func):
     @merge_func(func)
     def _inner(*args, md=None, **kwargs):
@@ -93,10 +72,10 @@ def _ucal_add_processing_md(func):
         return (yield from func(*args, md=_md, **kwargs))
 
     return _inner
+"""
 
 
 @add_to_scan_list
-@beamline_setup
 def tes_count_old(
     *args,
     **kwargs,
@@ -117,7 +96,7 @@ def tes_count_old(
     scanex = ScanExfiltrator(motor, en.energy.position)
     tes.scanexfiltrator = scanex
 
-    @_ucal_add_processing_md
+    # @_ucal_add_processing_md
     @nbs_base_scan_decorator
     @wrap_xes
     @merge_func(bp.count)
@@ -134,8 +113,7 @@ def _tes_count_plan_wrapper(plan_function, plan_name):
         name = "time"
         egu = "index"
 
-    @beamline_setup
-    @_ucal_add_processing_md
+    # @_ucal_add_processing_md
     @nbs_base_scan_decorator
     @merge_func(plan_function)
     def _inner(*args, **kwargs):
@@ -158,8 +136,7 @@ Other detectors may be added on the fly via extra_dets
 
 
 def _tes_plan_wrapper(plan_function, plan_name):
-    @beamline_setup
-    @_ucal_add_processing_md
+    # @_ucal_add_processing_md
     @nbs_base_scan_decorator
     @merge_func(plan_function, ["motor"])
     def _inner(detectors, motor, *args, **kwargs):
@@ -233,9 +210,9 @@ def take_dark_counts():
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
 
-    beamline_config["last_cal"] = None
-    beamline_config["last_noise"] = None
-    beamline_config["last_projectors"] = None
+    # beamline_config["last_cal"] = None
+    # beamline_config["last_noise"] = None
+    # beamline_config["last_projectors"] = None
     yield from abs_set(tes.noise_uid, "")
     yield from abs_set(tes.projector_uid, "")
     shutter_open = yield from is_shutter_open()
@@ -246,7 +223,7 @@ def tes_take_noise():
     yield from call_obj(tes, "_file_end")
     yield from call_obj(tes, "_set_pulse_triggers")
 
-    beamline_config["last_noise"] = uid
+    # beamline_config["last_noise"] = uid
     yield from abs_set(tes.noise_uid, uid)
     if shutter_open:
         yield from open_shutter()
@@ -261,7 +238,7 @@ def tes_take_projectors():
     uid = yield from bp.count([tes], 30, md={"scantype": "projectors"})
     yield from call_obj(tes, "_file_end")
     yield from abs_set(tes.projector_uid, uid)
-    beamline_config["last_projectors"] = uid
+    # beamline_config["last_projectors"] = uid
     return uid
 
 
@@ -271,7 +248,6 @@ def tes_make_and_load_projectors():
 
 
 @add_to_plan_list
-@beamline_setup
 def tes_setup(should_take_dark_counts=True):
     """Set up TES after cryostat cycle. Must have counts from cal sample.
 
@@ -308,12 +284,11 @@ def _make_gscan_points(*args, shift=0):
     return points
 
 
+# @_ucal_add_processing_md
 @add_to_scan_list
-@beamline_setup
-@_ucal_add_processing_md
 @nbs_base_scan_decorator
-@merge_func(fly_scan, ["detectors", "motor"])
-def tes_flyscan(detectors, *args, **kwargs):
+@merge_func(fly_scan, ["detectors", "motor"], use_func_name=False)
+def en_flyscan(detectors, *args, **kwargs):
     yield from fly_scan(detectors, GLOBAL_BEAMLINE.energy, *args, **kwargs)
 
 
@@ -381,32 +356,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     _md.update(md)
     cal_uid = yield from tes_count(int(time // dwell), dwell=dwell, md=_md, **kwargs)
     yield from mv(tes.cal_flag, False)
-    beamline_config["last_cal"] = cal_uid
+    # beamline_config["last_cal"] = cal_uid
     yield from abs_set(tes.calibration_uid, cal_uid)
     yield from set_exposure(pre_cal_exposure)
     return cal_uid
-
-
-def xas_factory(energy_grid, edge, name):
-    @wrap_xas(edge)
-    @wrap_metadata({"plan_name": name})
-    @merge_func(tes_gscan, omit_params=["motor", "args"])
-    def inner(**kwargs):
-        """Parameters
-        ----------
-        repeat : int
-            Number of times to repeat the scan
-        **kwargs :
-            Arguments to be passed to tes_gscan
-
-        """
-        yield from tes_gscan(GLOBAL_BEAMLINE.energy, *energy_grid, **kwargs)
-
-    d = f"Perform an in-place xas scan for {edge} with energy pattern {energy_grid} \n"
-    inner.__doc__ = d + inner.__doc__
-
-    inner.__qualname__ = name
-    inner.__name__ = name
-    inner._edge = edge
-    inner._short_doc = f"Do XAS for {edge} from {energy_grid[0]} to {energy_grid[-2]}"
-    return inner

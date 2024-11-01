@@ -53,7 +53,7 @@ def manipulatorFactory1Ax(xPV):
             super().__init__(*args, **kwargs)
             for s in refsamples:
                 sid, name, coordinates, _ = s
-                position = {"coordinates": [np.mean(coordinates)]}
+                position = {"coordinates": [float(np.mean(coordinates))]}
                 self.add_sample(name, sid, position)
             self.alias_dict = {
                 "c": 0,
@@ -83,7 +83,7 @@ def manipulatorFactory1Ax(xPV):
             if sample_id in self.samples:
                 return super().set_sample(sample_id)
             else:
-                sample_id = self.alias_dict.get(str(sample_id).lower(), "6")
+                sample_id = str(self.alias_dict.get(str(sample_id).lower(), "6"))
                 return super().set_sample(sample_id)
 
     return MultiMesh

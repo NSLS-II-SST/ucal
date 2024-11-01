@@ -1,5 +1,5 @@
 from nbs_bl.run_engine import create_run_engine, generic_cmd
-from nbs_bl.settings import GLOBAL_SETTINGS as settings
+from nbs_bl.beamline import GLOBAL_BEAMLINE
 from ucal.suspenders import suspend_current, suspend_shutter1
 
 
@@ -42,18 +42,14 @@ def setup_run_engine(engine):
 RE = create_run_engine(setup=True)
 RE = setup_run_engine(RE)
 
-if "redis" in settings:
-    from redis_json_dict import RedisJSONDict
+if "redis" in GLOBAL_BEAMLINE.settings:
     import redis
-    from nbs_bl.status import StatusContainerBase
-    from nbs_bl.queueserver import add_status
+    from nbs_bl.status import RedisStatusDict
+    from nbs_bl.queueserver import GLOBAL_USER_STATUS
 
-    class RedisStatusDict(StatusContainerBase, RedisJSONDict):
-        NORMAL_METHODS = ["__delitem__", "__setitem__", "clear", "pop", "update"]
-        REINIT_METHODS = []
-
-    uri = settings.get("redis").get("host", "localhost")  # "info.sst.nsls2.bnl.gov"
-    prefix = settings.get("redis").get("prefix", "")
+    redis_settings = GLOBAL_BEAMLINE.settings.get("redis").get("md")
+    uri = redis_settings.get("host", "localhost")  # "info.sst.nsls2.bnl.gov"
+    prefix = redis_settings.get("prefix", "")
     md = RedisStatusDict(redis.Redis(uri), prefix=prefix)
-    add_status("USER_MD", md)
+    GLOBAL_USER_STATUS.add_status("USER_MD", md)
     RE.md = md

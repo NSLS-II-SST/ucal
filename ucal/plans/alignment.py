@@ -17,9 +17,11 @@ from ucal.plans.find_edges import (
 )
 
 from ucal.plans.samples import set_side
-from nbs_bl.samples import move_sample, add_sample_to_globals
+from nbs_bl.samples import move_sample
 from ucal.plans.plan_stubs import update_manipulator_side
-from ucal.configuration import beamline_config
+
+# from ucal.configuration import beamline_config
+from nbs_bl.queueserver import GLOBAL_USER_STATUS
 from nbs_bl.help import add_to_plan_list
 from nbs_bl.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 from nbs_bl.geometry.frames import Frame
@@ -31,6 +33,9 @@ import numpy as np
 # need to fix imports, test, etc, actually hook up the max logic, and do a
 # derivative scan version
 # figure out if I can use bluesky-live instead? See thread
+MANIPULATOR_CONFIG = GLOBAL_USER_STATUS.request_status_dict(
+    "MANIPULATOR_CONFIG", use_redis=True
+)
 
 
 def find_min_r(step, npts):
@@ -242,25 +247,24 @@ def calibrate_sides(side_start, side_end, nsides=4):
 
 
 def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
+    """Set the manipulator origin coordinates"""
     updates = [x, y, z, r]
-    print(updates)
-    if (
-        np.any(updates) is None
-        and beamline_config.get("manipulator_origin", None) is not None
-    ):
+    if np.any(updates) is None and "origin" in MANIPULATOR_CONFIG:
         print("No updates")
-        manipulator.origin = np.array(beamline_config["manipulator_origin"])
+        manipulator.origin = np.array(MANIPULATOR_CONFIG["origin"])
     else:
         for i, val in enumerate([x, y, z, r]):
             if val is not None:
                 print(f"Setting origin {i} to {val}")
                 manipulator.origin[i] = val
-        beamline_config["manipulator_origin"] = list(manipulator.origin)
+        MANIPULATOR_CONFIG["origin"] = list(manipulator.origin)
 
 
 def new_calibrate_sides(side_start, side_end, nsides=4, findz=True, preserve=False):
+    """Calibrate multiple manipulator sides"""
     if not preserve:
-        beamline_config["manipulator_calibration"] = {}
+        MANIPULATOR_CONFIG["calibration"] = {}
+
     if findz:
         yield from mv(manipr, 0, manipx, 0)
         z = yield from find_z()
@@ -301,18 +305,18 @@ def new_calibrate_sides(side_start, side_end, nsides=4, findz=True, preserve=Fal
         except:
             print(x1, y1, x3, y3, z, z2, r1, z0)
         points = find_side_points(x1, y1, x3, y3, z, z2, r1, vec(0, 0, z0))
-        if "manipulator_calibration" not in beamline_config:
-            beamline_config["manipulator_calibration"] = {}
-        beamline_config["manipulator_calibration"][f"{side}"] = points
-        beamline_config.flush()
+        if "calibration" not in MANIPULATOR_CONFIG:
+            MANIPULATOR_CONFIG["calibration"] = {}
+        MANIPULATOR_CONFIG["calibration"][f"{side}"] = points
         yield from update_manipulator_side(side, *points)
 
 
 def load_saved_manipulator_calibration():
-    if "manipulator_calibration" in beamline_config:
-        for side, points in beamline_config["manipulator_calibration"].items():
+    """Load saved manipulator calibration from Redis"""
+    if "calibration" in MANIPULATOR_CONFIG:
+        for side, points in MANIPULATOR_CONFIG["calibration"].items():
             yield from update_manipulator_side(int(side), *points)
-    if "manipulator_origin" in beamline_config:
+    if "origin" in MANIPULATOR_CONFIG:
         set_manipulator_origin()
 
 
@@ -364,22 +368,3 @@ def get_manual_sample_frame(x, y, z, r):
     points = find_side_points(pr[0], pr[1], pr[0], pr[1], z, z + 1, rdiv, vec(0, 0, z0))
     frame = Frame(points[0], points[1], points[2])
     return frame
-
-
-@add_to_plan_list
-def add_current_position_as_sample(name, sample_id, description=None):
-    x = manipx.position
-    y = manipy.position
-    z = manipz.position
-    r = manipr.position
-    add_position_as_sample(x, y, z, r, name, sample_id, description)
-
-
-@add_to_plan_list
-def add_position_as_sample(x, y, z, r, name, sample_id, description=None):
-    frame = get_manual_sample_frame(x, y, z, r)
-    side = r // 90 + 1
-    manipulator.holder._add_frame(frame, sample_id, name, side, description)
-    add_sample_to_globals(
-        sample_id, name, [x, y, z, r], side, 0, description, origin="manual"
-    )
