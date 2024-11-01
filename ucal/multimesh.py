@@ -53,7 +53,7 @@ def manipulatorFactory1Ax(xPV):
             super().__init__(*args, **kwargs)
             for s in refsamples:
                 sid, name, coordinates, _ = s
-                position = {"coordinates": [np.mean(coordinates)]}
+                position = {"coordinates": [float(np.mean(coordinates))]}
                 self.add_sample(name, sid, position)
             self.alias_dict = {
                 "c": 0,

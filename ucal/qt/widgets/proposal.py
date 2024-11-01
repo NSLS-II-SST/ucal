@@ -14,7 +14,7 @@ from redis_json_dict import RedisJSONDict
 import redis
 import warnings
 from ldap3 import Server, Connection, NTLM
-from ldap3.core.exceptions import LDAPInvalidCredentialsResult
+from ldap3.core.exceptions import LDAPInvalidCredentialsResult, LDAPSocketOpenError
 from nslsii.sync_experiment.sync_experiment import (
     validate_proposal,
     should_they_be_here,
@@ -27,21 +27,32 @@ class AuthorizationError(Exception): ...
 
 
 def authenticate(username, password):
-    auth_server = Server("dc2.bnl.gov", use_ssl=True)
 
-    try:
-        connection = Connection(
-            auth_server,
-            user=f"BNL\\{username}",
-            password=password,
-            authentication=NTLM,
-            auto_bind=True,
-            raise_exceptions=True,
-        )
-        print(f"\nAuthenticated as : {connection.extend.standard.who_am_i()}")
+    authenticated = False
+    for server in ["1", "2", "3"]:
+        if authenticated:
+            break
 
-    except LDAPInvalidCredentialsResult:
-        raise RuntimeError(f"Invalid credentials for user '{username}'.") from None
+        auth_server = Server(f"dc{server}.bnl.gov", use_ssl=True)
+
+        try:
+            connection = Connection(
+                auth_server,
+                user=f"BNL\\{username}",
+                password=password,
+                authentication=NTLM,
+                auto_bind=True,
+                raise_exceptions=True,
+            )
+            print(f"\nAuthenticated as : {connection.extend.standard.who_am_i()}")
+            authenticated = True
+        except LDAPInvalidCredentialsResult:
+            raise RuntimeError(f"Invalid credentials for user '{username}'.") from None
+        except LDAPSocketOpenError:
+            print(f"DC{server} server connection failed...")
+
+    if not authenticated:
+        raise RuntimeError("All authentication servers are unavailable.")
 
 
 def sync_experiment(proposal_number, username, password, redis_settings):
