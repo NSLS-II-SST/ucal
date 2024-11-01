@@ -10,9 +10,9 @@ class ScanExfiltrator:
     def get_scan_start_info(self):
         motor_name = getattr(self.motor, "name", "unnamed_motor")
         motor_unit = getattr(self.motor, "egu", "index")
-        sample = manipulator.sample
-        sample_id = sample.sample_id.get()
-        sample_name = sample.sample_name.get()
+        sample = manipulator.current_sample
+        sample_id = sample.get("sample_id", "")
+        sample_name = sample.get("name", "")
         info = {
             "motor": motor_name,
             "motor_unit": motor_unit,
