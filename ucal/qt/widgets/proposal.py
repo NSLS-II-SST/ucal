@@ -203,7 +203,7 @@ class RedisProposalBox(RedisStatusBox):
         cleaned_md["Data Session"] = user_md.get("data_session", "")
         cleaned_md["Type"] = prop_md.get("type", "")
         cleaned_md["PI"] = prop_md.get("pi_name", "")
-        cleaned_md["Start Date"] = user_md.get("beamtime_start", "")
+        cleaned_md["Start Date"] = user_md.get("start_datetime", "")
 
         return cleaned_md
 
