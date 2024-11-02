@@ -200,7 +200,7 @@ class RedisProposalBox(RedisStatusBox):
         prop_md = user_md.get("proposal", {})
         cleaned_md["Title"] = prop_md.get("title", "")
         cleaned_md["Proposal ID"] = prop_md.get("proposal_id", "")
-        cleaned_md["Data Session"] = user_md.get("data_session", "")
+        # cleaned_md["Data Session"] = user_md.get("data_session", "")
         cleaned_md["Type"] = prop_md.get("type", "")
         cleaned_md["PI"] = prop_md.get("pi_name", "")
         cleaned_md["Start Date"] = user_md.get("start_datetime", "")
