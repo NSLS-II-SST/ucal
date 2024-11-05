@@ -198,7 +198,12 @@ class RedisProposalBox(RedisStatusBox):
 
         cleaned_md = {}
         prop_md = user_md.get("proposal", {})
-        cleaned_md["Title"] = prop_md.get("title", "")
+        full_title = prop_md.get("title", "")
+        if len(full_title) > 40:
+            title = full_title[:40] + "..."
+        else:
+            title = full_title
+        cleaned_md["Title"] = title
         cleaned_md["Proposal ID"] = prop_md.get("proposal_id", "")
         # cleaned_md["Data Session"] = user_md.get("data_session", "")
         cleaned_md["Type"] = prop_md.get("type", "")
