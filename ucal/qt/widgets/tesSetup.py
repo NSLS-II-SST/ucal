@@ -7,13 +7,14 @@ from qtpy.QtWidgets import (
 )
 
 from qtpy.QtWidgets import QLabel, QWidget
-from qtpy.QtCore import Signal, Slot
+from qtpy.QtCore import Signal, Slot, QFileSystemWatcher
 from bluesky_queueserver_api import BPlan, BFunc
 from nbs_gui.widgets.views import AutoMonitor, AutoControl
 from nbs_gui.settings import SETTINGS
 from os.path import join
 import pickle
 from os.path import exists
+import numpy as np
 
 
 class TESControl(QWidget):
@@ -324,6 +325,15 @@ class TESProcessing(QGroupBox):
         self.science_file = join(config_path, "data_processing_info.pkl")
         self.cal_file = join(config_path, "data_calibration_info.pkl")
 
+        # Initialize file watcher
+        self.watcher = QFileSystemWatcher(self)
+        self.watcher.fileChanged.connect(self.on_file_changed)
+
+        # Add files to watch if they exist
+        for file_path in [self.science_file, self.cal_file]:
+            if exists(file_path):
+                self.watcher.addPath(file_path)
+
         # Initialize data dictionaries
         self.science_info = {}
         self.cal_info = {}
@@ -361,6 +371,14 @@ class TESProcessing(QGroupBox):
         # Initial update
         self.update()
 
+    def on_file_changed(self, path):
+        """Handle file change events."""
+        print(f"File changed: {path}")
+        # Re-add the file to the watcher as it might be removed after being modified
+        if exists(path):
+            self.watcher.addPath(path)
+        self.update()
+
     def update(self):
         """Update processing information display from files."""
         # Load calibration info
@@ -368,6 +386,9 @@ class TESProcessing(QGroupBox):
             try:
                 with open(self.cal_file, "rb") as f:
                     self.cal_info = pickle.load(f)
+                # Add file to watcher if not already watching
+                if self.cal_file not in self.watcher.files():
+                    self.watcher.addPath(self.cal_file)
                 self._update_cal_display()
             except Exception as e:
                 print(f"Error loading calibration info: {e}")
@@ -377,6 +398,9 @@ class TESProcessing(QGroupBox):
             try:
                 with open(self.science_file, "rb") as f:
                     self.science_info = pickle.load(f)
+                # Add file to watcher if not already watching
+                if self.science_file not in self.watcher.files():
+                    self.watcher.addPath(self.science_file)
                 self._update_science_display()
             except Exception as e:
                 print(f"Error loading science info: {e}")
@@ -431,6 +455,10 @@ class TESProcessing(QGroupBox):
                 "Calibrated Channels",
                 f"{self.cal_info.get('calibrated_channels', 0)}/{self.cal_info.get('total_channels', 0)}",
             )
+        )
+        median_rms = np.median(list(self.cal_info.get("rms_per_channel", [0]).values()))
+        self.cal_layout.addLayout(
+            self._create_info_row("Median RMS (should be < 0.2)", f"{median_rms:.3f}")
         )
 
     def _update_science_display(self):
