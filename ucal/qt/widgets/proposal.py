@@ -55,7 +55,7 @@ def authenticate(username, password):
         raise RuntimeError("All authentication servers are unavailable.")
 
 
-def sync_experiment(proposal_number, username, password, redis_settings):
+def sync_experiment(proposal_number, saf, username, password, redis_settings):
     """
     Sync experiment data with Redis.
 
@@ -109,6 +109,7 @@ def sync_experiment(proposal_number, username, password, redis_settings):
         md["username"] = username
         md["start_datetime"] = datetime.now().isoformat()
         md["cycle"] = get_current_cycle()
+        md["saf"] = saf
         md["proposal"] = {
             "proposal_id": proposal_data.get("proposal_id"),
             "title": proposal_data.get("title"),
@@ -131,10 +132,12 @@ class ProposalSyncExperiment(QDialog):
         form = QFormLayout()
         self.username = QLineEdit()
         self.proposal = QLineEdit()
+        self.saf = QLineEdit()
         self.password = QLineEdit()
         self.password.setEchoMode(QLineEdit.Password)
         form.addRow("Username", self.username)
         form.addRow("Proposal ID", self.proposal)
+        form.addRow("Safety Approval Form", self.saf)
         form.addRow("Password", self.password)
         vbox.addLayout(form)
         vbox.addWidget(button)
@@ -143,10 +146,11 @@ class ProposalSyncExperiment(QDialog):
     def submit_form(self):
         username = self.username.text()
         proposal = self.proposal.text()
+        saf = self.saf.text()
         password = self.password.text()
 
         print(f"Authenticating {username} and {proposal}")
-        sync_experiment(proposal, username, password, self.redis_settings)
+        sync_experiment(proposal, saf, username, password, self.redis_settings)
 
 
 class RedisProposalBox(RedisStatusBox):
@@ -205,7 +209,7 @@ class RedisProposalBox(RedisStatusBox):
             title = full_title
         cleaned_md["Title"] = title
         cleaned_md["Proposal ID"] = prop_md.get("proposal_id", "")
-        # cleaned_md["Data Session"] = user_md.get("data_session", "")
+        cleaned_md["SAF"] = user_md.get("saf", "")
         cleaned_md["Type"] = prop_md.get("type", "")
         cleaned_md["PI"] = prop_md.get("pi_name", "")
         cleaned_md["Start Date"] = user_md.get("start_datetime", "")

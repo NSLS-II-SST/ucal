@@ -11,7 +11,7 @@ from qtpy.QtWidgets import (
 from qtpy.QtCore import Signal, Slot
 from bluesky_queueserver_api import BPlan
 from nbs_gui.widgets.views import AutoControl
-from ..widgets.tesSetup import TESSetup
+from ..widgets.tesSetup import TESSetup, TESProcessing
 
 
 class TESTabWidget(QWidget):
@@ -37,5 +37,7 @@ class TESTabWidget(QWidget):
         vbox.addWidget(AutoControl(tes, model))
         print("Adding TES Setup")
         vbox.addWidget(TESSetup(tes, model))
+        print("Adding TES Processing")
+        vbox.addWidget(TESProcessing(model))
         vbox.addItem(QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.setLayout(vbox)

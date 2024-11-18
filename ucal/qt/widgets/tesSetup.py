@@ -10,6 +10,10 @@ from qtpy.QtWidgets import QLabel, QWidget
 from qtpy.QtCore import Signal, Slot
 from bluesky_queueserver_api import BPlan, BFunc
 from nbs_gui.widgets.views import AutoMonitor, AutoControl
+from nbs_gui.settings import SETTINGS
+from os.path import join
+import pickle
+from os.path import exists
 
 
 class TESControl(QWidget):
@@ -293,3 +297,181 @@ class TESSetup(QGroupBox):
             worker_exists and not bool(running_item_uid) and is_connected
         )
         self.enable_buttons()
+
+
+class TESProcessing(QGroupBox):
+    """
+    Widget for displaying TES processing information.
+
+    Parameters
+    ----------
+    model : object
+        TES model object
+    *args : tuple
+        Additional arguments passed to QGroupBox
+    **kwargs : dict
+        Additional keyword arguments passed to QGroupBox
+    """
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__("TES Processing Status")
+        self.model = model
+
+        # Get file paths from settings
+        config_path = SETTINGS.beamline_config.get("settings", {}).get(
+            "tes_processing", ""
+        )
+        self.science_file = join(config_path, "data_processing_info.pkl")
+        self.cal_file = join(config_path, "data_calibration_info.pkl")
+
+        # Initialize data dictionaries
+        self.science_info = {}
+        self.cal_info = {}
+
+        # Create layout
+        layout = QVBoxLayout()
+
+        # Create refresh button
+        button_layout = QHBoxLayout()
+        self.refresh_button = QPushButton("Refresh Processing Info")
+        self.refresh_button.clicked.connect(self.update)
+        button_layout.addWidget(self.refresh_button)
+        button_layout.addStretch()
+        layout.addLayout(button_layout)
+
+        # Create calibration info section
+        cal_group = QGroupBox("Calibration Information")
+        self.cal_layout = QVBoxLayout()
+        self.cal_labels = {}
+        cal_group.setLayout(self.cal_layout)
+
+        # Create science info section
+        science_group = QGroupBox("Science Run Information")
+        self.science_layout = QVBoxLayout()
+        self.science_labels = {}
+        science_group.setLayout(self.science_layout)
+
+        # Add groups to main layout
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(cal_group)
+        hlayout.addWidget(science_group)
+        layout.addLayout(hlayout)
+        self.setLayout(layout)
+
+        # Initial update
+        self.update()
+
+    def update(self):
+        """Update processing information display from files."""
+        # Load calibration info
+        if exists(self.cal_file):
+            try:
+                with open(self.cal_file, "rb") as f:
+                    self.cal_info = pickle.load(f)
+                self._update_cal_display()
+            except Exception as e:
+                print(f"Error loading calibration info: {e}")
+
+        # Load science info
+        if exists(self.science_file):
+            try:
+                with open(self.science_file, "rb") as f:
+                    self.science_info = pickle.load(f)
+                self._update_science_display()
+            except Exception as e:
+                print(f"Error loading science info: {e}")
+
+    def _create_info_row(self, label, value):
+        """Create a horizontal layout with label and value."""
+        row = QHBoxLayout()
+        label_widget = QLabel(f"{label}:")
+        label_widget.setStyleSheet("font-weight: bold;")
+        value_widget = QLabel(str(value))
+        row.addWidget(label_widget)
+        row.addWidget(value_widget)
+        row.addStretch()
+        return row
+
+    def _clear_layout(self, layout):
+        """Properly clear all widgets from a layout."""
+        while layout.count():
+            item = layout.takeAt(0)
+            if item.layout():
+                self._clear_layout(item.layout())
+                item.layout().deleteLater()
+            elif item.widget():
+                item.widget().deleteLater()
+
+    def _update_cal_display(self):
+        """Update calibration information display."""
+        # Clear existing content
+        self._clear_layout(self.cal_layout)
+
+        if not self.cal_info:
+            self.cal_layout.addLayout(
+                self._create_info_row("Status", "No calibration data")
+            )
+            return
+
+        # Add run information
+        run_info = self.cal_info.get("run_info", {})
+        self.cal_layout.addLayout(
+            self._create_info_row("Scan ID", run_info.get("scan_id", "N/A"))
+        )
+        self.cal_layout.addLayout(
+            self._create_info_row("Sample", run_info.get("sample_name", "N/A"))
+        )
+        self.cal_layout.addLayout(
+            self._create_info_row("Timestamp", run_info.get("timestamp", "N/A"))
+        )
+
+        # Add calibration statistics
+        self.cal_layout.addLayout(
+            self._create_info_row(
+                "Calibrated Channels",
+                f"{self.cal_info.get('calibrated_channels', 0)}/{self.cal_info.get('total_channels', 0)}",
+            )
+        )
+
+    def _update_science_display(self):
+        """Update science run information display."""
+        # Clear existing content
+        self._clear_layout(self.science_layout)
+
+        if not self.science_info:
+            self.science_layout.addLayout(
+                self._create_info_row("Status", "No science data")
+            )
+            return
+
+        # Add run information
+        run_info = self.science_info.get("run_info", {})
+        self.science_layout.addLayout(
+            self._create_info_row("Scan ID", run_info.get("scan_id", "N/A"))
+        )
+        self.science_layout.addLayout(
+            self._create_info_row("Sample", run_info.get("sample_name", "N/A"))
+        )
+        self.science_layout.addLayout(
+            self._create_info_row("Timestamp", run_info.get("timestamp", "N/A"))
+        )
+
+        # Add calibration source information
+        cal_source = self.science_info.get("calibration_source", {})
+        self.science_layout.addLayout(
+            self._create_info_row("Cal. Scan ID", cal_source.get("scan_id", "N/A"))
+        )
+
+        # Add processing statistics
+        self.science_layout.addLayout(
+            self._create_info_row(
+                "Processed Channels",
+                f"{self.science_info.get('calibrated_channels', 0)}/{self.science_info.get('total_channels', 0)}",
+            )
+        )
+        self.science_layout.addLayout(
+            self._create_info_row(
+                "Data Saved",
+                "Yes" if self.science_info.get("data_saved", False) else "No",
+            )
+        )
