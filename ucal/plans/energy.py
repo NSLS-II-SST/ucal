@@ -1,6 +1,7 @@
 import bluesky.plan_stubs as bps
 from ucal.hw import en, ref, psh4
 from .plan_stubs import set_edge
+from nbs_bl.plans.plan_stubs import set_exposure
 from nbs_bl.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from nbs_bl.plans.maximizers import find_max
 from bluesky.plans import rel_scan
@@ -8,15 +9,20 @@ from nbs_bl.help import add_to_plan_list
 from ucal.plans.configuration import setup_mono
 
 
-def base_grating_to_250():
+def base_grating_to_250(stripe=2):
     mono_en = en.monoen
-    type = mono_en.gratingx.readback.get()
-    if "250l/mm" in type:
-        print("the grating is already at 250 l/mm")
-        return 0  # the grating is already here
-    print("Moving the grating to 250 l/mm.  This will take a minute...")
-    yield from psh4.close()
-    yield from bps.abs_set(mono_en.gratingx, 2, wait=True)
+    stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]
+    current_stripe = mono_en.gratingx.readback.get()
+    if "250" not in stripe_str:
+        print(f"Requested stripe {stripe_str} is not a 250l/mm stripe, aborting setup")
+        return 0
+    if current_stripe != stripe_str:
+        print(f"Moving the grating to {stripe_str}.  This will take a minute...")
+        yield from psh4.close()
+        yield from bps.abs_set(mono_en.gratingx, stripe, wait=True)
+    else:
+        print(f"the grating is already at {current_stripe}")
+
     # yield from bps.sleep(60)
     # yield from bps.mv(mirror2.user_offset, 0.04) #0.0315)
     # yield from bps.mv(grating.user_offset, -0.0874)#-0.0959)
@@ -24,19 +30,23 @@ def base_grating_to_250():
     yield from bps.mv(mono_en.cff, 1.47)
     yield from bps.mv(en, 270)
     yield from psh4.open()
-    print("the grating is now at 250 l/mm signifigant higher order")
+    print(f"the grating is now at {stripe_str}, signifigant higher order beam will be present")
     return 1
 
 
-def base_grating_to_1200():
+def base_grating_to_1200(stripe=9):
     mono_en = en.monoen
-    type = mono_en.gratingx.readback.get()
-    if "1200" in type:
-        print("the grating is already at 1200 l/mm")
-        return 0  # the grating is already here
-    print("Moving the grating to 1200 l/mm.  This will take a minute...")
-    yield from psh4.close()
-    yield from bps.abs_set(mono_en.gratingx, 9, wait=True)
+    stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]
+    current_stripe = mono_en.gratingx.readback.get()
+    if "1200" not in stripe_str:
+        print(f"Requested stripe {stripe_str} is not a 1200l/mm stripe, aborting setup")
+        return 0
+    if current_stripe != stripe_str:
+        print(f"Moving the grating to {stripe_str}.  This will take a minute...")
+        yield from psh4.close()
+        yield from bps.abs_set(mono_en.gratingx, stripe, wait=True)
+    else:
+        print(f"the grating is already at {current_stripe}")
     # yield from bps.sleep(60)
     # yield from bps.mv(mirror2.user_offset, 0.2044) #0.1962) #0.2052) # 0.1745)  # 8.1264)
     # yield from bps.mv(grating.user_offset, 0.0769) #0.0687) # 0.0777) # 0.047)  # 7.2964)  # 7.2948)#7.2956
@@ -44,7 +54,7 @@ def base_grating_to_1200():
     # yield from bps.mv(en.m3offset, 7.91)
     yield from bps.mv(en, 270)
     yield from psh4.open()
-    print("the grating is now at 1200 l/mm")
+    print(f"the grating is now at {stripe_str}")
     return 1
 
 
@@ -119,7 +129,7 @@ def tune_pgm(
 
 
 def tune_250(auto_accept=True):
-    yield from set_edge(1)
+    yield from set_edge("1")
     yield from tune_pgm(
         cs=[1.45, 1.5, 1.55, 1.6],
         ms=[1, 1, 1, 1],
@@ -131,7 +141,7 @@ def tune_250(auto_accept=True):
 
 
 def tune_1200(auto_accept=True):
-    yield from set_edge(1)
+    yield from set_edge("1")
     yield from tune_pgm(
         cs=[2.0, 2.05, 2.1, 2.15],
         ms=[1, 1, 1, 1],
@@ -146,7 +156,7 @@ def tune_1200(auto_accept=True):
 def tune_grating(auto_accept=True):
     """Tune grating offsets, should be run after grating change automatically"""
     grating = yield from bps.rd(en.monoen.gratingx.readback)
-
+    yield from set_exposure(1.0)
     if "250l/mm" in grating:
         yield from setup_mono()
         yield from tune_250(auto_accept=auto_accept)
@@ -158,17 +168,23 @@ def tune_grating(auto_accept=True):
 
 
 @add_to_plan_list
-def change_grating(grating, tune=True):
+def change_grating(stripe, tune=True):
     """Change to specified grating, optionally tune afterwards
 
     grating: either 250 or 1200
     tune: if True, calibrate grating offsets after change"""
-    if grating == 250:
-        yield from base_grating_to_250()
+    mono_en = en.monoen
+    if isinstance(stripe, int):
+        stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]
+    else:
+        stripe_str = stripe
+        stripe = mono_en.gratingx.setpoint.enum_strs.index(stripe_str)
+    if "250" in stripe_str:
+        yield from base_grating_to_250(stripe)
         if tune:
             yield from tune_250()
-    elif grating == 1200:
-        yield from base_grating_to_1200()
+    elif "1200" in stripe_str:
+        yield from base_grating_to_1200(stripe)
         if tune:
             yield from tune_1200()
     else:

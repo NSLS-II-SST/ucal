@@ -62,26 +62,27 @@ class EnergyControl(QGroupBox):
         print("Creating Energy Motor")
         for m in energy.energy.pseudo_axes_models:
             vbox2.addWidget(MotorControl(m, parent_model))
+        print("Creating Exit Slit")
+        vbox2.addWidget(
+            MotorControl(parent_model.beamline.motors["Exit_Slit"], parent_model)
+        )
         for p in energy.energy.real_axes_models:
             vbox3.addWidget(MotorControl(p, parent_model))
         # vbox.addWidget(PseudoManipulatorControl(energy.energy, parent_model))
-        print("Creating Exit Slit")
+        
         hbox.addLayout(vbox2)
         hbox.addLayout(vbox3)
         vbox.addLayout(hbox)
-        vbox.addWidget(
-            MotorControl(parent_model.beamline.motors["Exit_Slit"], parent_model)
-        )
         hbox2 = QHBoxLayout()
-        vbox.addLayout(hbox2)
         hbox2.addWidget(AutoMonitor(energy.cff, parent_model))
         hbox2.addWidget(AutoMonitor(energy.grating_motor, parent_model))
 
         self.advancedControlButton = QPushButton("Advanced Controls")
         self.advancedControlButton.clicked.connect(self.showAdvancedControls)
-        vbox.addWidget(
+        hbox2.addWidget(
             self.advancedControlButton
-        )  # Assuming vbox is your main QVBoxLayout
+        )
+        vbox.addLayout(hbox2)
         self.setLayout(vbox)
 
     def showAdvancedControls(self):
@@ -115,8 +116,9 @@ class AdvancedEnergyControl(QGroupBox):
         print("Making ComboBox")
         cb = QComboBox()
         self.cb = cb
-        cb.addItem("250 l/mm", 2)
-        cb.addItem("1200 l/mm", 9)
+        for n, s in enumerate(model.grating_motor.obj.setpoint.enum_strs):
+            if s != "":
+                cb.addItem(s, n)
         self.button = QPushButton("Change Grating")
         self.button.clicked.connect(self.change_grating)
         hbox.addWidget(cb)
@@ -139,11 +141,8 @@ class AdvancedEnergyControl(QGroupBox):
     def change_grating(self):
         enum = self.cb.currentData()
         print(enum)
-        if self.confirm_dialog("Are you sure you want to change gratings?"):
-            if enum == 9:
-                plan = BPlan("change_grating", 1200)
-            else:
-                plan = BPlan("change_grating", 250)
+        if self.confirm_dialog("Are you sure you want to change gratings?\nEnsure beam is open to the multimesh.\nGrating change and tune will run as queue item"):
+            plan = BPlan("change_grating", enum)
             self.REClientModel._client.item_execute(plan)
 
     def confirm_dialog(self, confirm_message):
