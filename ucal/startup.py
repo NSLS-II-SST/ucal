@@ -35,16 +35,7 @@ from ucal.plans.alignment import (
     load_saved_manipulator_calibration,
 )
 from ucal.plans.samples import *
-from ucal.plans.scan_base import (
-    tes_calibrate,
-    tes_take_noise,
-    tes_gscan,
-    tes_rel_scan,
-    tes_take_projectors,
-    tes_make_and_load_projectors,
-)
-
-# import ucal.plans.scans
+from ucal.plans.scan_base import *
 from ucal.plans.plan_stubs import *
 import nbs_bl.plans.scans
 from ucal.plans.tes_setup import *
