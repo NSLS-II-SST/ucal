@@ -7,7 +7,7 @@ from nbs_bl.shutters import (
     open_shutter,
     is_shutter_open,
 )
-
+from nbs_bl.utils import merge_func
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from nbs_bl.samples import move_sample
 from .scan_base import take_dark_counts
@@ -24,7 +24,7 @@ def tes_start_file():
 @add_to_plan_list
 def tes_end_file():
     tes_state = yield from rd(tes.state)
-    if tes_state is not "no_file":
+    if tes_state != "no_file":
         yield from call_obj(tes, "_file_end")
 
 
@@ -62,7 +62,7 @@ def tes_cycle_and_setup(sample=None, should_close_shutter=False, setup=True, cal
             print(f"Fridge Magnet still at {heater_out}%, will not cycle yet")
             return
 
-    yield from tes_cycle_cryostat(wait=True, should_close_shutter)
+    yield from tes_cycle_cryostat(wait=True, should_close_shutter=should_close_shutter)
     if setup:
         if sample is not None:
             yield from move_sample(sample)
