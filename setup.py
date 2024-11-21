@@ -16,7 +16,7 @@ setup(
     entry_points={
         "nbs_gui.plans": [
             "ucal-tes-count=ucal.qt.plans.tesBasic:TESCountWidget",
-            "ucal-tes-scan=ucal.qt.plans.tesBasic:TESScanWidget",
+            "ucal-tes-setup=ucal.qt.plans.tesSetup:TESSetupWidget",
             "ucal-tes-cal=ucal.qt.plans.tesBasic:TESCalibrateWidget",
             "manual-sample-move=ucal.qt.plans.sampleMove:ManualSampleWidget",
         ],

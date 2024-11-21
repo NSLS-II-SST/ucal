@@ -10,6 +10,7 @@ from nbs_bl.shutters import (
 from nbs_bl.utils import merge_func
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from nbs_bl.samples import move_sample
+from nbs_bl.beamline import GLOBAL_BEAMLINE
 from .scan_base import take_dark_counts
 from .plan_stubs import set_edge
 from bluesky.plan_stubs import sleep, rd, mv, abs_set
@@ -55,7 +56,15 @@ def tes_wait_for_cycle(timeout=None, sleep_time=10):
 
 
 @add_to_plan_list
-def tes_cycle_and_setup(sample=None, should_close_shutter=False, setup=True, calibrate=False, calibration_time=1600, fridge_threshold=None, **cal_args):
+def tes_cycle_and_setup(
+    sample=None,
+    should_close_shutter=False,
+    setup=True,
+    calibrate=False,
+    calibration_time=1600,
+    fridge_threshold=None,
+    **cal_args,
+):
     if fridge_threshold is not None:
         heater_out = yield from rd(adr.heater)
         if heater_out > fridge_threshold:
@@ -69,6 +78,7 @@ def tes_cycle_and_setup(sample=None, should_close_shutter=False, setup=True, cal
         yield from tes_setup()
         if calibrate:
             yield from tes_calibrate(calibration_time, sample=sample, **cal_args)
+
 
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
@@ -96,7 +106,7 @@ def tes_take_projectors():
     uid = yield from bp.count([tes], 30, md={"scantype": "projectors"})
     yield from call_obj(tes, "_file_end")
     yield from abs_set(tes.projector_uid, uid)
-    
+
     return uid
 
 
@@ -106,7 +116,15 @@ def tes_make_and_load_projectors():
 
 
 @add_to_plan_list
-def tes_setup(should_take_dark_counts=True, sample=None, calibrate=False, time=1600, dwell=10, energy=980, **kwargs):
+def tes_setup(
+    should_take_dark_counts=True,
+    sample=None,
+    calibrate=False,
+    time=1600,
+    dwell=10,
+    energy=980,
+    **kwargs,
+):
     """Set up TES after cryostat cycle. Must have counts from cal sample.
 
     should_take_dark_counts: if True, take dark counts for the other
@@ -124,9 +142,11 @@ def tes_setup(should_take_dark_counts=True, sample=None, calibrate=False, time=1
     yield from tes_take_projectors()
     yield from tes_make_and_load_projectors()
     if calibrate:
-        yield from tes_calibrate(time, dwell=dwell, sample=sample, energy=energy, **kwargs)
+        yield from tes_calibrate(
+            time, dwell=dwell, sample=sample, energy=energy, **kwargs
+        )
 
-            
+
 @add_to_scan_list
 @merge_func(nbs_count, ["num", "delay"], use_func_name=False)
 def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
@@ -158,7 +178,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    yield from abs_set(tes.mca.make_cal, time*600)
+    yield from abs_set(tes.mca.make_cal, time * 600)
     cal_uid = yield from nbs_count(int(time // dwell), dwell=dwell, md=_md, **kwargs)
     yield from mv(tes.cal_flag, False)
     yield from abs_set(tes.calibration_uid, cal_uid)
