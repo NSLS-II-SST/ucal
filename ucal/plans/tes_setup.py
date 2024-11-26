@@ -48,6 +48,7 @@ def tes_cycle_cryostat(wait=False, should_close_shutter=False):
     if wait:
         yield from sleep(60)
         yield from tes_wait_for_cycle()
+        yield from sleep(60*5) # Wait for autosetup to be done -- autotune takes a few minutes
 
 
 @add_to_plan_list
@@ -118,21 +119,12 @@ def tes_make_and_load_projectors():
 @add_to_plan_list
 def tes_setup(
     should_take_dark_counts=True,
-    sample=None,
-    calibrate=False,
-    time=1600,
-    dwell=10,
-    energy=980,
-    **kwargs,
 ):
     """Set up TES after cryostat cycle. Must have counts from cal sample.
 
     should_take_dark_counts: if True, take dark counts for the other
     detectors at the same time.
     """
-    if sample is not None:
-        yield from move_sample(sample)
-
     if should_take_dark_counts:
         yield from close_shutter()
         deactivate_detector("tes")
@@ -141,15 +133,11 @@ def tes_setup(
     yield from tes_take_noise()
     yield from tes_take_projectors()
     yield from tes_make_and_load_projectors()
-    if calibrate:
-        yield from tes_calibrate(
-            time, dwell=dwell, sample=sample, energy=energy, **kwargs
-        )
 
 
 @add_to_scan_list
 @merge_func(nbs_count, ["num", "delay"], use_func_name=False)
-def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
+def tes_calibrate(time, dwell=10, energy=980, md=None, autosetup=True, **kwargs):
     """
     Perform an in-place energy calibration for the TES detector.
 
@@ -171,6 +159,10 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     cal_uid : str
         The unique identifier for the calibration run.
     """
+    if autosetup:
+        tes_status = yield from rd(tes.status)
+        if tes_status < 4:
+            yield from tes_setup()
     yield from mv(tes.cal_flag, True)
     yield from set_edge("blank")
     yield from mv(GLOBAL_BEAMLINE.energy, energy)
@@ -178,7 +170,7 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, **kwargs):
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
     _md.update(md)
-    yield from abs_set(tes.mca.make_cal, time * 600)
+    yield from mv(tes.mca.make_cal, time * 600)
     cal_uid = yield from nbs_count(int(time // dwell), dwell=dwell, md=_md, **kwargs)
     yield from mv(tes.cal_flag, False)
     yield from abs_set(tes.calibration_uid, cal_uid)
