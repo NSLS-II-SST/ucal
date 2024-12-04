@@ -9,7 +9,7 @@ from qtpy.QtWidgets import (
     QPushButton,
     QWidget,
 )
-from nbs_gui.QtRedisJSONDict import QtRedisJSONDict
+from nbs_gui.models import QtRedisJSONDict
 from redis_json_dict import RedisJSONDict
 import redis
 import warnings
