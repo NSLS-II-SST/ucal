@@ -1,4 +1,4 @@
-from nbs_gui.widgets.status import RedisStatusBox
+from nbs_gui.views.status import RedisStatusBox
 from nbs_gui.settings import SETTINGS
 from qtpy.QtCore import Slot
 from qtpy.QtWidgets import (

@@ -1,4 +1,5 @@
-from nbs_gui.widgets.views import AutoMonitorBox
+from nbs_gui.views.views import AutoMonitorBox
+
 
 class SignalTupleMonitor(AutoMonitorBox):
     def __init__(self, model, parent_model, orientation="h"):

@@ -7,12 +7,8 @@ from qtpy.QtWidgets import (
     QMessageBox,
     QDialog,
 )
-from nbs_gui.widgets.views import AutoControl, AutoMonitor
-from nbs_gui.widgets.motor import MotorMonitor, MotorControl
-from nbs_gui.widgets.manipulator_monitor import (
-    ManipulatorMonitor,
-    PseudoManipulatorControl,
-)
+from nbs_gui.views.views import AutoControl, AutoMonitor
+from nbs_gui.views.motor import MotorMonitor, MotorControl
 
 from bluesky_queueserver_api import BPlan
 
@@ -69,7 +65,7 @@ class EnergyControl(QGroupBox):
         for p in energy.energy.real_axes_models:
             vbox3.addWidget(MotorControl(p, parent_model))
         # vbox.addWidget(PseudoManipulatorControl(energy.energy, parent_model))
-        
+
         hbox.addLayout(vbox2)
         hbox.addLayout(vbox3)
         vbox.addLayout(hbox)
@@ -79,9 +75,7 @@ class EnergyControl(QGroupBox):
 
         self.advancedControlButton = QPushButton("Advanced Controls")
         self.advancedControlButton.clicked.connect(self.showAdvancedControls)
-        hbox2.addWidget(
-            self.advancedControlButton
-        )
+        hbox2.addWidget(self.advancedControlButton)
         vbox.addLayout(hbox2)
         self.setLayout(vbox)
 
@@ -141,7 +135,9 @@ class AdvancedEnergyControl(QGroupBox):
     def change_grating(self):
         enum = self.cb.currentData()
         print(enum)
-        if self.confirm_dialog("Are you sure you want to change gratings?\nEnsure beam is open to the multimesh.\nGrating change and tune will run as queue item"):
+        if self.confirm_dialog(
+            "Are you sure you want to change gratings?\nEnsure beam is open to the multimesh.\nGrating change and tune will run as queue item"
+        ):
             plan = BPlan("change_grating", enum)
             self.REClientModel._client.item_execute(plan)
 

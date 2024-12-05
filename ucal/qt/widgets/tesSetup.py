@@ -9,7 +9,7 @@ from qtpy.QtWidgets import (
 from qtpy.QtWidgets import QLabel, QWidget
 from qtpy.QtCore import Signal, Slot, QFileSystemWatcher
 from bluesky_queueserver_api import BPlan, BFunc
-from nbs_gui.widgets.views import AutoMonitor, AutoControl
+from nbs_gui.views.views import AutoMonitor, AutoControl
 from nbs_gui.settings import SETTINGS
 from os.path import join
 import pickle

@@ -10,7 +10,7 @@ from qtpy.QtWidgets import (
 )
 from qtpy.QtCore import Signal, Slot
 from bluesky_queueserver_api import BPlan
-from nbs_gui.widgets.views import AutoControl
+from nbs_gui.views.views import AutoControl
 from ..widgets.tesSetup import TESSetup, TESProcessing
 
 
