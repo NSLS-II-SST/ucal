@@ -6,7 +6,6 @@ from nbs_bl.gGrEqns import get_mirror_grating_angles, find_best_offsets
 from nbs_bl.plans.maximizers import find_max
 from bluesky.plans import rel_scan
 from nbs_bl.help import add_to_plan_list
-from ucal.plans.configuration import setup_mono
 
 
 def base_grating_to_250(stripe=2):
@@ -30,7 +29,9 @@ def base_grating_to_250(stripe=2):
     yield from bps.mv(mono_en.cff, 1.47)
     yield from bps.mv(en, 270)
     yield from psh4.open()
-    print(f"the grating is now at {stripe_str}, signifigant higher order beam will be present")
+    print(
+        f"the grating is now at {stripe_str}, signifigant higher order beam will be present"
+    )
     return 1
 
 

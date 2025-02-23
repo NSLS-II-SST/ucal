@@ -1,21 +1,5 @@
 from bluesky.plan_stubs import abs_set
 
-# startup sequence for beamline
-# import ucal.motors as ucal_motors
-# import ucal.mirrors as ucal_mirrors
-# import ucal.shutters as ucal_shutters
-# import ucal.valves as ucal_valves
-
-# convenience imports
-# from ucal.shutters import psh10, psh7
-# from ucal.mirrors import mir3, mir4
-# from ucal import mir1
-# from ucal.detectors import (sc, i0, ref, tes)
-# from ucal.controllers import adr
-# from ucal.energy import en
-# from ucal.motors import (manipx, manipy, manipz, manipr, tesz,
-#                         manipulator, eslit, i0upAu)
-
 import nbs_bl
 from ucal.hw import *
 from nbs_bl.detectors import (
