@@ -3,7 +3,7 @@ from ucal.hw import en, ref, psh4
 from .plan_stubs import set_edge
 from nbs_bl.plans.plan_stubs import set_exposure
 from nbs_bl.gGrEqns import get_mirror_grating_angles, find_best_offsets
-from nbs_bl.plans.maximizers import find_max
+from nbs_bl.plans.maximizers import find_max, fly_max
 from bluesky.plans import rel_scan
 from nbs_bl.help import add_to_plan_list
 
@@ -97,6 +97,11 @@ def tune_pgm(
             grating, g_set, mirror2, m_set, grating.velocity, 0.1, mirror2.velocity, 0.1
         )
         yield from bps.sleep(0.2)
+        max_info = yield from fly_max([ref], grating, g_set-0.1, g_set+0.1, 0.2/30, period=0.2)
+        gset2 = max_info[ref.name][grating.name]
+        max_info = yield from fly_max([ref], grating, gset2-0.015, gset2+0.015, 0.03/30.0, period=0.2)
+        gmax = max_info[ref.name][grating.name]
+        """
         _ = yield from find_max(
             rel_scan, [ref], grating, -0.1, 0.1, 41, max_channel=ref.name
         )
@@ -104,6 +109,7 @@ def tune_pgm(
             rel_scan, [ref], grating, -0.015, 0.015, 61, max_channel=ref.name
         )
         _, gmax = ret[0]
+        """
         grating_measured.append(gmax)
         mirror_measured.append(m_set)
         energy_measured.append(energy)
@@ -112,12 +118,16 @@ def tune_pgm(
     print(f"grating positions: {grating_measured}")
     print(f"energy positions: {energy_measured}")
     print(f"orders: {m_measured}")
-    print(f"Current Mir2 Offset: {mirror2.user_offset.get()}")
-    print(f"Current Grating Offset: {grating.user_offset.get()}")
+    mir2_current = mirror2.user_offset.get()
+    grat_current = grating.user_offset.get()
     fit = find_best_offsets(
         mirror_measured, grating_measured, m_measured, energy_measured, k
     )
-    print(fit)
+    print(f"Current Mir2 Offset: {mir2_current}, New Offset: {mir2_current - fit.x[0]}")
+    print(f"Current Grating Offset: {grat_current}, New Offset: {grat_current - fit.x[1]}")
+
+    print(f"Fit object: {fit}")
+    
     if not auto_accept:
         accept = input("Accept these values and set the offset (y/n)? ")
     else:
@@ -159,9 +169,11 @@ def tune_grating(auto_accept=True):
     grating = yield from bps.rd(en.monoen.gratingx.readback)
     yield from set_exposure(1.0)
     if "250l/mm" in grating:
+        print("Tuning 250l/mm Grating")
         yield from setup_mono()
         yield from tune_250(auto_accept=auto_accept)
     elif "1200l/mm" in grating:
+        print("Tuning 1200l/mm Grating")
         yield from setup_mono()
         yield from tune_1200(auto_accept=auto_accept)
     else:
