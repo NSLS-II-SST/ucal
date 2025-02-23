@@ -1,4 +1,4 @@
-from nbs_bl.sampleholders import Manipulator1AxBase
+from nbs_bl.devices.sampleholders import Manipulator1AxBase
 from nbs_bl.geometry.bars import Bar1d
 from sst_base.motors import PrettyMotor
 import numpy as np
