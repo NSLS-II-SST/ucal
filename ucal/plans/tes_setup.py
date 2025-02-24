@@ -159,13 +159,13 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, autosetup=True, **kwargs)
     cal_uid : str
         The unique identifier for the calibration run.
     """
+    yield from set_edge("blank")
+    yield from mv(GLOBAL_BEAMLINE.energy, energy)
     if autosetup:
         tes_status = yield from rd(tes.status)
         if tes_status < 4:
             yield from tes_setup()
     yield from mv(tes.cal_flag, True)
-    yield from set_edge("blank")
-    yield from mv(GLOBAL_BEAMLINE.energy, energy)
     pre_cal_exposure = yield from rd(tes.acquire_time)
     md = md or {}
     _md = {"scantype": "calibration", "calibration_energy": energy}
