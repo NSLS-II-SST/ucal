@@ -64,7 +64,7 @@ def setup_mono():
     monotype = mono_en.gratingx.readback.get()
     if "250l/mm" in monotype:
         # yield from bps.mv(en.m3offset, 7.91)
-        yield from bps.mv(mono_en.cff, 1.5)
+        yield from bps.mv(mono_en.cff, 1.47)
     elif "1200" in monotype:
         yield from bps.mv(mono_en.cff, 2.02)
         # yield from bps.mv(en.m3offset, 7.91)
@@ -97,9 +97,13 @@ def tune_pgm(
             grating, g_set, mirror2, m_set, grating.velocity, 0.1, mirror2.velocity, 0.1
         )
         yield from bps.sleep(0.2)
-        max_info = yield from fly_max([ref], grating, g_set-0.1, g_set+0.1, 0.2/30, period=0.2)
+        max_info = yield from fly_max(
+            [ref], grating, g_set - 0.1, g_set + 0.1, 0.2 / 30, period=0.2
+        )
         gset2 = max_info[ref.name][grating.name]
-        max_info = yield from fly_max([ref], grating, gset2-0.015, gset2+0.015, 0.03/30.0, period=0.2)
+        max_info = yield from fly_max(
+            [ref], grating, gset2 - 0.015, gset2 + 0.015, 0.03 / 30.0, period=0.2
+        )
         gmax = max_info[ref.name][grating.name]
         """
         _ = yield from find_max(
@@ -124,10 +128,12 @@ def tune_pgm(
         mirror_measured, grating_measured, m_measured, energy_measured, k
     )
     print(f"Current Mir2 Offset: {mir2_current}, New Offset: {mir2_current - fit.x[0]}")
-    print(f"Current Grating Offset: {grat_current}, New Offset: {grat_current - fit.x[1]}")
+    print(
+        f"Current Grating Offset: {grat_current}, New Offset: {grat_current - fit.x[1]}"
+    )
 
     print(f"Fit object: {fit}")
-    
+
     if not auto_accept:
         accept = input("Accept these values and set the offset (y/n)? ")
     else:
@@ -142,7 +148,7 @@ def tune_pgm(
 def tune_250(auto_accept=True):
     yield from set_edge("1")
     yield from tune_pgm(
-        cs=[1.45, 1.5, 1.55, 1.6],
+        cs=[1.4, 1.45, 1.5, 1.55],
         ms=[1, 1, 1, 1],
         energy=291.65,
         pol=0,
