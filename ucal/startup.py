@@ -26,6 +26,7 @@ from ucal.plans.tes_setup import *
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.run_engine import RE
+from sst_base.plans import *
 
 # from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
 from nbs_bl.help import GLOBAL_IMPORT_DICTIONARY
