@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ucal"
+authors = [
+    {name = "Charles Titus", email = "charles.titus@nist.gov"},
+]
+description = "UCAL beamline package"
+dynamic = ["version"]
+dependencies = [
+    "bluesky",
+    "ophyd",
+    "sst_base",
+    "nbs_bl",
+]
+
+[project.urls]
+homepage = "https://github.com/nsls-ii-sst/ucal"
+
+[tool.setuptools]
+packages = ["ucal"]
+
+[tool.setuptools.package-data]
+ucal = ["*.yaml"]
+
+[tool.setuptools_scm]
+
+[project.entry-points."nbs_gui.plans"]
+ucal-tes-count = "ucal.qt.plans.tesBasic:TESCountWidget"
+ucal-tes-setup = "ucal.qt.plans.tesSetup:TESSetupWidget"
+ucal-tes-cal = "ucal.qt.plans.tesBasic:TESCalibrateWidget"
+manual-sample-move = "ucal.qt.plans.sampleMove:ManualSampleWidget"
+
+[project.entry-points."nbs_gui.tabs"]
+ucal-tes-tab = "ucal.qt.tabs.tesTab:TESTabWidget"
+ucal-gui-samples = "ucal.qt.tabs.sampleTab:SampleTab"
+
+[project.entry-points."nbs_gui.widgets"]
+ucal-header-widget = "ucal.qt.widgets.header:UCALHeader"
+
+[project.entry-points."nbs.startup"]
+ucal = "ucal.startup:main"
