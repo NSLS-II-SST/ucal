@@ -12,30 +12,34 @@ def setup_ucal():
     yield from setup_manipulators()
     yield from setup_mono()
 
-
+@add_to_plan_list
 def setup_mirrors():
     # Set mir4 consistently, ask Cherno what these values are and why
-    # x: 30
-    # y: 0
-    # z: 0.00017
-    # yaw: 2.504
-    # pitch: -0.625
-    # roll: 1.44e-5
 
-    yield from mv(mir4.x, 27.5)
-    yield from mv(mir4.y, 0)
-    yield from mv(mir4.z, 0.00199)
-    yield from mv(mir4.yaw, 2.504)
-    yield from mv(mir4.pitch, -0.625)
-    yield from mv(mir4.roll, -0.00)
-    yield from mv(mir3.x, 26.7)
-    yield from mv(mir3.y, 18)
-    yield from mv(mir3.z, 0)
-    yield from mv(mir3.pitch, 7.89)
-    yield from mv(mir3.yaw, 0)
-    yield from mv(mir3.roll, 0)
-    yield from mv(mir1.pitch, 0.68)
+    m3x = 24.2
+    m3y = 18
+    m3z = 0
+    m3yaw = 0
+    m3pitch = 7.78
+    m3roll = 0
 
+    m1pitch = 0.57
+    m1x = -0.5
+
+    m4x = 27.5
+    m4y = 0
+    m4z = 0 
+    m4yaw = 2.504
+    m4pitch = -0.65
+    m4roll = 0
+    
+    pairs = [(mir4.x, m4x), (mir4.y, m4y), (mir4.z, m4z), (mir4.yaw, m4yaw),
+             (mir4.pitch, m4pitch), (mir4.roll, m4roll), (mir3.x, m3x),
+             (mir3.y, m3y), (mir3.z, m3z), (mir3.pitch, m3pitch), (mir3.roll, m3roll),
+             (mir3.yaw, m3yaw), (mir1.pitch, m1pitch), (mir1.x, m1x)]
+    for pair in pairs:
+        yield from mv(pair[0], pair[1], timeout=60)
+    
 
 def setup_manipulators():
     yield from mv(i0upAu, 78)
