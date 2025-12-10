@@ -26,7 +26,7 @@ from ucal.plans.tes_setup import *
 from ucal.plans.configuration import setup_ucal
 from ucal.plans.energy import tune_grating, change_grating
 from ucal.plans.capacitor_box import *
-from ucal.run_engine import RE
+from ucal.run_engine import setup_run_engine
 from sst_base.plans import *
 
 # from ucal.configuration import beamline_config, new_proposal, load_saved_configuration
@@ -34,12 +34,11 @@ from nbs_bl.help import GLOBAL_IMPORT_DICTIONARY
 from nbs_bl.plans.groups import group
 from nbs_bl.queueserver import request_update, get_status
 from nbs_bl.samples import list_samples
+from nbs_bl.beamline import GLOBAL_BEAMLINE
 
-for key in GLOBAL_IMPORT_DICTIONARY:
-    if key not in globals():
-        globals()[key] = GLOBAL_IMPORT_DICTIONARY[key]
+setup_run_engine(GLOBAL_BEAMLINE.run_engine)
 
-
+"""
 def main():
     print("UCAL Startup")
     RE(set_exposure(1.0))
@@ -47,6 +46,6 @@ def main():
     tes.path = "/data/raw"
     # load_saved_configuration()
     activate_detector_set("default")
-
+"""
 
 # ucal_sd.baseline = [manipulator, eslit, i0upAu, tesz, mir3, mir4, mir5, multimesh]

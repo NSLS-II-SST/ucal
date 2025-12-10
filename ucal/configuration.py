@@ -1,4 +1,4 @@
-from ucal.run_engine import RE
+from nbs_bl.beamline import GLOBAL_BEAMLINE
 from nbs_bl.printing import boxed_text
 from nbs_bl.help import add_to_func_list
 from bluesky.utils import PersistentDict
@@ -26,6 +26,7 @@ GLOBAL_USER_MD = StatusDict()
 
 
 def load_saved_configuration():
+    RE = GLOBAL_BEAMLINE.run_engine
     proposal = RE.md.get("proposal", {})
     data_session = RE.md.get("data_session", "")
     cycle = RE.md.get("cycle", "")
@@ -43,6 +44,7 @@ def load_saved_configuration():
 
 
 def configure_user(users, proposal, cycle, saf):
+    RE = GLOBAL_BEAMLINE.run_engine
     RE.md["users"] = users
     RE.md["proposal"] = proposal
     RE.md["saf"] = saf
@@ -88,6 +90,7 @@ def new_proposal(users, proposal, year, cycle, saf):
 @add_to_func_list
 def print_config_info():
     """Print basic info about the current beamline setup"""
+    RE = GLOBAL_BEAMLINE.run_engine
     title = "Currently configured information"
     infolist = []
     infolist.append("User(s): " + ", ".join(RE.md.get("users", [])))

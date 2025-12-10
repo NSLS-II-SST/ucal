@@ -1,5 +1,4 @@
 # from ucal.hw import tes, eslit as energy_slit, en
-from ucal.hw import tes
 from nbs_bl.beamline import (
     # GLOBAL_ACTIVE_DETECTORS,
     GLOBAL_BEAMLINE,

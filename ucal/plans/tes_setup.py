@@ -10,7 +10,7 @@ from nbs_bl.shutters import (
 from nbs_bl.utils import merge_func
 from nbs_bl.help import add_to_plan_list, add_to_scan_list
 from nbs_bl.samples import move_sample
-from nbs_bl.beamline import GLOBAL_BEAMLINE
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 from .scan_base import take_dark_counts
 from .plan_stubs import set_edge
 from bluesky.plan_stubs import sleep, rd, mv, abs_set
@@ -19,11 +19,13 @@ import bluesky.plans as bp
 
 @add_to_plan_list
 def tes_start_file():
+    tes = bl["tes"]
     yield from call_obj(tes, "_file_start")
 
 
 @add_to_plan_list
 def tes_end_file():
+    tes = bl["tes"]
     tes_state = yield from rd(tes.state)
     if tes_state != "no_file":
         yield from call_obj(tes, "_file_end")
@@ -39,6 +41,8 @@ def tes_shutoff(should_close_shutter=True):
 
 @add_to_plan_list
 def tes_cycle_cryostat(wait=False, should_close_shutter=False):
+    tes = bl["tes"]
+    adr = bl["adr"]
     yield from call_obj(adr, "start_cycle")
     yield from abs_set(tes.noise_uid, "")
     yield from abs_set(tes.projector_uid, "")
@@ -53,6 +57,7 @@ def tes_cycle_cryostat(wait=False, should_close_shutter=False):
 
 @add_to_plan_list
 def tes_wait_for_cycle(timeout=None, sleep_time=10):
+    adr = bl["adr"]
     yield from wait_for_signal_equals(adr.state, "control", timeout, sleep_time)
 
 
@@ -66,6 +71,7 @@ def tes_cycle_and_setup(
     fridge_threshold=None,
     **cal_args,
 ):
+    adr = bl["adr"]
     if fridge_threshold is not None:
         heater_out = yield from rd(adr.heater)
         if heater_out > fridge_threshold:
@@ -83,7 +89,7 @@ def tes_cycle_and_setup(
 
 def tes_take_noise():
     """Close the shutter and take TES noise. Run after cryostat cycle"""
-
+    tes = bl["tes"]
     yield from abs_set(tes.noise_uid, "")
     yield from abs_set(tes.projector_uid, "")
     shutter_open = yield from is_shutter_open()
@@ -101,7 +107,7 @@ def tes_take_noise():
 
 def tes_take_projectors():
     """Take projector data for TES. Run with pulses from cal sample"""
-
+    tes = bl["tes"]
     yield from open_shutter()
     yield from call_obj(tes, "take_projectors")
     uid = yield from bp.count([tes], 30, md={"scantype": "projectors"})
@@ -112,6 +118,7 @@ def tes_take_projectors():
 
 
 def tes_make_and_load_projectors():
+    tes = bl["tes"]
     yield from call_obj(tes, "make_projectors")
     return (yield from call_obj(tes, "set_projectors"))
 
@@ -159,8 +166,9 @@ def tes_calibrate(time, dwell=10, energy=980, md=None, autosetup=True, **kwargs)
     cal_uid : str
         The unique identifier for the calibration run.
     """
+    tes = bl["tes"]
     yield from set_edge("blank")
-    yield from mv(GLOBAL_BEAMLINE.energy, energy)
+    yield from mv(bl.energy, energy)
     if autosetup:
         tes_status = yield from rd(tes.status)
         if tes_status < 4:
