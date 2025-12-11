@@ -29,10 +29,11 @@ class TESTabWidget(QWidget):
         print(self.beamline)
         tes = self.beamline.devices.get("tes", None)
         print("Got TES Object")
-        if tes is not None:
-            print("Got TES model")
-        else:
-            raise ValueError("TES Object is None")
+        if tes is None or not getattr(tes, "is_available", True):
+            vbox.addWidget(QLabel("TES unavailable in current mode"))
+            self.setLayout(vbox)
+            return
+        print("Got TES model")
         print("Adding TES Autocontrol")
         vbox.addWidget(AutoControl(tes, model))
         print("Adding TES Setup")
