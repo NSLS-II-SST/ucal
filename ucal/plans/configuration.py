@@ -1,9 +1,7 @@
 # from ucal.mirrors import mir4, mir3
-from ucal.hw import mir1, mir3, mir4, i0upAu
-from ucal.hw import manipz, en
 from bluesky.plan_stubs import mv, rd
 from nbs_bl.help import add_to_plan_list
-
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 
 @add_to_plan_list
 def setup_ucal():
@@ -21,7 +19,9 @@ def setup_mirrors():
     # yaw: 2.504
     # pitch: -0.625
     # roll: 1.44e-5
-
+    mir4 = bl["mir4"]
+    mir3 = bl["mir3"]
+    mir1 = bl["mir1"]
     yield from mv(mir4.x, 27.5)
     yield from mv(mir4.y, 0)
     yield from mv(mir4.z, 0.00199)
@@ -38,6 +38,7 @@ def setup_mirrors():
 
 
 def setup_manipulators():
+    i0upAu = bl["i0upAu"]
     yield from mv(i0upAu, 78)
 
 
@@ -45,7 +46,7 @@ def setup_mono():
     """
     Sane default mono parameters
     """
-
+    en = bl["en"]
     grating = yield from rd(en.monoen.gratingx.readback)
     mono = en.monoen
     if "1200l/mm" in grating:
