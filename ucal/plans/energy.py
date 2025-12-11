@@ -105,11 +105,11 @@ def tune_pgm(
         )
         yield from bps.sleep(0.2)
         max_info = yield from fly_max(
-            [ref], grating, g_set - 0.1, g_set + 0.1, 0.2 / 30, period=0.2
+            [ref], grating, g_set - 0.1, g_set + 0.1, 0.2 / 45, period=0.2
         )
         gset2 = max_info[ref.name][grating.name]
         max_info = yield from fly_max(
-            [ref], grating, gset2 - 0.015, gset2 + 0.015, 0.03 / 30.0, period=0.2
+            [ref], grating, gset2 - 0.015, gset2 + 0.015, 0.03 / 45.0, period=0.2
         )
         gmax = max_info[ref.name][grating.name]
         """
