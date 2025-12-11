@@ -1,8 +1,6 @@
 from bluesky.plan_stubs import mv, mvr
 
 # from bluesky.utils import Msg
-from ucal.hw import manipx, manipy, manipz, manipr, manipulator
-from ucal.hw import tesz
 from ucal.plans.find_edges import (
     scan_r_coarse,
     scan_r_medium,
@@ -22,6 +20,7 @@ from ucal.plans.plan_stubs import update_manipulator_side
 
 # from ucal.configuration import beamline_config
 from nbs_bl.queueserver import GLOBAL_USER_STATUS
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 from nbs_bl.help import add_to_plan_list
 from nbs_bl.geometry.linalg import deg_to_rad, rad_to_deg, rotz, vec
 from nbs_bl.geometry.frames import Frame
@@ -39,6 +38,7 @@ MANIPULATOR_CONFIG = GLOBAL_USER_STATUS.request_status_dict(
 
 
 def find_min_r(step, npts):
+    manipr = bl["manipr"]
     xlist = []
     rcurr = manipr.position
 
@@ -56,6 +56,7 @@ def find_r_offset():
     Works to find angle where bar is square to beam. Maybe want to subtract 0.5 deg
     from result for safety, better not to have exposed 2nd side
     """
+    manipr = bl["manipr"]
     minr = yield from find_min_r(2, 9)
     yield from mv(manipr, minr)
     minr2 = yield from find_min_r(0.5, 9)
@@ -63,6 +64,9 @@ def find_r_offset():
 
 
 def find_beam_x_offset(side=1, rdiff=180):
+    tesz = bl["tesz"]
+    manipr = bl["manipr"]
+    manipx = bl["manipx"]
     tes_pos = yield from rd(tesz)
     if tes_pos < 40:
         print("TES too close, move back to 40 mm to continue")
@@ -98,6 +102,7 @@ def find_corner_x_r():
 
 
 def find_corner_coordinates(nsides=4):
+    manipr = bl["manipr"]
     # rotation angle to next side
     ra = 360.0 / nsides
 
@@ -123,6 +128,7 @@ def calculate_corner_y(x1, r1, x2, r2, nsides=4):
 
 
 def find_corner_known_rotation(r1, r2, nsides=4):
+    manipr = bl["manipr"]
     yield from mv(manipr, r1)
     x1 = yield from find_x()
     yield from mv(manipr, r2)
@@ -137,6 +143,10 @@ def find_side_basis(nsides=4, x1=None, r1=None, x3=None, z=None, find_angle=Fals
     Efficiently finds the side basis and leaves manipulator ready for
     the next side
     """
+    manipz = bl["manipz"]
+    manipulator = bl["manipulator"]
+    manipr = bl["manipr"]
+    manipx = bl["manipx"]
     ra = 360.0 / nsides
     z_bump = 5
     if z is None:
@@ -236,6 +246,8 @@ def calibrate_side(side_num, nsides=4):
 
 @add_to_plan_list
 def calibrate_sides(side_start, side_end, nsides=4):
+    manipr = bl["manipr"]
+    manipx = bl["manipx"]
     yield from mv(manipr, 0, manipx, 0)
     z = yield from find_z()
     previous_side = {}
@@ -248,6 +260,7 @@ def calibrate_sides(side_start, side_end, nsides=4):
 
 def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
     """Set the manipulator origin coordinates"""
+    manipulator = bl["manipulator"]
     updates = [x, y, z, r]
     if np.any(updates) is None and "origin" in MANIPULATOR_CONFIG:
         print("No updates")
@@ -262,6 +275,10 @@ def set_manipulator_origin(*, x=None, y=None, z=None, r=None):
 
 def new_calibrate_sides(side_start, side_end, nsides=4, findz=True, preserve=False):
     """Calibrate multiple manipulator sides"""
+    manipr = bl["manipr"]
+    manipx = bl["manipx"]
+    manipz = bl["manipz"]
+    manipulator = bl["manipulator"]
     if not preserve:
         MANIPULATOR_CONFIG["calibration"] = {}
 
@@ -321,6 +338,9 @@ def load_saved_manipulator_calibration():
 
 
 def find_sides_one_z(z, side_start, side_end, nsides):
+    manipz = bl["manipz"]
+    manipulator = bl["manipulator"]
+    manipr = bl["manipr"]
     xr_list = []
     x0 = manipulator.origin[0]
     for side in range(side_start, side_end + 1):
@@ -360,6 +380,7 @@ def find_sides_one_z(z, side_start, side_end, nsides):
 
 
 def get_manual_sample_frame(x, y, z, r):
+    manipulator = bl["manipulator"]
     rmod = r % 90
     rdiv = r - rmod
     z0 = manipulator.origin[2]

@@ -1,4 +1,3 @@
-from ucal.hw import tes, adr
 from nbs_bl.detectors import deactivate_detector, activate_detector
 from nbs_bl.plans.plan_stubs import call_obj, wait_for_signal_equals, set_exposure
 from nbs_bl.plans.scans import nbs_count

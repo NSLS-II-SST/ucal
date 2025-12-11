@@ -1,6 +1,5 @@
 import numpy as np
-from ucal.hw import manipx, manipy, manipz, manipr
-from nbs_bl.beamline import GLOBAL_BEAMLINE  # , GLOBAL_ACTIVE_DETECTORS
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl  # , GLOBAL_ACTIVE_DETECTORS
 
 # GLOBAL_DETECTOR_THRESHOLDS, GLOBAL_ALIGNMENT_DETECTOR
 from nbs_bl.plans.maximizers import (
@@ -26,10 +25,10 @@ def get_alignment_det():
     """
     Returns detector to use for alignment
     """
-    if hasattr(GLOBAL_BEAMLINE, "indirect_alignment"):
-        return GLOBAL_BEAMLINE.indirect_alignment.name
-    elif hasattr(GLOBAL_BEAMLINE, "direct_alignment"):
-        return GLOBAL_BEAMLINE.direct_alignment.name
+    if hasattr(bl, "indirect_alignment"):
+        return bl.indirect_alignment.name
+    elif hasattr(bl, "direct_alignment"):
+        return bl.direct_alignment.name
     else:
         raise KeyError(
             "Neither indirect nor direct Alignment Detector Found, not guessing!"
@@ -40,9 +39,9 @@ def invert_alignment():
     """
     Returns True if the detector maximum occurs when the sample is in the beam
     """
-    if hasattr(GLOBAL_BEAMLINE, "indirect_alignment"):
+    if hasattr(bl, "indirect_alignment"):
         return False
-    elif hasattr(GLOBAL_BEAMLINE, "direct_alignment"):
+    elif hasattr(bl, "direct_alignment"):
         return True
     else:
         raise KeyError(
@@ -53,9 +52,10 @@ def invert_alignment():
 def scan_z_offset(zstart, zstop, step_size):
     nsteps = int(np.abs(zstop - zstart) / step_size) + 1
     max_channel = get_alignment_det()
+    manipz = bl["manipz"]
     ret = yield from find_max_deriv(
         rel_scan,
-        GLOBAL_BEAMLINE.detectors.active,
+        bl.detectors.active,
         manipz,
         zstart,
         zstop,
@@ -83,12 +83,13 @@ def scan_r_offset(rstart, rstop, step_size):
     """
     Relative scan, find r that maximizes signal
     """
+    manipr = bl["manipr"]
     nsteps = int(np.abs(rstop - rstart) / step_size) + 1
     max_channel = get_alignment_det()
     invert = invert_alignment()
     ret = yield from find_max(
         rel_scan,
-        GLOBAL_BEAMLINE.detectors.active,
+        bl.detectors.active,
         manipr,
         rstart,
         rstop,
@@ -114,12 +115,13 @@ def scan_r_fine():
 
 
 def scan_x_offset(xstart, xstop, step_size):
+    manipx = bl["manipx"]
     nsteps = int(np.abs(xstop - xstart) / step_size) + 1
     max_channel = get_alignment_det()
 
     ret = yield from find_max_deriv(
         rel_scan,
-        GLOBAL_BEAMLINE.detectors.active,
+        bl.detectors.active,
         manipx,
         xstart,
         xstop,
@@ -194,7 +196,7 @@ def find_edge_adaptive(dets, motor, step, precision, max_channel=None):
         detname = dets[0].name
     else:
         detname = max_channel
-    if detname not in GLOBAL_BEAMLINE.detectors.thresholds:
+    if detname not in bl.detectors.thresholds:
         raise KeyError(
             f"{detname} has no threshold value and cannot be"
             "used with an adaptive plan"
@@ -202,7 +204,7 @@ def find_edge_adaptive(dets, motor, step, precision, max_channel=None):
     thres_pos = yield from threshold_adaptive(
         dets,
         motor,
-        GLOBAL_BEAMLINE.detectors.thresholds[detname],
+        bl.detectors.thresholds[detname],
         step=step,
         max_channel=max_channel,
     )
@@ -222,10 +224,11 @@ def find_z_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
+    manipz = bl["manipz"]
     max_channel = get_alignment_det()
     return (
         yield from find_edge_adaptive(
-            GLOBAL_BEAMLINE.detectors.active,
+            bl.detectors.active,
             manipz,
             step,
             precision,
@@ -242,10 +245,11 @@ def find_x_adaptive(precision=0.1, step=2):
     precision : float
         desired precision of edge position
     """
+    manipx = bl["manipx"]
     max_channel = get_alignment_det()
     return (
         yield from find_edge_adaptive(
-            GLOBAL_BEAMLINE.detectors.active,
+            bl.detectors.active,
             manipx,
             step,
             precision,
@@ -269,7 +273,7 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
         detname = dets[0].name
     else:
         detname = max_channel
-    if detname not in GLOBAL_BEAMLINE.detectors.thresholds:
+    if detname not in bl.detectors.thresholds:
         raise KeyError(
             f"{detname} has no threshold value and cannot be"
             "used with an adaptive plan"
@@ -277,7 +281,7 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
     thres_pos = yield from threshold_adaptive(
         dets,
         motor,
-        GLOBAL_BEAMLINE.detectors.thresholds[detname],
+        bl.detectors.thresholds[detname],
         step=step,
         max_channel=max_channel,
     )
@@ -304,6 +308,7 @@ def find_edge(dets, motor, step, start, stop, points, max_channel=None, fly=True
 
 
 def find_x(invert=False, precision=0.1):
+    manipx = bl["manipx"]
     print("Finding x edge position")
     max_channel = get_alignment_det()
 
@@ -322,7 +327,7 @@ def find_x(invert=False, precision=0.1):
     points = int(np.abs(start - stop) / precision) + 1
     return (
         yield from find_edge(
-            GLOBAL_BEAMLINE.detectors.active,
+            bl.detectors.active,
             manipx,
             step,
             start,
@@ -335,6 +340,8 @@ def find_x(invert=False, precision=0.1):
 
 def find_z(invert=False, precision=0.1):
     """Find the z edge position"""
+    manipz = bl["manipz"]
+    max_channel = get_alignment_det()
     print("Finding z edge position")
     if not invert_alignment():
         invert = not invert
@@ -350,7 +357,7 @@ def find_z(invert=False, precision=0.1):
     points = int(np.abs(start - stop) / precision) + 1
     return (
         yield from find_edge(
-            GLOBAL_BEAMLINE.detectors.active,
+            bl.detectors.active,
             manipz,
             step,
             start,

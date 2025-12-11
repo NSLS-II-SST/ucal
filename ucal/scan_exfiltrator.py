@@ -1,4 +1,4 @@
-from nbs_bl.hw import manipulator
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 
 
 class ScanExfiltrator:
@@ -10,7 +10,7 @@ class ScanExfiltrator:
     def get_scan_start_info(self):
         motor_name = getattr(self.motor, "name", "unnamed_motor")
         motor_unit = getattr(self.motor, "egu", "index")
-        sample = manipulator.current_sample
+        sample = bl["manipulator"].current_sample
         sample_id = sample.get("sample_id", "")
         sample_name = sample.get("name", "")
         info = {

@@ -1,5 +1,5 @@
 import bluesky.plan_stubs as bps
-from ucal.hw import en, ref, psh4
+from nbs_bl.beamline import GLOBAL_BEAMLINE as bl
 from .plan_stubs import set_edge
 from nbs_bl.plans.plan_stubs import set_exposure
 from nbs_bl.gGrEqns import get_mirror_grating_angles, find_best_offsets
@@ -9,6 +9,9 @@ from nbs_bl.help import add_to_plan_list
 
 
 def base_grating_to_250(stripe=2):
+    en = bl["en"]
+    ref = bl["ref"]
+    psh4 = bl["psh4"]
     mono_en = en.monoen
     stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]
     current_stripe = mono_en.gratingx.readback.get()
@@ -36,6 +39,8 @@ def base_grating_to_250(stripe=2):
 
 
 def base_grating_to_1200(stripe=9):
+    en = bl["en"]
+    psh4 = bl["psh4"]
     mono_en = en.monoen
     stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]
     current_stripe = mono_en.gratingx.readback.get()
@@ -60,6 +65,7 @@ def base_grating_to_1200(stripe=9):
 
 
 def setup_mono():
+    en = bl["en"]
     mono_en = en.monoen
     monotype = mono_en.gratingx.readback.get()
     if "250l/mm" in monotype:
@@ -81,7 +87,8 @@ def tune_pgm(
     # RE(load_sample(sample_by_name(bar, 'HOPG')))
     # RE(tune_pgm(cs=[1.35,1.37,1.385,1.4,1.425,1.45],ms=[1,1,1,1,1],energy=291.65,pol=90,k=250))
     # RE(tune_pgm(cs=[1.55,1.6,1.65,1.7,1.75,1.8],ms=[1,1,1,1,1],energy=291.65,pol=90,k=1200))
-
+    en = bl["en"]
+    ref = bl["ref"]
     yield from bps.mv(en.polarization, pol)
     yield from bps.mv(en, energy)
     mirror_measured = []
@@ -172,6 +179,7 @@ def tune_1200(auto_accept=True):
 @add_to_plan_list
 def tune_grating(auto_accept=True):
     """Tune grating offsets, should be run after grating change automatically"""
+    en = bl["en"]
     grating = yield from bps.rd(en.monoen.gratingx.readback)
     yield from set_exposure(1.0)
     if "250l/mm" in grating:
@@ -192,6 +200,7 @@ def change_grating(stripe, tune=True):
 
     grating: either 250 or 1200
     tune: if True, calibrate grating offsets after change"""
+    en = bl["en"]
     mono_en = en.monoen
     if isinstance(stripe, int):
         stripe_str = mono_en.gratingx.setpoint.enum_strs[stripe]

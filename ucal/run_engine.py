@@ -39,9 +39,9 @@ def setup_run_engine(engine):
     return engine
 
 
-RE = create_run_engine(setup=True)
-RE = setup_run_engine(RE)
-
+#RE = create_run_engine(setup=True)
+#RE = setup_run_engine(RE)
+"""
 if "redis" in GLOBAL_BEAMLINE.settings:
     import redis
     from nbs_bl.status import RedisStatusDict
@@ -53,3 +53,4 @@ if "redis" in GLOBAL_BEAMLINE.settings:
     md = RedisStatusDict(redis.Redis(uri), prefix=prefix)
     GLOBAL_USER_STATUS.add_status("USER_MD", md)
     RE.md = md
+"""
