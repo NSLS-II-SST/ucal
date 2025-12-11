@@ -126,3 +126,14 @@ class TESModel(QObject):
             self.writeOff,
             self.writeLjh,
         ]
+
+    def iter_models(self):
+        """
+        Yield all contained models for traversal.
+
+        Yields
+        ------
+        BaseModel
+            Contained models.
+        """
+        yield from self.signals
